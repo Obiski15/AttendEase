@@ -7,12 +7,26 @@ import com.example.attendance_manager.ui.navigation.Screen
 import com.example.attendance_manager.ui.screens.auth.LoginScreen
 
 
+import com.example.attendance_manager.state.UserRole
+
+
 fun NavGraphBuilder.authGraph(
     navController: NavController
 ) {
 
     composable(Screen.Login.route) {
-        LoginScreen()
+        LoginScreen(
+            onLoginSuccess = { role ->
+                val destination = when (role) {
+                    UserRole.STUDENT -> Screen.StudentDashboard.route
+                    UserRole.LECTURER -> Screen.LecturerDashboard.route
+                    UserRole.ADMIN -> Screen.AdminDashboard.route
+                }
+                navController.navigate(destination) {
+                    popUpTo(Screen.Login.route) { inclusive = true }
+                }
+            }
+        )
     }
 
 }

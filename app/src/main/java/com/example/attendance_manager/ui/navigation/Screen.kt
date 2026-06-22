@@ -11,7 +11,8 @@ sealed class Screen(val route: String) {
     data object Students : Screen("students")
     data object StudentDetail : Screen("student_detail/{studentId}") {
         fun createRoute(studentId: String): String {
-            return "student_detail/$studentId"
+            val encodedId = android.net.Uri.encode(studentId)
+            return "student_detail/$encodedId"
         }
     }
     data object Lecturers : Screen("lecturers")
@@ -24,6 +25,7 @@ sealed class Screen(val route: String) {
     data object LecturerDashboard : Screen("lecturer_dashboard")
     data object StartSession : Screen("start_session")
     data object AttendanceList : Screen("attendance_list")
+    data object SessionHistory : Screen("session_history")
 
     // Student
     data object StudentDashboard : Screen("student_dashboard")

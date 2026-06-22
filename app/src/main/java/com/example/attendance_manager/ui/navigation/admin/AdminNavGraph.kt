@@ -7,6 +7,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import androidx.navigation.compose.composable
+import com.example.attendance_manager.ui.screens.admin.*
 
 
 fun NavGraphBuilder.adminGraph(
@@ -14,15 +15,15 @@ fun NavGraphBuilder.adminGraph(
 ) {
 
     composable(Screen.AdminDashboard.route) {
-//        AdminDashboardScreen(navController)
+        AdminDashboardScreen(navController)
     }
 
     composable(Screen.Students.route) {
-//        StudentsScreen(navController)
+        StudentsScreen(navController)
     }
 
     composable(Screen.AddStudent.route) {
-//        AddStudentScreen(navController)
+        AddStudentScreen(navController)
     }
 
     composable(
@@ -36,31 +37,31 @@ fun NavGraphBuilder.adminGraph(
     ) { backStackEntry ->
 
         // Extract the argument from the backStackEntry
-//        val studentId = backStackEntry.arguments?.getString("studentId")
+        val studentId = backStackEntry.arguments?.getString("studentId")
 
         // Pass the extracted ID down to actual UI screen
-//        if (studentId != null) {
-//            StudentDetailScreen(navController = navController, studentId = studentId)
-//        }
+        if (studentId != null) {
+            StudentDetailScreen(navController = navController, studentId = studentId)
+        }
     }
 
     composable(Screen.Courses.route) {
-//        CoursesScreen(navController)
+        CoursesScreen(navController)
     }
 
     composable(Screen.AddCourse.route){
-//        AddCourseScreen(navController)
+        AddCourseScreen(navController)
     }
 
     composable(Screen.CourseAssignment.route) {
-//        CourseAssignmentScreen(navController)
+        CourseAssignmentScreen(navController)
     }
 
     composable(Screen.Lecturers.route) {
-//        LecturersScreen(navController)
+        LecturersScreen(navController)
     }
 
     composable(Screen.AddLecturer.route) {
-//        AddLecturerScreen(navController)
+        AddLecturerScreen(navController)
     }
 }
