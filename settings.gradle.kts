@@ -22,5 +22,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Attendance-Manager"
+rootProject.name = "AttendEase"
 include(":app")
