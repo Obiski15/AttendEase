@@ -22,26 +22,33 @@ import com.example.attendease.ui.components.AttendEaseBottomBar
 import com.example.attendease.ui.components.AttendEaseTopAppBar
 import com.example.attendease.ui.navigation.Screen
 import com.example.attendease.ui.theme.Spacing
-
-data class Lecturer(
-    val name: String,
-    val email: String,
-    val assignedCourses: Int,
-    val imageUrl: String? = null
-)
+import com.example.attendease.viewModel.LecturerViewModel
+import com.example.attendease.dto.response.LecturerResponse
+import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LecturersScreen(navController: NavController) {
+fun LecturersScreen(
+    navController: NavController,
+    viewModel: LecturerViewModel = koinViewModel()
+) {
     var searchQuery by remember { mutableStateOf("") }
+    val lecturers by viewModel.lecturers.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
 
-    val dummyLecturers = listOf(
-        Lecturer("Dr. Sarah Smith", "sarah.smith@atendease.edu", 3),
-        Lecturer("Dr. James Wilson", "j.wilson@atendease.edu", 5),
-        Lecturer("Prof. Elena Rodriguez", "e.rodriguez@atendease.edu", 2),
-        Lecturer("Dr. Robert Henderson", "r.henderson@atendease.edu", 4),
-        Lecturer("Dr. Ananya Kapoor", "a.kapoor@atendease.edu", 3)
-    )
+    LaunchedEffect(Unit) {
+        viewModel.loadLecturers()
+    }
+
+    val filteredLecturers = lecturers.filter {
+        val name = it.user?.name ?: ""
+        val email = it.user?.email ?: ""
+        val staffId = it.staffId ?: ""
+        name.contains(searchQuery, ignoreCase = true) ||
+                email.contains(searchQuery, ignoreCase = true) ||
+                staffId.contains(searchQuery, ignoreCase = true)
+    }
 
     Scaffold(
         topBar = {
@@ -57,7 +64,7 @@ fun LecturersScreen(navController: NavController) {
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { navController.navigate(Screen.AddLecturer.route) },
-                containerColor = Color(0xFF006F62), // Teal color from image
+                containerColor = Color(0xFF006F62),
                 contentColor = Color.White,
                 shape = RoundedCornerShape(16.dp)
             ) {
@@ -77,9 +84,8 @@ fun LecturersScreen(navController: NavController) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(Spacing.md),
-                placeholder = { Text("Search by name or department...", color = Color.Gray) },
+                placeholder = { Text("Search by name or staff ID...", color = Color.Gray) },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
-                trailingIcon = { Icon(Icons.Default.FilterList, contentDescription = "Filter", tint = Color.Gray) },
                 shape = RoundedCornerShape(12.dp),
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
@@ -88,16 +94,68 @@ fun LecturersScreen(navController: NavController) {
                 )
             )
 
-            // Lecturer List
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = Spacing.md),
-                verticalArrangement = Arrangement.spacedBy(Spacing.md),
-                contentPadding = PaddingValues(bottom = 80.dp)
-            ) {
-                items(dummyLecturers) { lecturer ->
-                    LecturerCard(lecturer)
+            // Loading state
+            if (isLoading && lecturers.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                }
+            } else {
+                // Error state
+                error?.let { err ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = Spacing.md, vertical = Spacing.xs),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+                    ) {
+                        Text(
+                            text = err,
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            modifier = Modifier.padding(Spacing.md),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+
+                if (filteredLecturers.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .weight(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = if (searchQuery.isEmpty()) "No lecturers available." else "No search results found.",
+                            color = Color.Gray,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                } else {
+                    // Lecturer List
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = Spacing.md),
+                        verticalArrangement = Arrangement.spacedBy(Spacing.md),
+                        contentPadding = PaddingValues(bottom = 80.dp)
+                    ) {
+                        items(filteredLecturers, key = { it.userId }) { lecturer ->
+                            LecturerCard(
+                                lecturer = lecturer,
+                                onEditClick = {
+                                    navController.navigate(Screen.EditLecturer.createRoute(lecturer.userId))
+                                },
+                                onDeleteClick = {
+                                    viewModel.deleteLecturer(lecturer.userId)
+                                }
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -105,7 +163,13 @@ fun LecturersScreen(navController: NavController) {
 }
 
 @Composable
-fun LecturerCard(lecturer: Lecturer) {
+fun LecturerCard(
+    lecturer: LecturerResponse,
+    onEditClick: () -> Unit,
+    onDeleteClick: () -> Unit
+) {
+    var showMenu by remember { mutableStateOf(false) }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -136,13 +200,13 @@ fun LecturerCard(lecturer: Lecturer) {
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = lecturer.name,
+                    text = lecturer.user?.name ?: "User",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF1A237E) // Dark blue
                 )
                 Text(
-                    text = lecturer.email,
+                    text = lecturer.user?.email ?: "",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -156,14 +220,14 @@ fun LecturerCard(lecturer: Lecturer) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Book,
+                            imageVector = Icons.Default.Badge,
                             contentDescription = null,
                             tint = Color(0xFF006064),
                             modifier = Modifier.size(14.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "Assigned Courses: ${lecturer.assignedCourses}",
+                            text = "Staff ID: ${lecturer.staffId ?: "N/A"}",
                             style = MaterialTheme.typography.labelSmall,
                             color = Color(0xFF006064),
                             fontWeight = FontWeight.Bold
@@ -172,12 +236,35 @@ fun LecturerCard(lecturer: Lecturer) {
                 }
             }
 
-            IconButton(onClick = { }) {
-                Icon(
-                    imageVector = Icons.Default.MoreVert,
-                    contentDescription = "Options",
-                    tint = MaterialTheme.colorScheme.outline
-                )
+            Box {
+                IconButton(onClick = { showMenu = true }) {
+                    Icon(
+                        imageVector = Icons.Default.MoreVert,
+                        contentDescription = "Options",
+                        tint = MaterialTheme.colorScheme.outline
+                    )
+                }
+                DropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Edit") },
+                        onClick = {
+                            showMenu = false
+                            onEditClick()
+                        },
+                        leadingIcon = { Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(20.dp)) }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Delete", color = MaterialTheme.colorScheme.error) },
+                        onClick = {
+                            showMenu = false
+                            onDeleteClick()
+                        },
+                        leadingIcon = { Icon(Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(20.dp)) }
+                    )
+                }
             }
         }
     }

@@ -27,21 +27,30 @@ fun NavGraphBuilder.adminGraph(
     }
 
     composable(
-        route = Screen.StudentDetail.route,
-        // Define the exact arguments this route expects
+        route = Screen.EditStudent.route,
         arguments = listOf(
             navArgument("studentId") {
                 type = NavType.StringType
             }
         )
     ) { backStackEntry ->
-
-        // Extract the argument from the backStackEntry
         val studentId = backStackEntry.arguments?.getString("studentId")
-
-        // Pass the extracted ID down to actual UI screen
         if (studentId != null) {
-            StudentDetailScreen(navController = navController, studentId = studentId)
+            EditStudentScreen(navController, studentId)
+        }
+    }
+
+    composable(
+        route = Screen.StudentDetail.route,
+        arguments = listOf(
+            navArgument("userId") {
+                type = NavType.StringType
+            }
+        )
+    ) { backStackEntry ->
+        val userId = backStackEntry.arguments?.getString("userId")
+        if (userId != null) {
+            StudentDetailScreen(navController = navController, userId = userId)
         }
     }
 
@@ -57,11 +66,29 @@ fun NavGraphBuilder.adminGraph(
         CourseAssignmentScreen(navController)
     }
 
+    composable(Screen.AcademicSessions.route) {
+        AcademicSessionsScreen(navController)
+    }
+
     composable(Screen.Lecturers.route) {
         LecturersScreen(navController)
     }
 
     composable(Screen.AddLecturer.route) {
         AddLecturerScreen(navController)
+    }
+
+    composable(
+        route = Screen.EditLecturer.route,
+        arguments = listOf(
+            navArgument("lecturerId") {
+                type = NavType.StringType
+            }
+        )
+    ) { backStackEntry ->
+        val lecturerId = backStackEntry.arguments?.getString("lecturerId")
+        if (lecturerId != null) {
+            EditLecturerScreen(navController, lecturerId)
+        }
     }
 }

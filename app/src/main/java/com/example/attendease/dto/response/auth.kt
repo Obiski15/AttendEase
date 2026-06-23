@@ -13,6 +13,7 @@ data class LoginResponse(
 
 @Serializable
 data class UserResponse(
+    val id: String? = null,
     val role: UserRole,
     @SerialName("full_name") val name: String? = null,
     val email: String? = null

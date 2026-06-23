@@ -14,8 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.attendease.ui.components.AttendEaseDropdown
@@ -24,12 +22,13 @@ import com.example.attendease.ui.components.AttendEaseTopAppBar
 import com.example.attendease.ui.components.SuccessModal
 import com.example.attendease.ui.theme.Spacing
 import com.example.attendease.viewModel.LecturerViewModel
-import com.example.attendease.dto.request.LecturerCreateRequest
+import com.example.attendease.dto.request.LecturerUpdateRequest
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun AddLecturerScreen(
+fun EditLecturerScreen(
     navController: NavController,
+    lecturerId: String,
     viewModel: LecturerViewModel = koinViewModel()
 ) {
     var staffId by remember { mutableStateOf("") }
@@ -37,19 +36,29 @@ fun AddLecturerScreen(
     var department by remember { mutableStateOf("") }
     var selectedDepartmentId by remember { mutableStateOf<String?>(null) }
     var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var passwordVisible by remember { mutableStateOf(false) }
     var showSuccessModal by remember { mutableStateOf(false) }
 
     val departments by viewModel.departments.collectAsState()
+    val currentLecturer by viewModel.currentLecturer.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
     val saveSuccess by viewModel.saveSuccess.collectAsState()
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(lecturerId) {
         viewModel.resetSaveState()
         viewModel.clearCurrentLecturer()
         viewModel.loadDepartments()
+        viewModel.loadLecturer(lecturerId)
+    }
+
+    LaunchedEffect(currentLecturer, departments) {
+        currentLecturer?.let {
+            staffId = it.staffId ?: ""
+            fullName = it.user?.name ?: ""
+            email = it.user?.email ?: ""
+            selectedDepartmentId = it.departmentId
+            department = departments.find { dept -> dept.id == it.departmentId }?.name ?: ""
+        }
     }
 
     LaunchedEffect(saveSuccess) {
@@ -61,7 +70,7 @@ fun AddLecturerScreen(
     Scaffold(
         topBar = {
             AttendEaseTopAppBar(
-                title = "Add Lecturer",
+                title = "Edit Lecturer",
                 showBackButton = true,
                 onBackClick = { navController.popBackStack() },
                 showBadge = false,
@@ -154,8 +163,9 @@ fun AddLecturerScreen(
                     AttendEaseFormField(
                         label = "FULL NAME",
                         value = fullName,
-                        onValueChange = { if (!isLoading) fullName = it },
-                        placeholder = "Dr. Sarah Johnson"
+                        onValueChange = { },
+                        placeholder = "Dr. Sarah Johnson",
+                        enabled = false
                     )
                 }
 
@@ -177,30 +187,11 @@ fun AddLecturerScreen(
                     AttendEaseFormField(
                         label = "EMAIL ADDRESS",
                         value = email,
-                        onValueChange = { if (!isLoading) email = it },
+                        onValueChange = { },
                         placeholder = "sarah.johnson@university.edu",
                         trailingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = Color.LightGray) },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
-                    )
-                }
-
-                item {
-                    AttendEaseFormField(
-                        label = "TEMPORARY PASSWORD",
-                        value = password,
-                        onValueChange = { if (!isLoading) password = it },
-                        placeholder = "........",
-                        trailingIcon = {
-                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                                Icon(
-                                    imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                    contentDescription = null
-                                )
-                            }
-                        },
-                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                        helperText = "Lecturer will be prompted to change this on first login."
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                        enabled = false
                     )
                 }
 
@@ -209,17 +200,15 @@ fun AddLecturerScreen(
                     
                     Button(
                         onClick = {
-                            viewModel.createLecturer(
-                                LecturerCreateRequest(
-                                    email = email,
-                                    password = password,
-                                    fullName = fullName,
+                            viewModel.updateLecturer(
+                                lecturerId,
+                                LecturerUpdateRequest(
                                     staffId = staffId,
-                                    departmentId = selectedDepartmentId ?: ""
+                                    departmentId = selectedDepartmentId
                                 )
                             )
                         },
-                        enabled = !isLoading && staffId.isNotEmpty() && selectedDepartmentId != null && fullName.isNotEmpty() && email.isNotEmpty() && password.isNotEmpty(),
+                        enabled = !isLoading && staffId.isNotEmpty() && selectedDepartmentId != null,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(56.dp),
@@ -236,7 +225,7 @@ fun AddLecturerScreen(
                             Icon(Icons.Default.Save, contentDescription = null)
                             Spacer(modifier = Modifier.width(Spacing.sm))
                             Text(
-                                text = "Save Lecturer",
+                                text = "Update Lecturer",
                                 fontWeight = FontWeight.Bold
                             )
                         }
@@ -248,8 +237,8 @@ fun AddLecturerScreen(
 
             if (showSuccessModal) {
                 SuccessModal(
-                    title = "Lecturer Added",
-                    message = "New lecturer record has been successfully created and synced.",
+                    title = "Lecturer Updated",
+                    message = "Lecturer record has been successfully updated and synced.",
                     onContinue = {
                         showSuccessModal = false
                         viewModel.resetSaveState()

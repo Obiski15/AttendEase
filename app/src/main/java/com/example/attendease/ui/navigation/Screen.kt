@@ -15,19 +15,30 @@ sealed class Screen(val route: String) {
 
     // Admin
     data object AdminDashboard : Screen("admin_dashboard")
-    data object AddStudent: Screen(route = "add_student")
-    data object Students : Screen("students")
-    data object StudentDetail : Screen("student_detail/{studentId}") {
+    data object AddStudent: Screen("add_student")
+    data object EditStudent: Screen("edit_student/{studentId}") {
         fun createRoute(studentId: String): String {
-            val encodedId = android.net.Uri.encode(studentId)
+            return "edit_student/$studentId"
+        }
+    }
+    data object Students : Screen("students")
+    data object StudentDetail : Screen("student_detail/{userId}") {
+        fun createRoute(userId: String): String {
+            val encodedId = android.net.Uri.encode(userId)
             return "student_detail/$encodedId"
         }
     }
     data object Lecturers : Screen("lecturers")
     data object AddLecturer: Screen("add_lecturer")
+    data object EditLecturer: Screen("edit_lecturer/{lecturerId}") {
+        fun createRoute(lecturerId: String): String {
+            return "edit_lecturer/$lecturerId"
+        }
+    }
     data object AddCourse: Screen("add_course")
     data object Courses : Screen("courses")
     data object CourseAssignment : Screen("course_assignment")
+    data object AcademicSessions : Screen("academic_sessions")
 
     // Lecturer
     data object LecturerDashboard : Screen("lecturer_dashboard")

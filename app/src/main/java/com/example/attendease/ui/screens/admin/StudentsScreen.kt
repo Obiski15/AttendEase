@@ -25,34 +25,44 @@ import com.example.attendease.ui.components.AttendEaseBottomBar
 import com.example.attendease.ui.components.AttendEaseTopAppBar
 import com.example.attendease.ui.navigation.Screen
 import com.example.attendease.ui.theme.Spacing
-
-data class Student(
-    val name: String,
-    val matricNo: String,
-    val department: String,
-    val level: String,
-    val imageUrl: String? = null
-)
+import org.koin.androidx.compose.koinViewModel
+import com.example.attendease.viewModel.StudentViewModel
+import com.example.attendease.dto.response.StudentResponse
+import com.example.attendease.dto.response.DepartmentResponse
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StudentsScreen(navController: NavController) {
+fun StudentsScreen(
+    navController: NavController,
+    viewModel: StudentViewModel = koinViewModel()
+) {
     var searchQuery by remember { mutableStateOf("") }
-    val departments = listOf("ALL", "CS", "IT", "SE")
-    val levels = listOf("100L", "200L", "300L", "400L", "500L")
-    var selectedDept by remember { mutableStateOf("ALL") }
+    val students by viewModel.students.collectAsState()
+    val departments by viewModel.departments.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
 
-    val dummyStudents = listOf(
-        Student("Alex Johnson", "CST/19/1024", "COMPUTER SCIENCE", "400 LEVEL"),
-        Student("Sarah Miller", "ITE/20/2155", "INFORMATION TECH", "300 LEVEL"),
-        Student("David Chen", "SWE/21/3091", "SOFTWARE ENG.", "200 LEVEL"),
-        Student("Elena Rodriguez", "CST/18/0942", "COMPUTER SCIENCE", "500 LEVEL"),
-        Student("Michael Smith", "ITE/22/4001", "INFORMATION TECH", "100 LEVEL")
-    )
+    var selectedDept by remember { mutableStateOf("ALL") }
+    var selectedLevel by remember { mutableStateOf("ALL") }
+    val levels = listOf("ALL", "100L", "200L", "300L", "400L", "500L")
+
+    LaunchedEffect(Unit) {
+        viewModel.loadStudents()
+        viewModel.loadDepartments()
+    }
+
+    val filteredStudents = students.filter { student ->
+        val name = student.user?.name ?: ""
+        val matric = student.matricNumber ?: ""
+        val deptMatches = selectedDept == "ALL" || student.departmentId == selectedDept
+        val levelMatches = selectedLevel == "ALL" || student.level?.contains(selectedLevel.take(3)) == true
+        val searchMatches = name.contains(searchQuery, ignoreCase = true) || matric.contains(searchQuery, ignoreCase = true)
+        deptMatches && levelMatches && searchMatches
+    }
 
     Scaffold(
         topBar = {
-            AttendEaseTopAppBar()
+            AttendEaseTopAppBar(title = "Students")
         },
         bottomBar = {
             AttendEaseBottomBar(
@@ -94,45 +104,124 @@ fun StudentsScreen(navController: NavController) {
                 )
             )
 
-            // Filters
+            // Department Filters
             LazyRow(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = Spacing.base),
+                    .padding(vertical = Spacing.xs),
                 contentPadding = PaddingValues(horizontal = Spacing.md),
                 horizontalArrangement = Arrangement.spacedBy(Spacing.base)
             ) {
-                items(departments) { dept ->
+                item {
                     FilterChip(
-                        selected = selectedDept == dept,
-                        onClick = { selectedDept = dept },
-                        label = { Text(dept) },
+                        selected = selectedDept == "ALL",
+                        onClick = { selectedDept = "ALL" },
+                        label = { Text("ALL DEPT") },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
                             selectedLabelColor = MaterialTheme.colorScheme.primary
                         )
                     )
                 }
-                items(levels) { level ->
+                items(departments) { dept ->
                     FilterChip(
-                        selected = false,
-                        onClick = { },
-                        label = { Text(level) }
+                        selected = selectedDept == dept.id,
+                        onClick = { selectedDept = dept.id },
+                        label = { Text(dept.name) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            selectedLabelColor = MaterialTheme.colorScheme.primary
+                        )
                     )
                 }
             }
 
-            // Student List
-            LazyColumn(
+            // Level Filters
+            LazyRow(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = Spacing.md),
-                verticalArrangement = Arrangement.spacedBy(Spacing.md),
-                contentPadding = PaddingValues(bottom = 80.dp)
+                    .fillMaxWidth()
+                    .padding(vertical = Spacing.xs),
+                contentPadding = PaddingValues(horizontal = Spacing.md),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.base)
             ) {
-                items(dummyStudents) { student ->
-                    StudentCard(student) {
-                        navController.navigate(Screen.StudentDetail.createRoute(student.matricNo))
+                items(levels) { level ->
+                    FilterChip(
+                        selected = selectedLevel == level,
+                        onClick = { selectedLevel = level },
+                        label = { Text(level) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                            selectedLabelColor = MaterialTheme.colorScheme.tertiary
+                        )
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(Spacing.xs))
+
+            if (isLoading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                }
+            } else {
+                error?.let { err ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = Spacing.md, vertical = Spacing.xs),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+                    ) {
+                        Text(
+                            text = err,
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            modifier = Modifier.padding(Spacing.md),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+
+                if (filteredStudents.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .weight(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = if (searchQuery.isEmpty()) "No students available." else "No search results found.",
+                            color = Color.Gray,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = Spacing.md),
+                        verticalArrangement = Arrangement.spacedBy(Spacing.md),
+                        contentPadding = PaddingValues(bottom = 80.dp)
+                    ) {
+                        items(filteredStudents, key = { it.userId }) { student ->
+                            val deptName = departments.find { it.id == student.departmentId }?.name ?: "Unknown Dept"
+                            StudentCard(
+                                student = student,
+                                departmentName = deptName,
+                                onCardClick = {
+                                    navController.navigate(Screen.StudentDetail.createRoute(student.userId))
+                                },
+                                onEditClick = {
+                                    navController.navigate(Screen.EditStudent.createRoute(student.userId))
+                                },
+                                onDeleteClick = {
+                                    viewModel.deleteStudent(student.userId)
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -141,11 +230,19 @@ fun StudentsScreen(navController: NavController) {
 }
 
 @Composable
-fun StudentCard(student: Student, onClick: () -> Unit) {
+fun StudentCard(
+    student: StudentResponse,
+    departmentName: String,
+    onCardClick: () -> Unit,
+    onEditClick: () -> Unit,
+    onDeleteClick: () -> Unit
+) {
+    var showMenu by remember { mutableStateOf(false) }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() },
+            .clickable { onCardClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
@@ -154,7 +251,6 @@ fun StudentCard(student: Student, onClick: () -> Unit) {
             modifier = Modifier.padding(Spacing.md),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Profile Image Placeholder
             Box(
                 modifier = Modifier
                     .size(56.dp)
@@ -174,12 +270,12 @@ fun StudentCard(student: Student, onClick: () -> Unit) {
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = student.name,
+                    text = student.user?.name ?: "Student",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = student.matricNo,
+                    text = student.matricNumber ?: "N/A",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -190,7 +286,7 @@ fun StudentCard(student: Student, onClick: () -> Unit) {
                         shape = RoundedCornerShape(4.dp)
                     ) {
                         Text(
-                            text = student.department,
+                            text = departmentName,
                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.secondary,
@@ -203,7 +299,7 @@ fun StudentCard(student: Student, onClick: () -> Unit) {
                         shape = RoundedCornerShape(4.dp)
                     ) {
                         Text(
-                            text = student.level,
+                            text = student.level ?: "N/A",
                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.tertiary,
@@ -214,12 +310,35 @@ fun StudentCard(student: Student, onClick: () -> Unit) {
                 }
             }
 
-            IconButton(onClick = { }) {
-                Icon(
-                    imageVector = Icons.Default.MoreVert,
-                    contentDescription = "Options",
-                    tint = MaterialTheme.colorScheme.outline
-                )
+            Box {
+                IconButton(onClick = { showMenu = true }) {
+                    Icon(
+                        imageVector = Icons.Default.MoreVert,
+                        contentDescription = "Options",
+                        tint = MaterialTheme.colorScheme.outline
+                    )
+                }
+                DropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Edit") },
+                        onClick = {
+                            showMenu = false
+                            onEditClick()
+                        },
+                        leadingIcon = { Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(20.dp)) }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Delete", color = MaterialTheme.colorScheme.error) },
+                        onClick = {
+                            showMenu = false
+                            onDeleteClick()
+                        },
+                        leadingIcon = { Icon(Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(20.dp)) }
+                    )
+                }
             }
         }
     }

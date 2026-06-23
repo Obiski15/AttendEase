@@ -6,6 +6,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -14,8 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.attendease.ui.components.AttendEaseDropdown
@@ -23,33 +22,47 @@ import com.example.attendease.ui.components.AttendEaseFormField
 import com.example.attendease.ui.components.AttendEaseTopAppBar
 import com.example.attendease.ui.components.SuccessModal
 import com.example.attendease.ui.theme.Spacing
-import com.example.attendease.viewModel.LecturerViewModel
-import com.example.attendease.dto.request.LecturerCreateRequest
+import com.example.attendease.viewModel.StudentViewModel
+import com.example.attendease.dto.request.StudentUpdateRequest
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun AddLecturerScreen(
+fun EditStudentScreen(
     navController: NavController,
-    viewModel: LecturerViewModel = koinViewModel()
+    studentId: String,
+    viewModel: StudentViewModel = koinViewModel()
 ) {
-    var staffId by remember { mutableStateOf("") }
     var fullName by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var matricNo by remember { mutableStateOf("") }
+    var formStudentId by remember { mutableStateOf("") }
     var department by remember { mutableStateOf("") }
     var selectedDepartmentId by remember { mutableStateOf<String?>(null) }
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var passwordVisible by remember { mutableStateOf(false) }
+    var level by remember { mutableStateOf("100 Level") }
     var showSuccessModal by remember { mutableStateOf(false) }
 
     val departments by viewModel.departments.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
     val saveSuccess by viewModel.saveSuccess.collectAsState()
+    val currentStudent by viewModel.currentStudent.collectAsState()
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(studentId) {
         viewModel.resetSaveState()
-        viewModel.clearCurrentLecturer()
         viewModel.loadDepartments()
+        viewModel.loadStudent(studentId)
+    }
+
+    LaunchedEffect(currentStudent, departments) {
+        currentStudent?.let { student ->
+            fullName = student.user?.name ?: ""
+            email = student.user?.email ?: ""
+            matricNo = student.matricNumber ?: ""
+            formStudentId = student.studentId ?: ""
+            selectedDepartmentId = student.departmentId
+            department = departments.find { it.id == student.departmentId }?.name ?: ""
+            level = student.level ?: "100 Level"
+        }
     }
 
     LaunchedEffect(saveSuccess) {
@@ -61,11 +74,11 @@ fun AddLecturerScreen(
     Scaffold(
         topBar = {
             AttendEaseTopAppBar(
-                title = "Add Lecturer",
+                title = "Edit Student",
                 showBackButton = true,
                 onBackClick = { navController.popBackStack() },
-                showBadge = false,
-                rightIcon = Icons.Default.Person
+                rightIcon = Icons.AutoMirrored.Filled.HelpOutline,
+                showBadge = false
             )
         }
     ) { paddingValues ->
@@ -81,13 +94,12 @@ fun AddLecturerScreen(
                 item {
                     Spacer(modifier = Modifier.height(Spacing.md))
                     
-                    // Profile Upload Section (Mocked)
+                    // Profile Upload Section
                     Box(contentAlignment = Alignment.BottomEnd) {
                         Surface(
                             modifier = Modifier.size(120.dp),
                             shape = CircleShape,
-                            color = MaterialTheme.colorScheme.surfaceVariant,
-                            border = androidx.compose.foundation.BorderStroke(1.dp, Color.LightGray)
+                            color = MaterialTheme.colorScheme.surfaceVariant
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Person,
@@ -99,7 +111,7 @@ fun AddLecturerScreen(
                         Surface(
                             modifier = Modifier.size(36.dp),
                             shape = CircleShape,
-                            color = Color(0xFF006F62),
+                            color = MaterialTheme.colorScheme.secondary,
                             border = androidx.compose.foundation.BorderStroke(2.dp, Color.White)
                         ) {
                             Box(contentAlignment = Alignment.Center) {
@@ -115,9 +127,10 @@ fun AddLecturerScreen(
                     
                     Spacer(modifier = Modifier.height(Spacing.xs))
                     Text(
-                        text = "Upload Profile Photo",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = "UPLOAD PORTRAIT",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                     )
                     
                     Spacer(modifier = Modifier.height(Spacing.lg))
@@ -140,68 +153,75 @@ fun AddLecturerScreen(
                     }
                 }
 
+                // Form Fields
                 item {
                     AttendEaseFormField(
-                        label = "STAFF ID",
-                        value = staffId,
-                        onValueChange = { if (!isLoading) staffId = it },
-                        placeholder = "L-2023-001",
-                        trailingIcon = { Icon(Icons.Default.Badge, contentDescription = null, tint = Color.LightGray) }
-                    )
-                }
-
-                item {
-                    AttendEaseFormField(
-                        label = "FULL NAME",
+                        label = "Full Name",
                         value = fullName,
-                        onValueChange = { if (!isLoading) fullName = it },
-                        placeholder = "Dr. Sarah Johnson"
-                    )
-                }
-
-                item {
-                    AttendEaseDropdown(
-                        label = "DEPARTMENT",
-                        value = department,
-                        options = departments.map { it.name },
-                        onOptionSelected = { name ->
-                            if (!isLoading) {
-                                department = name
-                                selectedDepartmentId = departments.find { it.name == name }?.id
-                            }
-                        }
+                        onValueChange = { },
+                        placeholder = "e.g. John Doe",
+                        leadingIcon = Icons.Default.Person,
+                        enabled = false
                     )
                 }
 
                 item {
                     AttendEaseFormField(
-                        label = "EMAIL ADDRESS",
+                        label = "Email Address",
                         value = email,
-                        onValueChange = { if (!isLoading) email = it },
-                        placeholder = "sarah.johnson@university.edu",
-                        trailingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = Color.LightGray) },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+                        onValueChange = { },
+                        placeholder = "e.g. john.doe@university.edu",
+                        leadingIcon = Icons.Default.Email,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                        enabled = false
                     )
                 }
 
                 item {
                     AttendEaseFormField(
-                        label = "TEMPORARY PASSWORD",
-                        value = password,
-                        onValueChange = { if (!isLoading) password = it },
-                        placeholder = "........",
-                        trailingIcon = {
-                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                                Icon(
-                                    imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                    contentDescription = null
-                                )
-                            }
-                        },
-                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                        helperText = "Lecturer will be prompted to change this on first login."
+                        label = "Matric Number",
+                        value = matricNo,
+                        onValueChange = { if (!isLoading) matricNo = it },
+                        placeholder = "e.g. U2023/CS/1024",
+                        leadingIcon = Icons.Default.Badge
                     )
+                }
+
+                item {
+                    AttendEaseFormField(
+                        label = "Student Id",
+                        value = formStudentId,
+                        onValueChange = { if (!isLoading) formStudentId = it },
+                        placeholder = "e.g. M2301221",
+                        leadingIcon = Icons.Default.Badge
+                    )
+                }
+
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.md)
+                    ) {
+                        AttendEaseDropdown(
+                            label = "Department",
+                            value = department,
+                            options = departments.map { it.name },
+                            onOptionSelected = { name ->
+                                if (!isLoading) {
+                                    department = name
+                                    selectedDepartmentId = departments.find { it.name == name }?.id
+                                }
+                            },
+                            modifier = Modifier.weight(1f)
+                        )
+                        AttendEaseDropdown(
+                            label = "Level",
+                            value = level,
+                            options = listOf("100 Level", "200 Level", "300 Level", "400 Level", "500 Level"),
+                            onOptionSelected = { if (!isLoading) level = it },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
                 }
 
                 item {
@@ -209,36 +229,29 @@ fun AddLecturerScreen(
                     
                     Button(
                         onClick = {
-                            viewModel.createLecturer(
-                                LecturerCreateRequest(
-                                    email = email,
-                                    password = password,
-                                    fullName = fullName,
-                                    staffId = staffId,
-                                    departmentId = selectedDepartmentId ?: ""
+                            viewModel.updateStudent(
+                                studentId,
+                                StudentUpdateRequest(
+                                    studentId = formStudentId,
+                                    matricNumber = matricNo,
+                                    departmentId = selectedDepartmentId,
+                                    level = level
                                 )
                             )
                         },
-                        enabled = !isLoading && staffId.isNotEmpty() && selectedDepartmentId != null && fullName.isNotEmpty() && email.isNotEmpty() && password.isNotEmpty(),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(56.dp),
                         shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF000066))
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                        enabled = !isLoading && matricNo.isNotEmpty() && formStudentId.isNotEmpty() && selectedDepartmentId != null
                     ) {
                         if (isLoading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(24.dp),
-                                color = Color.White,
-                                strokeWidth = 2.dp
-                            )
+                            CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
                         } else {
                             Icon(Icons.Default.Save, contentDescription = null)
                             Spacer(modifier = Modifier.width(Spacing.sm))
-                            Text(
-                                text = "Save Lecturer",
-                                fontWeight = FontWeight.Bold
-                            )
+                            Text("Update Student", fontWeight = FontWeight.Bold)
                         }
                     }
                     
@@ -248,8 +261,8 @@ fun AddLecturerScreen(
 
             if (showSuccessModal) {
                 SuccessModal(
-                    title = "Lecturer Added",
-                    message = "New lecturer record has been successfully created and synced.",
+                    title = "Student Updated",
+                    message = "Student record has been successfully updated.",
                     onContinue = {
                         showSuccessModal = false
                         viewModel.resetSaveState()

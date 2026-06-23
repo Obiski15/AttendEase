@@ -8,7 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,6 +34,29 @@ fun SettingsScreen(
     sessionManager: SessionManager = koinInject(),
     authRepository: AuthRepository = koinInject()
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val cachedName = sessionManager.getUserName().takeIf { it != "User" && !it.isNullOrBlank() } ?: userName
+    val cachedEmail = sessionManager.getUserEmail().takeIf { !it.isNullOrBlank() } ?: userEmail
+    val cachedRole = sessionManager.getUserRole() ?: userRole
+
+    var name by remember { mutableStateOf(cachedName) }
+    var email by remember { mutableStateOf(cachedEmail) }
+    var role by remember { mutableStateOf(cachedRole) }
+    var isRefreshing by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        isRefreshing = true
+        try {
+            val user = authRepository.getMe(forceRefresh = true)
+            name = user.name ?: cachedName
+            email = user.email ?: cachedEmail
+            role = user.role
+        } catch (e: Exception) {
+            android.widget.Toast.makeText(context, "Failed to load profile. Using offline mode.", android.widget.Toast.LENGTH_SHORT).show()
+        } finally {
+            isRefreshing = false
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -41,7 +64,7 @@ fun SettingsScreen(
         },
         bottomBar = {
             AttendEaseBottomBar(
-                userRole = userRole,
+                userRole = role,
                 currentRoute = "settings",
                 navController = navController
             )
@@ -54,6 +77,16 @@ fun SettingsScreen(
                 .padding(horizontal = Spacing.md),
             verticalArrangement = Arrangement.spacedBy(Spacing.md)
         ) {
+            if (isRefreshing) {
+                item {
+                    LinearProgressIndicator(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = Spacing.xs),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
             item {
                 Spacer(modifier = Modifier.height(Spacing.md))
                 // Profile Header
@@ -84,12 +117,12 @@ fun SettingsScreen(
                         Spacer(modifier = Modifier.width(Spacing.lg))
                         Column {
                             Text(
-                                text = userName,
+                                text = name,
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
-                                text = userEmail,
+                                text = email,
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -99,7 +132,7 @@ fun SettingsScreen(
                                 shape = RoundedCornerShape(8.dp)
                             ) {
                                 Text(
-                                    text = userRole.name,
+                                    text = role.name,
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.secondary,

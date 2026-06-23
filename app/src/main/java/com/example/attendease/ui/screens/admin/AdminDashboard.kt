@@ -146,6 +146,18 @@ fun AdminDashboardScreen(
             }
 
             item {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.md)) {
+                    GridActionCard(
+                        title = "Academic Sessions",
+                        icon = Icons.Default.DateRange,
+                        onClick = { navController.navigate(Screen.AcademicSessions.route) },
+                        modifier = Modifier.weight(1f)
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+            }
+
+            item {
                 Spacer(modifier = Modifier.height(Spacing.xl))
             }
         }

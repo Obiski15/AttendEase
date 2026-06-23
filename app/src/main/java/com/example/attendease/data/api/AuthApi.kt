@@ -9,23 +9,22 @@ import com.example.attendease.dto.response.LoginResponse
 import com.example.attendease.dto.response.UserResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.request.get
-import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
-import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
+import io.ktor.http.HttpMethod
 import io.ktor.http.contentType
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 
 class UnauthorizedException(message: String) : Exception(message)
 
 class AuthApi(
-    private val client: HttpClient = NetworkClient.client,
-    private val sessionManager: SessionManager
-) {
+    client: HttpClient = NetworkClient.client,
+    sessionManager: SessionManager
+) : BaseApi(client, sessionManager) {
+    init {
+        authApiProvider = { this }
+    }
+
     private val url = "${BuildConfig.BASE_URL}/auth"
 
     suspend fun login(request: LoginRequest): LoginResponse {
@@ -42,38 +41,7 @@ class AuthApi(
     }
 
     suspend fun getMe(): UserResponse {
-        val token = sessionManager.getAccessToken()
-        val response = client.get("${this.url}/me") {
-            if (token != null) {
-                header("Authorization", "Bearer $token")
-            }
-        }
-
-        if (response.status.value == 401) {
-            // Access token expired, try to refresh
-            val newTokens = try {
-                refreshTokens()
-            } catch (e: Exception) {
-                sessionManager.clearSession()
-                throw UnauthorizedException("Session expired")
-            }
-
-            // Retry the /me request with the new access token
-            val retryResponse = client.get("${this.url}/me") {
-                header("Authorization", "Bearer ${newTokens.accessToken}")
-            }
-
-            if (retryResponse.status.value in 200..299) {
-                return retryResponse.body()
-            } else {
-                sessionManager.clearSession()
-                throw UnauthorizedException("Session expired")
-            }
-        } else if (response.status.value in 200..299) {
-            return response.body()
-        } else {
-            handleErrorResponse(response)
-        }
+        return authenticatedRequest(HttpMethod.Get, "$url/me")
     }
 
     suspend fun refreshTokens(): LoginResponse {
@@ -96,25 +64,5 @@ class AuthApi(
         } else {
             handleErrorResponse(response)
         }
-    }
-
-    private suspend fun handleErrorResponse(response: io.ktor.client.statement.HttpResponse): Nothing {
-        val errorText = try {
-            response.bodyAsText()
-        } catch (e: Exception) {
-            ""
-        }
-
-        val errorMessage = try {
-            val json = Json.parseToJsonElement(errorText).jsonObject
-            json["message"]?.jsonPrimitive?.content
-                ?: json["error"]?.jsonPrimitive?.content
-                ?: json["detail"]?.jsonPrimitive?.content
-                ?: "An error occurred (Status: ${response.status.value})"
-        } catch (e: Exception) {
-            if (errorText.isNotBlank()) errorText else "An error occurred (Status: ${response.status.value})"
-        }
-
-        throw Exception(errorMessage)
     }
 }

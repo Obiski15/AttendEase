@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
@@ -13,6 +14,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.attendease.ui.components.AttendEaseDropdown
@@ -20,15 +24,42 @@ import com.example.attendease.ui.components.AttendEaseFormField
 import com.example.attendease.ui.components.AttendEaseTopAppBar
 import com.example.attendease.ui.components.SuccessModal
 import com.example.attendease.ui.theme.Spacing
+import com.example.attendease.viewModel.StudentViewModel
+import com.example.attendease.dto.request.StudentCreateRequest
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun AddStudentScreen(navController: NavController) {
+fun AddStudentScreen(
+    navController: NavController,
+    viewModel: StudentViewModel = koinViewModel()
+) {
     var fullName by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
     var matricNo by remember { mutableStateOf("") }
     var studentId by remember { mutableStateOf("") }
-    var department by remember { mutableStateOf("Computer Science") }
+    var department by remember { mutableStateOf("") }
+    var selectedDepartmentId by remember { mutableStateOf<String?>(null) }
     var level by remember { mutableStateOf("100 Level") }
     var showSuccessModal by remember { mutableStateOf(false) }
+
+    val departments by viewModel.departments.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
+    val saveSuccess by viewModel.saveSuccess.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.resetSaveState()
+        viewModel.clearCurrentStudent()
+        viewModel.loadDepartments()
+    }
+
+    LaunchedEffect(saveSuccess) {
+        if (saveSuccess) {
+            showSuccessModal = true
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -95,12 +126,29 @@ fun AddStudentScreen(navController: NavController) {
                     Spacer(modifier = Modifier.height(Spacing.lg))
                 }
 
+                // Error Block
+                error?.let { err ->
+                    item {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+                        ) {
+                            Text(
+                                text = err,
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                modifier = Modifier.padding(Spacing.md),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
+                }
+
                 // Form Fields
                 item {
                     AttendEaseFormField(
                         label = "Full Name",
                         value = fullName,
-                        onValueChange = { fullName = it },
+                        onValueChange = { if (!isLoading) fullName = it },
                         placeholder = "e.g. John Doe",
                         leadingIcon = Icons.Default.Person
                     )
@@ -108,9 +156,40 @@ fun AddStudentScreen(navController: NavController) {
 
                 item {
                     AttendEaseFormField(
+                        label = "Email Address",
+                        value = email,
+                        onValueChange = { if (!isLoading) email = it },
+                        placeholder = "e.g. john.doe@university.edu",
+                        leadingIcon = Icons.Default.Email,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+                    )
+                }
+
+                item {
+                    AttendEaseFormField(
+                        label = "Temporary Password",
+                        value = password,
+                        onValueChange = { if (!isLoading) password = it },
+                        placeholder = "........",
+                        leadingIcon = Icons.Default.Lock,
+                        trailingIcon = {
+                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                Icon(
+                                    imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                    contentDescription = null
+                                )
+                            }
+                        },
+                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+                    )
+                }
+
+                item {
+                    AttendEaseFormField(
                         label = "Matric Number",
                         value = matricNo,
-                        onValueChange = { matricNo = it },
+                        onValueChange = { if (!isLoading) matricNo = it },
                         placeholder = "e.g. U2023/CS/1024",
                         leadingIcon = Icons.Default.Badge
                     )
@@ -120,7 +199,7 @@ fun AddStudentScreen(navController: NavController) {
                     AttendEaseFormField(
                         label = "Student Id",
                         value = studentId,
-                        onValueChange = { studentId = it },
+                        onValueChange = { if (!isLoading) studentId = it },
                         placeholder = "e.g. M2301221",
                         leadingIcon = Icons.Default.Badge
                     )
@@ -134,15 +213,20 @@ fun AddStudentScreen(navController: NavController) {
                         AttendEaseDropdown(
                             label = "Department",
                             value = department,
-                            options = listOf("Computer Science", "Engineering", "Mathematics"),
-                            onOptionSelected = { department = it },
+                            options = departments.map { it.name },
+                            onOptionSelected = { name ->
+                                if (!isLoading) {
+                                    department = name
+                                    selectedDepartmentId = departments.find { it.name == name }?.id
+                                }
+                            },
                             modifier = Modifier.weight(1f)
                         )
                         AttendEaseDropdown(
                             label = "Level",
                             value = level,
                             options = listOf("100 Level", "200 Level", "300 Level", "400 Level", "500 Level"),
-                            onOptionSelected = { level = it },
+                            onOptionSelected = { if (!isLoading) level = it },
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -152,16 +236,36 @@ fun AddStudentScreen(navController: NavController) {
                     Spacer(modifier = Modifier.height(Spacing.xl))
                     
                     Button(
-                        onClick = { showSuccessModal = true },
+                        onClick = {
+                            if (selectedDepartmentId == null) {
+                                return@Button
+                            }
+                            viewModel.createStudent(
+                                StudentCreateRequest(
+                                    email = email,
+                                    password = password,
+                                    fullName = fullName,
+                                    studentId = studentId,
+                                    matricNumber = matricNo,
+                                    departmentId = selectedDepartmentId!!,
+                                    level = level
+                                )
+                            )
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(56.dp),
                         shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                        enabled = !isLoading && fullName.isNotBlank() && email.isNotBlank() && password.isNotBlank() && selectedDepartmentId != null
                     ) {
-                        Icon(Icons.Default.Save, contentDescription = null)
-                        Spacer(modifier = Modifier.width(Spacing.sm))
-                        Text("Save Student", fontWeight = FontWeight.Bold)
+                        if (isLoading) {
+                            CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                        } else {
+                            Icon(Icons.Default.Save, contentDescription = null)
+                            Spacer(modifier = Modifier.width(Spacing.sm))
+                            Text("Save Student", fontWeight = FontWeight.Bold)
+                        }
                     }
                     
                     Spacer(modifier = Modifier.height(Spacing.xl))
@@ -174,6 +278,7 @@ fun AddStudentScreen(navController: NavController) {
                     message = "New student record has been successfully created and synced.",
                     onContinue = {
                         showSuccessModal = false
+                        viewModel.resetSaveState()
                         navController.popBackStack()
                     }
                 )

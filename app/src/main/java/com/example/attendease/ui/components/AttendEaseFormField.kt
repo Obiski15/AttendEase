@@ -24,6 +24,7 @@ fun AttendEaseFormField(
     trailingIcon: @Composable (() -> Unit)? = null,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    enabled: Boolean = true,
     readOnly: Boolean = false,
     helperText: String? = null,
     modifier: Modifier = Modifier
@@ -33,12 +34,13 @@ fun AttendEaseFormField(
             text = label,
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant else Color.Gray
         )
         Spacer(modifier = Modifier.height(Spacing.xs))
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
+            enabled = enabled,
             placeholder = { Text(placeholder, color = Color.LightGray) },
             leadingIcon = leadingIcon?.let {
                 {
