@@ -222,9 +222,19 @@ fun LoginScreen(
 
                         Spacer(modifier = Modifier.height(Spacing.xl))
 
+                        if (state.error != null) {
+                            Text(
+                                text = state.error!!,
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(bottom = Spacing.base)
+                            )
+                        }
+
                         // Login Button
                         Button(
-                            onClick = { onLoginSuccess(state.user) },
+                            onClick = { viewModel.login(onLoginSuccess) },
+                            enabled = !state.loading,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(56.dp),
@@ -233,22 +243,30 @@ fun LoginScreen(
                                 containerColor = MaterialTheme.colorScheme.secondary
                             )
                         ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                Text(
-                                    text = "Login",
-                                    style = MaterialTheme.typography.titleMedium,
+                            if (state.loading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp),
                                     color = Color.White,
-                                    fontWeight = FontWeight.Bold
+                                    strokeWidth = 2.dp
                                 )
-                                Spacer(modifier = Modifier.width(Spacing.base))
-                                Icon(
-                                    imageVector = Icons.Default.ArrowForward,
-                                    contentDescription = null,
-                                    tint = Color.White
-                                )
+                            } else {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center
+                                ) {
+                                    Text(
+                                        text = "Login",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = Color.White,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Spacer(modifier = Modifier.width(Spacing.base))
+                                    Icon(
+                                        imageVector = Icons.Default.ArrowForward,
+                                        contentDescription = null,
+                                        tint = Color.White
+                                    )
+                                }
                             }
                         }
 
