@@ -65,4 +65,12 @@ class AuthApi(
             handleErrorResponse(response)
         }
     }
+
+    suspend fun changePassword(request: com.example.attendease.dto.request.ChangePasswordRequest) {
+        authenticatedRequest<Unit>(HttpMethod.Post, "$url/change-password", request)
+    }
+
+    suspend fun updateProfile(request: com.example.attendease.dto.request.ProfileUpdateRequest): UserResponse {
+        return authenticatedRequest(HttpMethod.Patch, "$url/me", request)
+    }
 }

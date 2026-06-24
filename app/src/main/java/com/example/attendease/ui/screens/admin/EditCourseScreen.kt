@@ -21,14 +21,16 @@ import com.example.attendease.ui.components.AttendEaseDropdown
 import com.example.attendease.ui.components.AttendEaseFormField
 import com.example.attendease.ui.components.AttendEaseTopAppBar
 import com.example.attendease.ui.components.SuccessModal
+import com.example.attendease.ui.components.AttendEaseConfirmDialog
 import com.example.attendease.ui.theme.Spacing
 import org.koin.androidx.compose.koinViewModel
 import com.example.attendease.viewModel.CourseViewModel
 import com.example.attendease.viewModel.DepartmentViewModel
 
 @Composable
-fun AddCourseScreen(
+fun EditCourseScreen(
     navController: NavController,
+    courseId: String,
     courseViewModel: CourseViewModel = koinViewModel(),
     departmentViewModel: DepartmentViewModel = koinViewModel()
 ) {
@@ -37,16 +39,29 @@ fun AddCourseScreen(
     var departmentId by remember { mutableStateOf("") }
     var level by remember { mutableStateOf("") }
     var creditUnits by remember { mutableIntStateOf(3) }
+    
     var showSuccessModal by remember { mutableStateOf(false) }
+    var showDeleteConfirm by remember { mutableStateOf(false) }
 
     val departments by departmentViewModel.departments.collectAsState()
+    val currentCourse by courseViewModel.currentCourse.collectAsState()
     val saveSuccess by courseViewModel.saveSuccess.collectAsState()
     val isLoading by courseViewModel.isLoading.collectAsState()
     val error by courseViewModel.error.collectAsState()
 
     LaunchedEffect(Unit) {
         departmentViewModel.loadDepartments()
+        courseViewModel.loadCourse(courseId)
         courseViewModel.resetSaveState()
+    }
+
+    LaunchedEffect(currentCourse) {
+        currentCourse?.let { course ->
+            courseCode = course.courseCode
+            courseTitle = course.title
+            departmentId = course.departmentId
+            creditUnits = course.creditUnits
+        }
     }
 
     LaunchedEffect(saveSuccess) {
@@ -59,7 +74,7 @@ fun AddCourseScreen(
     Scaffold(
         topBar = {
             AttendEaseTopAppBar(
-                title = "Add Course",
+                title = "Edit Course",
                 showBackButton = true,
                 onBackClick = { navController.popBackStack() },
                 showBadge = false
@@ -86,9 +101,9 @@ fun AddCourseScreen(
                             Icon(Icons.Default.School, contentDescription = null, tint = Color(0xFF006F62))
                             Spacer(modifier = Modifier.width(Spacing.md))
                             Column {
-                                Text("Course Registration", fontWeight = FontWeight.Bold, color = Color(0xFF000066))
+                                Text("Edit Course Details", fontWeight = FontWeight.Bold, color = Color(0xFF000066))
                                 Text(
-                                    "Registering a new course will make it available for semester scheduling and attendance tracking.",
+                                    "Modify the code, title, credit units, or department of the course.",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = Color.Gray
                                 )
@@ -97,25 +112,6 @@ fun AddCourseScreen(
                     }
                     
                     Spacer(modifier = Modifier.height(Spacing.md))
-                    
-                    // Image Banner Placeholder
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(160.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFF000033)),
-                        contentAlignment = Alignment.BottomStart
-                    ) {
-                        Text(
-                            "Academic Session 2023/2024",
-                            color = Color.White,
-                            modifier = Modifier.padding(Spacing.md),
-                            style = MaterialTheme.typography.labelMedium
-                        )
-                    }
-                    
-                    Spacer(modifier = Modifier.height(Spacing.lg))
                 }
 
                 item {
@@ -189,48 +185,54 @@ fun AddCourseScreen(
                                 modifier = Modifier.padding(top = Spacing.sm)
                             )
                         }
-
-                        // Verification Note
-                        Surface(
-                            color = Color(0xFFE0F2F1),
-                            shape = RoundedCornerShape(8.dp)
-                        ) {
-                            Row(modifier = Modifier.padding(Spacing.md), verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Info, contentDescription = null, tint = Color(0xFF006F62), modifier = Modifier.size(20.dp))
-                                Spacer(modifier = Modifier.width(Spacing.base))
-                                Text(
-                                    "Verification: Please review the course details before submitting.",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    fontSize = 11.sp,
-                                    color = Color(0xFF004D40)
-                                )
-                            }
-                        }
                     }
                 }
 
                 item {
-                    Spacer(modifier = Modifier.height(Spacing.xl))
-                    Button(
-                        onClick = {
-                            courseViewModel.createCourse(
-                                title = courseTitle,
-                                courseCode = courseCode,
-                                creditUnits = creditUnits,
-                                departmentId = departmentId
-                            )
-                        },
-                        modifier = Modifier.fillMaxWidth().height(56.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF006F62)),
-                        shape = RoundedCornerShape(28.dp),
-                        enabled = !isLoading && courseTitle.isNotBlank() && courseCode.isNotBlank() && departmentId.isNotBlank()
+                    Spacer(modifier = Modifier.height(Spacing.md))
+                    
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.md)
                     ) {
-                        if (isLoading) {
-                            CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
-                        } else {
-                            Icon(Icons.Default.Save, contentDescription = null)
+                        Button(
+                            onClick = {
+                                courseViewModel.updateCourse(
+                                    courseId = courseId,
+                                    title = courseTitle,
+                                    courseCode = courseCode,
+                                    creditUnits = creditUnits,
+                                    departmentId = departmentId
+                                )
+                            },
+                            modifier = Modifier.weight(1.5f).height(56.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF006F62)),
+                            shape = RoundedCornerShape(28.dp),
+                            enabled = !isLoading && courseTitle.isNotBlank() && courseCode.isNotBlank() && departmentId.isNotBlank()
+                        ) {
+                            if (isLoading && !showDeleteConfirm) {
+                                CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                            } else {
+                                Icon(Icons.Default.Save, contentDescription = null)
+                                Spacer(modifier = Modifier.width(Spacing.base))
+                                Text("Save Changes", fontWeight = FontWeight.Bold)
+                            }
+                        }
+
+                        Button(
+                            onClick = { showDeleteConfirm = true },
+                            modifier = Modifier.weight(1f).height(56.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.1f),
+                                contentColor = MaterialTheme.colorScheme.error
+                            ),
+                            shape = RoundedCornerShape(28.dp),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.2f)),
+                            enabled = !isLoading
+                        ) {
+                            Icon(Icons.Default.Delete, contentDescription = null)
                             Spacer(modifier = Modifier.width(Spacing.base))
-                            Text("Save Course", fontWeight = FontWeight.Bold)
+                            Text("Delete", fontWeight = FontWeight.Bold)
                         }
                     }
                     Spacer(modifier = Modifier.height(Spacing.xl))
@@ -239,14 +241,26 @@ fun AddCourseScreen(
 
             if (showSuccessModal) {
                 SuccessModal(
-                    title = "Course Added",
-                    message = "The course has been successfully added to the system.",
+                    title = "Course Updated",
+                    message = "The course details have been successfully saved.",
                     onContinue = {
                         showSuccessModal = false
                         navController.popBackStack()
                     }
                 )
             }
+
+            AttendEaseConfirmDialog(
+                show = showDeleteConfirm,
+                title = "Delete Course",
+                message = "Are you sure you want to delete '$courseCode'? All associated session assignments and records will be affected.",
+                onConfirm = {
+                    showDeleteConfirm = false
+                    courseViewModel.deleteCourse(courseId)
+                    navController.popBackStack()
+                },
+                onDismiss = { showDeleteConfirm = false }
+            )
         }
     }
 }

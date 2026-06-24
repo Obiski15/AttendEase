@@ -1,6 +1,7 @@
 package com.example.attendease.ui.screens.admin
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -20,6 +21,7 @@ import androidx.navigation.NavController
 import com.example.attendease.enums.UserRole
 import com.example.attendease.ui.components.AttendEaseBottomBar
 import com.example.attendease.ui.components.AttendEaseTopAppBar
+import com.example.attendease.ui.components.AttendEaseConfirmDialog
 import com.example.attendease.ui.navigation.Screen
 import com.example.attendease.ui.theme.Spacing
 import com.example.attendease.viewModel.LecturerViewModel
@@ -147,6 +149,9 @@ fun LecturersScreen(
                         items(filteredLecturers, key = { it.userId }) { lecturer ->
                             LecturerCard(
                                 lecturer = lecturer,
+                                onCardClick = {
+                                    navController.navigate(Screen.LecturerDetail.createRoute(lecturer.userId))
+                                },
                                 onEditClick = {
                                     navController.navigate(Screen.EditLecturer.createRoute(lecturer.userId))
                                 },
@@ -165,13 +170,17 @@ fun LecturersScreen(
 @Composable
 fun LecturerCard(
     lecturer: LecturerResponse,
+    onCardClick: () -> Unit,
     onEditClick: () -> Unit,
     onDeleteClick: () -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
+    var showDeleteConfirm by remember { mutableStateOf(false) }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onCardClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
@@ -260,7 +269,7 @@ fun LecturerCard(
                         text = { Text("Delete", color = MaterialTheme.colorScheme.error) },
                         onClick = {
                             showMenu = false
-                            onDeleteClick()
+                            showDeleteConfirm = true
                         },
                         leadingIcon = { Icon(Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(20.dp)) }
                     )
@@ -268,4 +277,15 @@ fun LecturerCard(
             }
         }
     }
+
+    AttendEaseConfirmDialog(
+        show = showDeleteConfirm,
+        title = "Delete Lecturer",
+        message = "Are you sure you want to delete the lecturer account for '${lecturer.user?.name ?: "Lecturer"}'? This action cannot be undone.",
+        onConfirm = {
+            showDeleteConfirm = false
+            onDeleteClick()
+        },
+        onDismiss = { showDeleteConfirm = false }
+    )
 }

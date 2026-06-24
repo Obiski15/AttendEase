@@ -12,9 +12,11 @@ navigationCompose = "2.9.8"
 lifecycle = "2.9.2"
 ktor = "3.2.3"
 koin = "3.5.6"
+secretsGradlePlugin = "2.0.1"
 
 
 [libraries]
+
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
@@ -48,5 +50,7 @@ koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", versi
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+secrets-gradle-plugin = { id = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin", version.ref = "secretsGradlePlugin" }
+
 
 

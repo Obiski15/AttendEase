@@ -26,4 +26,16 @@ class CourseApi(
     suspend fun createCourse(request: CourseCreateRequest): CourseResponse {
         return authenticatedRequest(HttpMethod.Post, "$url/", request)
     }
+
+    suspend fun getCourse(courseId: String): CourseResponse {
+        return authenticatedRequest(HttpMethod.Get, "$url/$courseId")
+    }
+
+    suspend fun updateCourse(courseId: String, request: com.example.attendease.dto.request.CourseUpdateRequest): CourseResponse {
+        return authenticatedRequest(HttpMethod.Patch, "$url/$courseId", request)
+    }
+
+    suspend fun deleteCourse(courseId: String) {
+        authenticatedRequest<Unit>(HttpMethod.Delete, "$url/$courseId")
+    }
 }

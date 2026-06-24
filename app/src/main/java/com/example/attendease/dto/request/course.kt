@@ -24,3 +24,12 @@ data class AcademicSessionCreateRequest(
     val semester: String,
     @SerialName("is_active") val isActive: Boolean = false
 )
+
+@Serializable
+data class CourseUpdateRequest(
+    @SerialName("course_code") val courseCode: String? = null,
+    val title: String? = null,
+    @SerialName("credit_units") val creditUnits: Int? = null,
+    @SerialName("department_id") val departmentId: String? = null
+)
+

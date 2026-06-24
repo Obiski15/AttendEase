@@ -1,9 +1,8 @@
-import java.util.Properties
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.secrets.gradle.plugin)
 }
 
 android {
@@ -18,16 +17,8 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
-        val secretsFile = rootProject.file("secrets.properties")
-        val secrets = Properties()
-        if (secretsFile.exists()) {
-            secretsFile.inputStream().use { stream ->
-                secrets.load(stream)
-            }
-        }
-        buildConfigField("String", "BASE_URL", secrets.getProperty("BASE_URL") ?: "\"\"")
     }
+
 
     buildTypes {
         release {
@@ -76,5 +67,4 @@ dependencies {
     implementation(libs.koin.core)
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.compose)
-
 }

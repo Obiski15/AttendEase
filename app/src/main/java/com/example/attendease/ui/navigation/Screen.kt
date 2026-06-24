@@ -29,6 +29,11 @@ sealed class Screen(val route: String) {
         }
     }
     data object Lecturers : Screen("lecturers")
+    data object LecturerDetail : Screen("lecturer_detail/{lecturerId}") {
+        fun createRoute(lecturerId: String): String {
+            return "lecturer_detail/$lecturerId"
+        }
+    }
     data object AddLecturer: Screen("add_lecturer")
     data object EditLecturer: Screen("edit_lecturer/{lecturerId}") {
         fun createRoute(lecturerId: String): String {
@@ -36,9 +41,24 @@ sealed class Screen(val route: String) {
         }
     }
     data object AddCourse: Screen("add_course")
+    data object EditCourse: Screen("edit_course/{courseId}") {
+        fun createRoute(courseId: String): String {
+            return "edit_course/$courseId"
+        }
+    }
     data object Courses : Screen("courses")
+
     data object CourseAssignment : Screen("course_assignment")
     data object AcademicSessions : Screen("academic_sessions")
+    data object Departments : Screen("departments")
+    data object ManageAdmins : Screen("manage_admins")
+    data object AddAdmin : Screen("add_admin")
+    data object EditAdmin : Screen("edit_admin/{userId}") {
+        fun createRoute(userId: String): String {
+            return "edit_admin/$userId"
+        }
+    }
+
 
     // Lecturer
     data object LecturerDashboard : Screen("lecturer_dashboard")

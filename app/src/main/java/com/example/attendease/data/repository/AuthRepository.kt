@@ -53,4 +53,31 @@ class AuthRepository(
     fun clearCache() {
         _currentUser.value = null
     }
+
+    suspend fun changePassword(oldPassword: String, newPassword: String) {
+        api.changePassword(
+            com.example.attendease.dto.request.ChangePasswordRequest(
+                oldPassword = oldPassword,
+                newPassword = newPassword
+            )
+        )
+    }
+
+    suspend fun updateProfile(name: String, email: String): UserResponse {
+        val updatedUser = api.updateProfile(
+            com.example.attendease.dto.request.ProfileUpdateRequest(
+                name = name,
+                email = email
+            )
+        )
+        sessionManager.saveSession(
+            accessToken = sessionManager.getAccessToken() ?: "",
+            refreshToken = sessionManager.getRefreshToken() ?: "",
+            role = updatedUser.role,
+            name = updatedUser.name ?: name,
+            email = updatedUser.email ?: email
+        )
+        _currentUser.value = updatedUser
+        return updatedUser
+    }
 }

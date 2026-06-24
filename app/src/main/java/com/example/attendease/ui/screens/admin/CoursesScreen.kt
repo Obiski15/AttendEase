@@ -23,28 +23,38 @@ import com.example.attendease.ui.components.AttendEaseBottomBar
 import com.example.attendease.ui.components.AttendEaseTopAppBar
 import com.example.attendease.ui.navigation.Screen
 import com.example.attendease.ui.theme.Spacing
-
-data class CourseModel(
-    val code: String,
-    val title: String,
-    val department: String,
-    val level: String,
-    val lecturer: String?,
-    val attendance: Float
-)
+import org.koin.androidx.compose.koinViewModel
+import com.example.attendease.viewModel.CourseViewModel
+import com.example.attendease.viewModel.DepartmentViewModel
+import com.example.attendease.dto.response.CourseResponse
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CoursesScreen(navController: NavController) {
+fun CoursesScreen(
+    navController: NavController,
+    courseViewModel: CourseViewModel = koinViewModel(),
+    departmentViewModel: DepartmentViewModel = koinViewModel()
+) {
     var searchQuery by remember { mutableStateOf("") }
-    val categories = listOf("All Courses", "Computer Science", "Engineering", "Mathematics")
-    var selectedCategory by remember { mutableStateOf("All Courses") }
+    
+    val courses by courseViewModel.courses.collectAsState()
+    val departments by departmentViewModel.departments.collectAsState()
+    val isLoading by courseViewModel.isLoading.collectAsState()
+    val error by courseViewModel.error.collectAsState()
 
-    val dummyCourses = listOf(
-        CourseModel("CS301", "Data Structures & Algorithms", "Computer Science", "300 Level", "Dr. Henderson", 0.85f),
-        CourseModel("MATH204", "Linear Algebra II", "Mathematics", "200 Level", "Prof. Sarah Jenkins", 0.92f),
-        CourseModel("ENG101", "Academic Writing", "General Studies", "100 Level", "Leo Whitlock", 0.74f)
-    )
+    var selectedDept by remember { mutableStateOf("ALL") }
+
+    LaunchedEffect(Unit) {
+        courseViewModel.loadCourses()
+        departmentViewModel.loadDepartments()
+    }
+
+    val filteredCourses = courses.filter { course ->
+        val titleMatch = course.title.contains(searchQuery, ignoreCase = true)
+        val codeMatch = course.courseCode.contains(searchQuery, ignoreCase = true)
+        val deptMatch = selectedDept == "ALL" || course.departmentId == selectedDept
+        (titleMatch || codeMatch) && deptMatch
+    }
 
     Scaffold(
         topBar = {
@@ -80,7 +90,7 @@ fun CoursesScreen(navController: NavController) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = Spacing.md, vertical = Spacing.base),
-                placeholder = { Text("Search courses, codes, or lecturers...", color = Color.Gray) },
+                placeholder = { Text("Search courses or codes...", color = Color.Gray) },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
                 trailingIcon = { Icon(Icons.Default.FilterList, contentDescription = "Filter", tint = Color.Gray) },
                 shape = RoundedCornerShape(12.dp),
@@ -97,11 +107,22 @@ fun CoursesScreen(navController: NavController) {
                 contentPadding = PaddingValues(horizontal = Spacing.md),
                 horizontalArrangement = Arrangement.spacedBy(Spacing.base)
             ) {
-                items(categories) { category ->
+                item {
                     FilterChip(
-                        selected = selectedCategory == category,
-                        onClick = { selectedCategory = category },
-                        label = { Text(category) },
+                        selected = selectedDept == "ALL",
+                        onClick = { selectedDept = "ALL" },
+                        label = { Text("All Courses") },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = Color(0xFF000066),
+                            selectedLabelColor = Color.White
+                        )
+                    )
+                }
+                items(departments) { dept ->
+                    FilterChip(
+                        selected = selectedDept == dept.id,
+                        onClick = { selectedDept = dept.id },
+                        label = { Text(dept.name) },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = Color(0xFF000066),
                             selectedLabelColor = Color.White
@@ -110,14 +131,47 @@ fun CoursesScreen(navController: NavController) {
                 }
             }
 
-            // Course List
-            LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(horizontal = Spacing.md),
-                verticalArrangement = Arrangement.spacedBy(Spacing.md),
-                contentPadding = PaddingValues(bottom = 80.dp)
-            ) {
-                items(dummyCourses) { course ->
-                    AdminCourseCard(course)
+            if (isLoading) {
+                Box(modifier = Modifier.fillMaxSize().weight(1f), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                }
+            } else {
+                error?.let { err ->
+                    Card(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = Spacing.md, vertical = Spacing.xs),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+                    ) {
+                        Text(
+                            text = err,
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            modifier = Modifier.padding(Spacing.md),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+
+                if (filteredCourses.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxSize().weight(1f), contentAlignment = Alignment.Center) {
+                        Text("No courses found.", color = Color.Gray)
+                    }
+                } else {
+                    // Course List
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize().padding(horizontal = Spacing.md),
+                        verticalArrangement = Arrangement.spacedBy(Spacing.md),
+                        contentPadding = PaddingValues(bottom = 80.dp)
+                    ) {
+                        items(filteredCourses) { course ->
+                            val deptName = departments.find { it.id == course.departmentId }?.name ?: "Unknown"
+                            AdminCourseCard(
+                                course = course,
+                                departmentName = deptName,
+                                onEditClick = {
+                                    navController.navigate(Screen.EditCourse.createRoute(course.id))
+                                }
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -125,7 +179,11 @@ fun CoursesScreen(navController: NavController) {
 }
 
 @Composable
-fun AdminCourseCard(course: CourseModel) {
+fun AdminCourseCard(
+    course: CourseResponse,
+    departmentName: String,
+    onEditClick: () -> Unit
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -139,13 +197,13 @@ fun AdminCourseCard(course: CourseModel) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = course.code,
+                    text = course.courseCode,
                     color = Color(0xFF006F62),
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold
                 )
-                IconButton(onClick = { }) {
-                    Icon(Icons.Default.MoreVert, contentDescription = null, tint = Color.Gray)
+                IconButton(onClick = onEditClick) {
+                    Icon(Icons.Default.Edit, contentDescription = "Edit Course", tint = Color.Gray)
                 }
             }
             
@@ -160,11 +218,11 @@ fun AdminCourseCard(course: CourseModel) {
             Row(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text("DEPARTMENT", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
-                    Text(course.department, style = MaterialTheme.typography.bodySmall)
+                    Text(departmentName, style = MaterialTheme.typography.bodySmall)
                 }
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("LEVEL", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
-                    Text(course.level, style = MaterialTheme.typography.bodySmall)
+                    Text("CREDITS", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+                    Text("${course.creditUnits} Units", style = MaterialTheme.typography.bodySmall)
                 }
             }
             
@@ -179,7 +237,7 @@ fun AdminCourseCard(course: CourseModel) {
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Text(
-                            course.lecturer?.split(" ")?.joinToString("") { it.take(1) } ?: "?",
+                            "?", // Lecturer assigned info not in CourseResponse directly
                             color = Color.White,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
@@ -187,25 +245,9 @@ fun AdminCourseCard(course: CourseModel) {
                     }
                 }
                 Spacer(modifier = Modifier.width(Spacing.base))
-                Text(course.lecturer ?: "Unassigned", style = MaterialTheme.typography.bodyMedium)
-            }
-            
-            Spacer(modifier = Modifier.height(Spacing.md))
-            
-            LinearProgressIndicator(
-                progress = { course.attendance },
-                modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)),
-                color = Color(0xFF006F62),
-                trackColor = Color(0xFFEEEEEE)
-            )
-            
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text("Average Attendance", style = MaterialTheme.typography.labelSmall, color = Color(0xFF006F62), fontWeight = FontWeight.Bold)
-                Text("${(course.attendance * 100).toInt()}%", style = MaterialTheme.typography.labelSmall, color = Color(0xFF006F62), fontWeight = FontWeight.Bold)
+                Text("Not Available", style = MaterialTheme.typography.bodyMedium)
             }
         }
     }
 }
+

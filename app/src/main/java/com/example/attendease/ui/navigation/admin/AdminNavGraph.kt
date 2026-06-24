@@ -62,6 +62,20 @@ fun NavGraphBuilder.adminGraph(
         AddCourseScreen(navController)
     }
 
+    composable(
+        route = Screen.EditCourse.route,
+        arguments = listOf(
+            navArgument("courseId") {
+                type = NavType.StringType
+            }
+        )
+    ) { backStackEntry ->
+        val courseId = backStackEntry.arguments?.getString("courseId")
+        if (courseId != null) {
+            EditCourseScreen(navController, courseId)
+        }
+    }
+
     composable(Screen.CourseAssignment.route) {
         CourseAssignmentScreen(navController)
     }
@@ -70,8 +84,26 @@ fun NavGraphBuilder.adminGraph(
         AcademicSessionsScreen(navController)
     }
 
+    composable(Screen.Departments.route) {
+        DepartmentsScreen(navController)
+    }
+
     composable(Screen.Lecturers.route) {
         LecturersScreen(navController)
+    }
+
+    composable(
+        route = Screen.LecturerDetail.route,
+        arguments = listOf(
+            navArgument("lecturerId") {
+                type = NavType.StringType
+            }
+        )
+    ) { backStackEntry ->
+        val lecturerId = backStackEntry.arguments?.getString("lecturerId")
+        if (lecturerId != null) {
+            LecturerDetailScreen(navController = navController, lecturerId = lecturerId)
+        }
     }
 
     composable(Screen.AddLecturer.route) {
@@ -89,6 +121,28 @@ fun NavGraphBuilder.adminGraph(
         val lecturerId = backStackEntry.arguments?.getString("lecturerId")
         if (lecturerId != null) {
             EditLecturerScreen(navController, lecturerId)
+        }
+    }
+
+    composable(Screen.ManageAdmins.route) {
+        ManageAdminsScreen(navController)
+    }
+
+    composable(Screen.AddAdmin.route) {
+        AddAdminScreen(navController)
+    }
+
+    composable(
+        route = Screen.EditAdmin.route,
+        arguments = listOf(
+            navArgument("userId") {
+                type = NavType.StringType
+            }
+        )
+    ) { backStackEntry ->
+        val userId = backStackEntry.arguments?.getString("userId")
+        if (userId != null) {
+            EditAdminScreen(navController, userId)
         }
     }
 }

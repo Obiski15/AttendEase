@@ -15,15 +15,33 @@ import com.example.attendease.ui.components.*
 import com.example.attendease.ui.navigation.Screen
 import com.example.attendease.ui.theme.Spacing
 import com.example.attendease.ui.components.AuthenticateUser
+import org.koin.compose.koinInject
+import com.example.attendease.viewModel.DashboardViewModel
 
 @Composable
 fun AdminDashboardScreen(
-    navController: NavController
+    navController: NavController,
+    viewModel: DashboardViewModel = koinInject()
 ) {
     var userName by remember { mutableStateOf("Administrator") }
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     AuthenticateUser(navController) { user ->
         userName = user.name ?: "Administrator"
+    }
+
+    val stats by viewModel.adminStats.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.loadAdminStats()
+    }
+
+    LaunchedEffect(error) {
+        error?.let {
+            android.widget.Toast.makeText(context, it, android.widget.Toast.LENGTH_LONG).show()
+        }
     }
 
     Scaffold(
@@ -47,6 +65,17 @@ fun AdminDashboardScreen(
                 .padding(horizontal = Spacing.md),
             verticalArrangement = Arrangement.spacedBy(Spacing.md)
         ) {
+            if (isLoading) {
+                item {
+                    LinearProgressIndicator(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = Spacing.xs),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+
             item {
                 Spacer(modifier = Modifier.height(Spacing.base))
                 Text(
@@ -68,13 +97,13 @@ fun AdminDashboardScreen(
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.md)) {
                     MiniStatCard(
                         title = "Total Students",
-                        value = "1,240",
+                        value = stats?.totalStudents?.toString() ?: "-",
                         icon = Icons.Default.School,
                         modifier = Modifier.weight(1f)
                     )
                     MiniStatCard(
                         title = "Total Lecturers",
-                        value = "85",
+                        value = stats?.totalLecturers?.toString() ?: "-",
                         icon = Icons.Default.Person,
                         modifier = Modifier.weight(1f)
                     )
@@ -85,13 +114,13 @@ fun AdminDashboardScreen(
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.md)) {
                     MiniStatCard(
                         title = "Total Courses",
-                        value = "42",
+                        value = stats?.totalCourses?.toString() ?: "-",
                         icon = Icons.AutoMirrored.Filled.LibraryBooks,
                         modifier = Modifier.weight(1f)
                     )
                     MiniStatCard(
                         title = "Active Sessions",
-                        value = "12",
+                        value = stats?.activeSessions?.toString() ?: "-",
                         icon = Icons.Default.Wifi,
                         containerColor = MaterialTheme.colorScheme.secondaryContainer,
                         contentColor = MaterialTheme.colorScheme.secondary,
@@ -153,6 +182,23 @@ fun AdminDashboardScreen(
                         onClick = { navController.navigate(Screen.AcademicSessions.route) },
                         modifier = Modifier.weight(1f)
                     )
+                    GridActionCard(
+                        title = "Manage Departments",
+                        icon = Icons.Default.Domain,
+                        onClick = { navController.navigate(Screen.Departments.route) },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+
+            item {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.md)) {
+                    GridActionCard(
+                        title = "Manage Admins",
+                        icon = Icons.Default.Security,
+                        onClick = { navController.navigate(Screen.ManageAdmins.route) },
+                        modifier = Modifier.weight(1f)
+                    )
                     Spacer(modifier = Modifier.weight(1f))
                 }
             }
@@ -160,6 +206,7 @@ fun AdminDashboardScreen(
             item {
                 Spacer(modifier = Modifier.height(Spacing.xl))
             }
+
         }
     }
 }

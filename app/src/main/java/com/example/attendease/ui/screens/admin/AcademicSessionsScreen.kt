@@ -23,6 +23,7 @@ import com.example.attendease.ui.components.AttendEaseBottomBar
 import com.example.attendease.ui.components.AttendEaseTopAppBar
 import com.example.attendease.ui.components.AttendEaseDropdown
 import com.example.attendease.ui.components.AttendEaseFormField
+import com.example.attendease.ui.components.AttendEaseConfirmDialog
 import com.example.attendease.ui.navigation.Screen
 import com.example.attendease.ui.theme.Spacing
 import com.example.attendease.viewModel.AcademicSessionViewModel
@@ -141,6 +142,7 @@ fun AcademicSessionCard(
     onActivate: () -> Unit,
     onDelete: () -> Unit
 ) {
+    var showDeleteConfirm by remember { mutableStateOf(false) }
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -199,7 +201,7 @@ fun AcademicSessionCard(
                     }
 
                     OutlinedButton(
-                        onClick = onDelete,
+                        onClick = { showDeleteConfirm = true },
                         modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFD32F2F)),
                         border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEEEEEE)),
@@ -232,6 +234,17 @@ fun AcademicSessionCard(
             }
         }
     }
+
+    AttendEaseConfirmDialog(
+        show = showDeleteConfirm,
+        title = "Delete Academic Session",
+        message = "Are you sure you want to delete academic session '${session.sessionName}' (${session.semester} Semester)? This action cannot be undone.",
+        onConfirm = {
+            showDeleteConfirm = false
+            onDelete()
+        },
+        onDismiss = { showDeleteConfirm = false }
+    )
 }
 
 @Composable

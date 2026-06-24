@@ -80,7 +80,42 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
                     )
 
             }
-
         }
+    }
+
+    private val _changePasswordState = MutableStateFlow<Result<Unit>?>(null)
+    val changePasswordState = _changePasswordState.asStateFlow()
+
+    fun changePassword(oldPassword: String, newPassword: String) {
+        viewModelScope.launch {
+            try {
+                repository.changePassword(oldPassword, newPassword)
+                _changePasswordState.value = Result.success(Unit)
+            } catch (e: Exception) {
+                _changePasswordState.value = Result.failure(e)
+            }
+        }
+    }
+
+    fun resetChangePasswordState() {
+        _changePasswordState.value = null
+    }
+
+    private val _updateProfileState = MutableStateFlow<Result<com.example.attendease.dto.response.UserResponse>?>(null)
+    val updateProfileState = _updateProfileState.asStateFlow()
+
+    fun updateProfile(name: String, email: String) {
+        viewModelScope.launch {
+            try {
+                val updatedUser = repository.updateProfile(name, email)
+                _updateProfileState.value = Result.success(updatedUser)
+            } catch (e: Exception) {
+                _updateProfileState.value = Result.failure(e)
+            }
+        }
+    }
+
+    fun resetUpdateProfileState() {
+        _updateProfileState.value = null
     }
 }

@@ -24,6 +24,11 @@ import com.example.attendease.ui.theme.Spacing
 import org.koin.compose.koinInject
 import com.example.attendease.data.session.SessionManager
 import com.example.attendease.data.repository.AuthRepository
+import com.example.attendease.viewModel.AuthViewModel
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
+
 
 @Composable
 fun SettingsScreen(
@@ -32,7 +37,8 @@ fun SettingsScreen(
     userName: String,
     userEmail: String,
     sessionManager: SessionManager = koinInject(),
-    authRepository: AuthRepository = koinInject()
+    authRepository: AuthRepository = koinInject(),
+    authViewModel: AuthViewModel = koinInject()
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val cachedName = sessionManager.getUserName().takeIf { it != "User" && !it.isNullOrBlank() } ?: userName
@@ -43,6 +49,50 @@ fun SettingsScreen(
     var email by remember { mutableStateOf(cachedEmail) }
     var role by remember { mutableStateOf(cachedRole) }
     var isRefreshing by remember { mutableStateOf(false) }
+
+    var showPasswordDialog by remember { mutableStateOf(false) }
+    var oldPassword by remember { mutableStateOf("") }
+    var newPassword by remember { mutableStateOf("") }
+
+    var showProfileDialog by remember { mutableStateOf(false) }
+    var editName by remember { mutableStateOf("") }
+    var editEmail by remember { mutableStateOf("") }
+    var isUpdatingProfile by remember { mutableStateOf(false) }
+    
+    val changePasswordState by authViewModel.changePasswordState.collectAsState()
+    val updateProfileState by authViewModel.updateProfileState.collectAsState()
+
+    LaunchedEffect(changePasswordState) {
+        changePasswordState?.let { result ->
+            if (result.isSuccess) {
+                showPasswordDialog = false
+                oldPassword = ""
+                newPassword = ""
+                android.widget.Toast.makeText(context, "Password changed successfully!", android.widget.Toast.LENGTH_SHORT).show()
+            } else {
+                android.widget.Toast.makeText(context, result.exceptionOrNull()?.message ?: "Failed to change password", android.widget.Toast.LENGTH_LONG).show()
+            }
+            authViewModel.resetChangePasswordState()
+        }
+    }
+
+    LaunchedEffect(updateProfileState) {
+        updateProfileState?.let { result ->
+            isUpdatingProfile = false
+            if (result.isSuccess) {
+                val updatedUser = result.getOrNull()
+                if (updatedUser != null) {
+                    name = updatedUser.name ?: name
+                    email = updatedUser.email ?: email
+                }
+                showProfileDialog = false
+                android.widget.Toast.makeText(context, "Profile updated successfully!", android.widget.Toast.LENGTH_SHORT).show()
+            } else {
+                android.widget.Toast.makeText(context, result.exceptionOrNull()?.message ?: "Failed to update profile", android.widget.Toast.LENGTH_LONG).show()
+            }
+            authViewModel.resetUpdateProfileState()
+        }
+    }
 
     LaunchedEffect(Unit) {
         isRefreshing = true
@@ -157,7 +207,12 @@ fun SettingsScreen(
                 SettingsItem(
                     icon = Icons.Default.PersonOutline,
                     title = "Edit Profile Info",
-                    subtitle = "Change your name, photo, etc."
+                    subtitle = "Change your name, email, etc.",
+                    onClick = {
+                        editName = name
+                        editEmail = email
+                        showProfileDialog = true
+                    }
                 )
             }
 
@@ -165,7 +220,8 @@ fun SettingsScreen(
                 SettingsItem(
                     icon = Icons.Default.LockOpen,
                     title = "Security & Password",
-                    subtitle = "Update your login credentials"
+                    subtitle = "Update your login credentials",
+                    onClick = { showPasswordDialog = true }
                 )
             }
 
@@ -173,7 +229,8 @@ fun SettingsScreen(
                 SettingsItem(
                     icon = Icons.Default.NotificationsNone,
                     title = "Notifications",
-                    subtitle = "Manage your alert preferences"
+                    subtitle = "Manage your alert preferences",
+                    onClick = { }
                 )
             }
 
@@ -190,7 +247,8 @@ fun SettingsScreen(
                 SettingsItem(
                     icon = Icons.Default.Language,
                     title = "Language",
-                    subtitle = "English (United States)"
+                    subtitle = "English (United States)",
+                    onClick = { }
                 )
             }
 
@@ -198,7 +256,8 @@ fun SettingsScreen(
                 SettingsItem(
                     icon = Icons.Default.HelpOutline,
                     title = "Help & Support",
-                    subtitle = "FAQs, contact admin, etc."
+                    subtitle = "FAQs, contact admin, etc.",
+                    onClick = { }
                 )
             }
 
@@ -229,6 +288,112 @@ fun SettingsScreen(
                 Spacer(modifier = Modifier.height(Spacing.xl))
             }
         }
+
+        if (showPasswordDialog) {
+            AlertDialog(
+                onDismissRequest = { showPasswordDialog = false },
+                title = { Text("Change Password") },
+                text = {
+                    Column {
+                        OutlinedTextField(
+                            value = oldPassword,
+                            onValueChange = { oldPassword = it },
+                            label = { Text("Current Password") },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation()
+                        )
+                        Spacer(modifier = Modifier.height(Spacing.sm))
+                        OutlinedTextField(
+                            value = newPassword,
+                            onValueChange = { newPassword = it },
+                            label = { Text("New Password") },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation()
+                        )
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            if (oldPassword.isNotBlank() && newPassword.isNotBlank()) {
+                                authViewModel.changePassword(oldPassword, newPassword)
+                            }
+                        },
+                        enabled = oldPassword.isNotBlank() && newPassword.isNotBlank()
+                    ) {
+                        Text("Update Password")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showPasswordDialog = false }) {
+                        Text("Cancel")
+                    }
+                }
+            )
+        }
+
+        if (showProfileDialog) {
+            AlertDialog(
+                onDismissRequest = { if (!isUpdatingProfile) showProfileDialog = false },
+                title = { Text("Edit Profile Info") },
+                text = {
+                    Column {
+                        OutlinedTextField(
+                            value = editName,
+                            onValueChange = { editName = it },
+                            label = { Text("Full Name") },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            enabled = !isUpdatingProfile
+                        )
+                        Spacer(modifier = Modifier.height(Spacing.sm))
+                        OutlinedTextField(
+                            value = editEmail,
+                            onValueChange = { editEmail = it },
+                            label = { Text("Email Address") },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Email
+                            ),
+                            enabled = !isUpdatingProfile
+                        )
+                        if (isUpdatingProfile) {
+                            Spacer(modifier = Modifier.height(Spacing.md))
+                            Box(
+                                modifier = Modifier.fillMaxWidth(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator()
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            if (editName.isNotBlank() && editEmail.isNotBlank()) {
+                                isUpdatingProfile = true
+                                authViewModel.updateProfile(editName, editEmail)
+                            }
+                        },
+                        enabled = editName.isNotBlank() && editEmail.isNotBlank() && !isUpdatingProfile
+                    ) {
+                        Text("Save Changes")
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = { showProfileDialog = false },
+                        enabled = !isUpdatingProfile
+                    ) {
+                        Text("Cancel")
+                    }
+                }
+            )
+        }
     }
 }
 
@@ -236,10 +401,11 @@ fun SettingsScreen(
 fun SettingsItem(
     icon: ImageVector,
     title: String,
-    subtitle: String
+    subtitle: String,
+    onClick: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))

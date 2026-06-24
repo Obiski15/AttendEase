@@ -23,6 +23,7 @@ import androidx.navigation.NavController
 import com.example.attendease.enums.UserRole
 import com.example.attendease.ui.components.AttendEaseBottomBar
 import com.example.attendease.ui.components.AttendEaseTopAppBar
+import com.example.attendease.ui.components.AttendEaseConfirmDialog
 import com.example.attendease.ui.navigation.Screen
 import com.example.attendease.ui.theme.Spacing
 import org.koin.androidx.compose.koinViewModel
@@ -238,6 +239,7 @@ fun StudentCard(
     onDeleteClick: () -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
+    var showDeleteConfirm by remember { mutableStateOf(false) }
 
     Card(
         modifier = Modifier
@@ -334,7 +336,7 @@ fun StudentCard(
                         text = { Text("Delete", color = MaterialTheme.colorScheme.error) },
                         onClick = {
                             showMenu = false
-                            onDeleteClick()
+                            showDeleteConfirm = true
                         },
                         leadingIcon = { Icon(Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(20.dp)) }
                     )
@@ -342,4 +344,15 @@ fun StudentCard(
             }
         }
     }
+
+    AttendEaseConfirmDialog(
+        show = showDeleteConfirm,
+        title = "Delete Student",
+        message = "Are you sure you want to delete the student account for '${student.user?.name ?: "Student"}'? This action cannot be undone.",
+        onConfirm = {
+            showDeleteConfirm = false
+            onDeleteClick()
+        },
+        onDismiss = { showDeleteConfirm = false }
+    )
 }

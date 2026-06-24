@@ -14,19 +14,36 @@ import com.example.attendease.data.repository.LecturerRepository
 import com.example.attendease.data.repository.StudentRepository
 import com.example.attendease.data.repository.CourseAssignmentRepository
 import com.example.attendease.data.repository.AcademicSessionRepository
+import com.example.attendease.data.repository.DepartmentRepository
+import com.example.attendease.data.repository.CourseRepository
 import com.example.attendease.data.session.SessionManager
 import com.example.attendease.viewModel.LecturerViewModel
 import com.example.attendease.viewModel.StudentViewModel
 import com.example.attendease.viewModel.CourseAssignmentViewModel
 import com.example.attendease.viewModel.AcademicSessionViewModel
+import com.example.attendease.viewModel.DepartmentViewModel
+import com.example.attendease.viewModel.CourseViewModel
+import com.example.attendease.viewModel.DashboardViewModel
+import com.example.attendease.data.api.DashboardApi
+import com.example.attendease.data.repository.DashboardRepository
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
+import com.example.attendease.utils.ConnectivityObserver
+import com.example.attendease.utils.NetworkConnectivityObserver
+import com.example.attendease.data.api.UserApi
+import com.example.attendease.data.repository.UserRepository
+import com.example.attendease.viewModel.UserViewModel
+
 
 val appModule = module {
+    single<ConnectivityObserver> { NetworkConnectivityObserver(get()) }
     single { SessionManager(get()) }
     single { NetworkClient.client }
     single { AuthApi(get(), get()) }
     single { AuthRepository(get(), get()) }
+    single { DashboardApi(get(), get(), get()) }
+    single { DashboardRepository(get()) }
+    single { UserApi(get(), get(), get()) }
 
     single { LecturerApi(get(), get(), get()) }
     single { StudentApi(get(), get(), get()) }
@@ -39,10 +56,17 @@ val appModule = module {
     single { StudentRepository(get(), get()) }
     single { CourseAssignmentRepository(get(), get(), get(), get()) }
     single { AcademicSessionRepository(get()) }
+    single { DepartmentRepository(get()) }
+    single { CourseRepository(get()) }
+    single { UserRepository(get()) }
 
     viewModel { AuthViewModel(get()) }
     viewModel { LecturerViewModel(get()) }
     viewModel { StudentViewModel(get()) }
     viewModel { CourseAssignmentViewModel(get()) }
     viewModel { AcademicSessionViewModel(get()) }
+    viewModel { DepartmentViewModel(get()) }
+    viewModel { CourseViewModel(get()) }
+    viewModel { DashboardViewModel(get()) }
+    viewModel { UserViewModel(get()) }
 }

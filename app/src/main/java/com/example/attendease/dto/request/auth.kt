@@ -13,3 +13,15 @@ data class LoginRequest(
 data class TokenRefreshRequest(
     @SerialName("refresh_token") val refreshToken: String
 )
+
+@Serializable
+data class ChangePasswordRequest(
+    @SerialName("old_password") val oldPassword: String,
+    @SerialName("new_password") val newPassword: String
+)
+
+@Serializable
+data class ProfileUpdateRequest(
+    @SerialName("full_name") val name: String? = null,
+    val email: String? = null
+)
