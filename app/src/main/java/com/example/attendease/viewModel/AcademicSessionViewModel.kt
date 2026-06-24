@@ -37,13 +37,13 @@ class AcademicSessionViewModel(
         }
     }
 
-    fun createSession(sessionName: String, semester: String, isActive: Boolean) {
+    fun createSession(sessionName: String, semester: String, isActive: Boolean, startDate: String, endDate: String) {
         viewModelScope.launch {
             _isLoading.value = true
             _error.value = null
             _saveSuccess.value = false
             try {
-                repository.createAcademicSession(sessionName, semester, isActive)
+                repository.createAcademicSession(sessionName, semester, isActive, startDate, endDate)
                 _saveSuccess.value = true
                 loadSessions()
             } catch (e: Exception) {
@@ -54,12 +54,30 @@ class AcademicSessionViewModel(
         }
     }
 
+
     fun activateSession(sessionId: String) {
         viewModelScope.launch {
             _isLoading.value = true
             _error.value = null
             try {
                 repository.activateAcademicSession(sessionId)
+                loadSessions()
+            } catch (e: Exception) {
+                _error.value = e.message
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun updateSession(sessionId: String, sessionName: String, semester: String, isActive: Boolean, startDate: String, endDate: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _error.value = null
+            _saveSuccess.value = false
+            try {
+                repository.updateAcademicSession(sessionId, sessionName, semester, isActive, startDate, endDate)
+                _saveSuccess.value = true
                 loadSessions()
             } catch (e: Exception) {
                 _error.value = e.message
@@ -88,4 +106,5 @@ class AcademicSessionViewModel(
         _saveSuccess.value = false
         _error.value = null
     }
+
 }

@@ -1,6 +1,7 @@
 package com.example.attendease.ui.screens.lecturer
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -18,6 +19,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import org.koin.androidx.compose.koinViewModel
+import com.example.attendease.viewModel.LecturerSessionViewModel
+import com.example.attendease.viewModel.DashboardViewModel
+import com.example.attendease.dto.response.AttendanceSessionResponse
 import com.example.attendease.enums.UserRole
 import com.example.attendease.ui.components.AttendEaseBottomBar
 import com.example.attendease.ui.components.AttendEaseTopAppBar
@@ -31,21 +36,78 @@ data class LecturerSession(
     val time: String,
     val checkedIn: Int,
     val total: Int,
-    val isActive: Boolean = false
+    val isActive: Boolean = false,
+    val originalResponse: AttendanceSessionResponse? = null
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LecturerSessionHistoryScreen(navController: NavController) {
+fun LecturerSessionHistoryScreen(
+    navController: NavController,
+    sessionViewModel: LecturerSessionViewModel = koinViewModel(),
+    dashboardViewModel: DashboardViewModel = koinViewModel()
+) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedFilter by remember { mutableStateOf("All") }
     val filters = listOf("All", "Active", "Completed")
 
-    val dummySessions = listOf(
-        LecturerSession("CS301", "Data Structures", "Today, Oct 24", "10:00 AM - 11:30 AM", 42, 50, true),
-        LecturerSession("MATH202", "Discrete Mathematics", "Oct 22, 2023", "02:00 PM - 04:00 PM", 48, 50),
-        LecturerSession("ENG101", "Technical Writing", "Oct 20, 2023", "09:00 AM - 11:00 AM", 35, 50)
-    )
+    LaunchedEffect(Unit) {
+        sessionViewModel.loadSessionHistory()
+        dashboardViewModel.loadLecturerDashboard()
+    }
+
+    val historySessions by sessionViewModel.sessionsHistory.collectAsState()
+    val lecturerStats by dashboardViewModel.lecturerStats.collectAsState()
+    val isLoading by sessionViewModel.isLoading.collectAsState()
+    val error by sessionViewModel.error.collectAsState()
+
+    val sessions = remember(historySessions, lecturerStats, searchQuery, selectedFilter) {
+        historySessions.mapNotNull { session ->
+            val course = lecturerStats?.courses?.find { it.courseAssignmentId == session.courseAssignmentId }
+            val courseCode = course?.courseCode ?: "Session"
+            val courseTitle = course?.courseTitle ?: "Course Session"
+
+            val dateString = session.sessionDate ?: "Unknown Date"
+            val timeString = if (session.startTime != null && session.expiresAt != null) {
+                try {
+                    val cleanStart = session.startTime.replace(" ", "T")
+                    val cleanEnd = session.expiresAt.replace(" ", "T")
+                    val startStr = cleanStart.substringAfter('T').substringBefore(':') + ":" + cleanStart.substringAfter('T').substringAfter(':').substringBefore(':')
+                    val endStr = cleanEnd.substringAfter('T').substringBefore(':') + ":" + cleanEnd.substringAfter('T').substringAfter(':').substringBefore(':')
+                    "$startStr - $endStr"
+                } catch (e: Exception) {
+                    "Open Session"
+                }
+            } else {
+                "Open Session"
+            }
+
+            val isActive = session.status == "ACTIVE"
+
+            val item = LecturerSession(
+                code = courseCode,
+                title = courseTitle,
+                date = dateString,
+                time = timeString,
+                checkedIn = session.recordsCount ?: 0,
+                total = session.totalStudents ?: 0,
+                isActive = isActive,
+                originalResponse = session
+            )
+
+            val matchesSearch = item.code.contains(searchQuery, ignoreCase = true) ||
+                    item.title.contains(searchQuery, ignoreCase = true) ||
+                    item.date.contains(searchQuery, ignoreCase = true)
+
+            val matchesFilter = when (selectedFilter) {
+                "Active" -> item.isActive
+                "Completed" -> !item.isActive
+                else -> true
+            }
+
+            if (matchesSearch && matchesFilter) item else null
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -64,7 +126,6 @@ fun LecturerSessionHistoryScreen(navController: NavController) {
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Search Bar
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
@@ -81,7 +142,6 @@ fun LecturerSessionHistoryScreen(navController: NavController) {
                 )
             )
 
-            // Filters
             LazyRow(
                 modifier = Modifier.fillMaxWidth().padding(bottom = Spacing.md),
                 contentPadding = PaddingValues(horizontal = Spacing.md),
@@ -93,21 +153,45 @@ fun LecturerSessionHistoryScreen(navController: NavController) {
                         onClick = { selectedFilter = filter },
                         label = { Text(filter) },
                         colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = Color(0xFF000066),
+                            selectedContainerColor = Color(0xFF006F62),
                             selectedLabelColor = Color.White
                         )
                     )
                 }
             }
 
-            // Session List
-            LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(horizontal = Spacing.md),
-                verticalArrangement = Arrangement.spacedBy(Spacing.md),
-                contentPadding = PaddingValues(bottom = 80.dp)
-            ) {
-                items(dummySessions) { session ->
-                    LecturerSessionCard(session)
+            if (isLoading && sessions.isEmpty()) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            } else if (sessions.isEmpty()) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(Icons.Default.History, contentDescription = null, modifier = Modifier.size(48.dp), tint = Color.Gray)
+                        Spacer(modifier = Modifier.height(Spacing.base))
+                        Text(
+                            text = if (error != null) "Error: $error" else "No sessions found",
+                            color = Color.Gray
+                        )
+                    }
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize().padding(horizontal = Spacing.md),
+                    verticalArrangement = Arrangement.spacedBy(Spacing.md),
+                    contentPadding = PaddingValues(bottom = 80.dp)
+                ) {
+                    items(sessions) { sessionItem ->
+                        LecturerSessionCard(
+                            session = sessionItem,
+                            onClick = if (sessionItem.isActive && sessionItem.originalResponse != null) {
+                                {
+                                    sessionViewModel.setActiveSession(sessionItem.originalResponse)
+                                    navController.navigate(Screen.StartSession.route)
+                                }
+                            } else null
+                        )
+                    }
                 }
             }
         }
@@ -115,12 +199,14 @@ fun LecturerSessionHistoryScreen(navController: NavController) {
 }
 
 @Composable
-fun LecturerSessionCard(session: LecturerSession) {
-    val progress = session.checkedIn.toFloat() / session.total
+fun LecturerSessionCard(session: LecturerSession, onClick: (() -> Unit)? = null) {
+    val progress = if (session.total > 0) session.checkedIn.toFloat() / session.total else 0f
     val percentage = (progress * 100).toInt()
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEEEEEE))

@@ -22,7 +22,9 @@ data class CourseAssignmentCreateRequest(
 data class AcademicSessionCreateRequest(
     @SerialName("session_name") val sessionName: String,
     val semester: String,
-    @SerialName("is_active") val isActive: Boolean = false
+    @SerialName("is_active") val isActive: Boolean = false,
+    @SerialName("start_date") val startDate: String,
+    @SerialName("end_date") val endDate: String
 )
 
 @Serializable
@@ -32,4 +34,14 @@ data class CourseUpdateRequest(
     @SerialName("credit_units") val creditUnits: Int? = null,
     @SerialName("department_id") val departmentId: String? = null
 )
+
+@Serializable
+data class AcademicSessionUpdateRequest(
+    @SerialName("session_name") val sessionName: String? = null,
+    val semester: String? = null,
+    @SerialName("is_active") val isActive: Boolean? = null,
+    @SerialName("start_date") val startDate: String? = null,
+    @SerialName("end_date") val endDate: String? = null
+)
+
 

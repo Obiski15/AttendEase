@@ -10,12 +10,16 @@ import com.example.attendease.data.api.StudentApi
 import com.example.attendease.data.api.CourseApi
 import com.example.attendease.data.api.AcademicSessionApi
 import com.example.attendease.data.api.CourseAssignmentApi
+import com.example.attendease.data.api.AttendanceSessionApi
+import com.example.attendease.data.api.AttendanceApi
 import com.example.attendease.data.repository.LecturerRepository
 import com.example.attendease.data.repository.StudentRepository
 import com.example.attendease.data.repository.CourseAssignmentRepository
 import com.example.attendease.data.repository.AcademicSessionRepository
 import com.example.attendease.data.repository.DepartmentRepository
 import com.example.attendease.data.repository.CourseRepository
+import com.example.attendease.data.repository.AttendanceSessionRepository
+import com.example.attendease.data.repository.AttendanceRepository
 import com.example.attendease.data.session.SessionManager
 import com.example.attendease.viewModel.LecturerViewModel
 import com.example.attendease.viewModel.StudentViewModel
@@ -33,6 +37,9 @@ import com.example.attendease.utils.NetworkConnectivityObserver
 import com.example.attendease.data.api.UserApi
 import com.example.attendease.data.repository.UserRepository
 import com.example.attendease.viewModel.UserViewModel
+import com.example.attendease.viewModel.LecturerSessionViewModel
+import com.example.attendease.viewModel.AttendanceViewModel
+
 
 
 val appModule = module {
@@ -51,6 +58,8 @@ val appModule = module {
     single { CourseApi(get(), get(), get()) }
     single { AcademicSessionApi(get(), get(), get()) }
     single { CourseAssignmentApi(get(), get(), get()) }
+    single { AttendanceSessionApi(get(), get(), get()) }
+    single { AttendanceApi(get(), get(), get()) }
 
     single { LecturerRepository(get(), get()) }
     single { StudentRepository(get(), get()) }
@@ -59,6 +68,9 @@ val appModule = module {
     single { DepartmentRepository(get()) }
     single { CourseRepository(get()) }
     single { UserRepository(get()) }
+    single { AttendanceSessionRepository(get()) }
+    single { AttendanceRepository(get()) }
+    single { LecturerSessionViewModel(get()) }
 
     viewModel { AuthViewModel(get()) }
     viewModel { LecturerViewModel(get()) }
@@ -69,4 +81,5 @@ val appModule = module {
     viewModel { CourseViewModel(get()) }
     viewModel { DashboardViewModel(get()) }
     viewModel { UserViewModel(get()) }
+    viewModel { AttendanceViewModel(get()) }
 }

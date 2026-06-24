@@ -30,7 +30,12 @@ class AcademicSessionApi(
         return authenticatedRequest(HttpMethod.Post, "$url/$sessionId/activate")
     }
 
+    suspend fun updateAcademicSession(sessionId: String, request: com.example.attendease.dto.request.AcademicSessionUpdateRequest): AcademicSessionResponse {
+        return authenticatedRequest(HttpMethod.Patch, "$url/$sessionId", request)
+    }
+
     suspend fun deleteAcademicSession(sessionId: String) {
         authenticatedRequest<Unit>(HttpMethod.Delete, "$url/$sessionId")
     }
+
 }

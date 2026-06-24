@@ -67,4 +67,15 @@ dependencies {
     implementation(libs.koin.core)
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.compose)
+
+    // CameraX
+    implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
+
+    // Google Play Services Location & Barcode Scanning
+    implementation(libs.play.services.location)
+    implementation(libs.mlkit.barcode.scanning)
+    implementation(libs.zxing.core)
 }

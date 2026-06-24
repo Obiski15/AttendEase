@@ -43,6 +43,8 @@ fun AcademicSessionsScreen(
     val saveSuccess by viewModel.saveSuccess.collectAsState()
 
     var showCreateDialog by remember { mutableStateOf(false) }
+    var showEditDialog by remember { mutableStateOf(false) }
+    var sessionToEdit by remember { mutableStateOf<AcademicSessionResponse?>(null) }
 
     LaunchedEffect(Unit) {
         viewModel.loadSessions()
@@ -50,9 +52,11 @@ fun AcademicSessionsScreen(
 
     LaunchedEffect(saveSuccess) {
         if (saveSuccess) {
-            android.widget.Toast.makeText(context, "Academic Session created successfully!", android.widget.Toast.LENGTH_SHORT).show()
+            val message = if (showEditDialog) "Academic Session updated successfully!" else "Academic Session created successfully!"
+            android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_SHORT).show()
             viewModel.resetSaveState()
             showCreateDialog = false
+            showEditDialog = false
         }
     }
 
@@ -118,7 +122,11 @@ fun AcademicSessionsScreen(
                         AcademicSessionCard(
                             session = session,
                             onActivate = { viewModel.activateSession(session.id) },
-                            onDelete = { viewModel.deleteSession(session.id) }
+                            onDelete = { viewModel.deleteSession(session.id) },
+                            onEdit = {
+                                sessionToEdit = session
+                                showEditDialog = true
+                            }
                         )
                     }
                 }
@@ -128,10 +136,22 @@ fun AcademicSessionsScreen(
         if (showCreateDialog) {
             AddAcademicSessionDialog(
                 onDismiss = { showCreateDialog = false },
-                onConfirm = { name, semester, active ->
-                    viewModel.createSession(name, semester, active)
+                onConfirm = { name, semester, active, start, end ->
+                    viewModel.createSession(name, semester, active, start, end)
                 }
             )
+        }
+
+        if (showEditDialog) {
+            sessionToEdit?.let { session ->
+                EditAcademicSessionDialog(
+                    session = session,
+                    onDismiss = { showEditDialog = false },
+                    onConfirm = { name, semester, active, start, end ->
+                        viewModel.updateSession(session.id, name, semester, active, start, end)
+                    }
+                )
+            }
         }
     }
 }
@@ -140,7 +160,8 @@ fun AcademicSessionsScreen(
 fun AcademicSessionCard(
     session: AcademicSessionResponse,
     onActivate: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    onEdit: () -> Unit
 ) {
     var showDeleteConfirm by remember { mutableStateOf(false) }
     Card(
@@ -166,19 +187,38 @@ fun AcademicSessionCard(
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.Gray
                     )
+                    if (session.startDate.isNotBlank() && session.endDate.isNotBlank()) {
+                        Spacer(modifier = Modifier.height(Spacing.xs))
+                        Text(
+                            text = "${session.startDate} to ${session.endDate}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.Gray
+                        )
+                    }
                 }
 
-                Surface(
-                    color = if (session.isActive) Color(0xFFE0F2F1) else Color(0xFFEEEEEE),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text(
-                        text = if (session.isActive) "ACTIVE" else "INACTIVE",
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = if (session.isActive) Color(0xFF006F62) else Color.Gray,
-                        fontWeight = FontWeight.Bold
-                    )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = onEdit) {
+                        Icon(
+                            Icons.Default.Edit,
+                            contentDescription = "Edit Session",
+                            tint = Color.Gray,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(Spacing.xs))
+                    Surface(
+                        color = if (session.isActive) Color(0xFFE0F2F1) else Color(0xFFEEEEEE),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = if (session.isActive) "ACTIVE" else "INACTIVE",
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = if (session.isActive) Color(0xFF006F62) else Color.Gray,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
 
@@ -250,11 +290,13 @@ fun AcademicSessionCard(
 @Composable
 fun AddAcademicSessionDialog(
     onDismiss: () -> Unit,
-    onConfirm: (name: String, semester: String, isActive: Boolean) -> Unit
+    onConfirm: (name: String, semester: String, isActive: Boolean, startDate: String, endDate: String) -> Unit
 ) {
     var sessionName by remember { mutableStateOf("") }
     var selectedSemester by remember { mutableStateOf("First") }
     var isActive by remember { mutableStateOf(false) }
+    var startDate by remember { mutableStateOf("") }
+    var endDate by remember { mutableStateOf("") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -285,6 +327,22 @@ fun AddAcademicSessionDialog(
                     onOptionSelected = { selectedSemester = it }
                 )
 
+                AttendEaseFormField(
+                    label = "Start Date (YYYY-MM-DD)",
+                    value = startDate,
+                    onValueChange = { startDate = it },
+                    placeholder = "e.g. 2026-09-01",
+                    trailingIcon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = Color.LightGray) }
+                )
+
+                AttendEaseFormField(
+                    label = "End Date (YYYY-MM-DD)",
+                    value = endDate,
+                    onValueChange = { endDate = it },
+                    placeholder = "e.g. 2027-01-30",
+                    trailingIcon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = Color.LightGray) }
+                )
+
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth().padding(top = Spacing.xs)
@@ -301,8 +359,8 @@ fun AddAcademicSessionDialog(
         },
         confirmButton = {
             Button(
-                onClick = { onConfirm(sessionName, selectedSemester, isActive) },
-                enabled = sessionName.isNotBlank(),
+                onClick = { onConfirm(sessionName, selectedSemester, isActive, startDate, endDate) },
+                enabled = sessionName.isNotBlank() && startDate.isNotBlank() && endDate.isNotBlank(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF006F62))
             ) {
                 Text("Create", fontWeight = FontWeight.Bold)
@@ -315,3 +373,92 @@ fun AddAcademicSessionDialog(
         }
     )
 }
+
+@Composable
+fun EditAcademicSessionDialog(
+    session: AcademicSessionResponse,
+    onDismiss: () -> Unit,
+    onConfirm: (name: String, semester: String, isActive: Boolean, startDate: String, endDate: String) -> Unit
+) {
+    var sessionName by remember { mutableStateOf(session.sessionName) }
+    var selectedSemester by remember { mutableStateOf(session.semester) }
+    var isActive by remember { mutableStateOf(session.isActive) }
+    var startDate by remember { mutableStateOf(session.startDate) }
+    var endDate by remember { mutableStateOf(session.endDate) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Edit Academic Session",
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.titleLarge
+            )
+        },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(Spacing.md),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                AttendEaseFormField(
+                    label = "Session Name",
+                    value = sessionName,
+                    onValueChange = { sessionName = it },
+                    placeholder = "e.g. 2023/2024",
+                    trailingIcon = { Icon(Icons.Default.Tag, contentDescription = null, tint = Color.LightGray) }
+                )
+
+                AttendEaseDropdown(
+                    label = "Semester",
+                    value = selectedSemester,
+                    options = listOf("First", "Second"),
+                    onOptionSelected = { selectedSemester = it }
+                )
+
+                AttendEaseFormField(
+                    label = "Start Date (YYYY-MM-DD)",
+                    value = startDate,
+                    onValueChange = { startDate = it },
+                    placeholder = "e.g. 2026-09-01",
+                    trailingIcon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = Color.LightGray) }
+                )
+
+                AttendEaseFormField(
+                    label = "End Date (YYYY-MM-DD)",
+                    value = endDate,
+                    onValueChange = { endDate = it },
+                    placeholder = "e.g. 2027-01-30",
+                    trailingIcon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = Color.LightGray) }
+                )
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth().padding(top = Spacing.xs)
+                ) {
+                    Checkbox(
+                        checked = isActive,
+                        onCheckedChange = { isActive = it },
+                        colors = CheckboxDefaults.colors(checkedColor = Color(0xFF006F62))
+                    )
+                    Spacer(modifier = Modifier.width(Spacing.xs))
+                    Text("Set as active session immediately", style = MaterialTheme.typography.bodyMedium)
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { onConfirm(sessionName, selectedSemester, isActive, startDate, endDate) },
+                enabled = sessionName.isNotBlank() && startDate.isNotBlank() && endDate.isNotBlank(),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF006F62))
+            ) {
+                Text("Save", fontWeight = FontWeight.Bold)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel", color = Color.Gray)
+            }
+        }
+    )
+}
+

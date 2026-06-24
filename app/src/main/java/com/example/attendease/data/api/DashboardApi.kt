@@ -4,6 +4,8 @@ import com.example.attendease.BuildConfig
 import com.example.attendease.data.network.NetworkClient
 import com.example.attendease.data.session.SessionManager
 import com.example.attendease.dto.response.AdminDashboardResponse
+import com.example.attendease.dto.response.LecturerDashboardResponse
+import com.example.attendease.dto.response.StudentDashboardResponse
 import io.ktor.client.HttpClient
 import io.ktor.http.HttpMethod
 
@@ -20,5 +22,13 @@ class DashboardApi(
 
     suspend fun getAdminDashboard(): AdminDashboardResponse {
         return authenticatedRequest(HttpMethod.Get, "$url/admin")
+    }
+
+    suspend fun getLecturerDashboard(): LecturerDashboardResponse {
+        return authenticatedRequest(HttpMethod.Get, "$url/lecturer")
+    }
+
+    suspend fun getStudentDashboard(): StudentDashboardResponse {
+        return authenticatedRequest(HttpMethod.Get, "$url/student")
     }
 }

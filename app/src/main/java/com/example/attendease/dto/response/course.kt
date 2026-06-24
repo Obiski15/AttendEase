@@ -17,8 +17,11 @@ data class AcademicSessionResponse(
     val id: String,
     @SerialName("session_name") val sessionName: String,
     val semester: String,
-    @SerialName("is_active") val isActive: Boolean = false
+    @SerialName("is_active") val isActive: Boolean = false,
+    @SerialName("start_date") val startDate: String = "",
+    @SerialName("end_date") val endDate: String = ""
 )
+
 
 @Serializable
 data class CourseAssignmentResponse(
