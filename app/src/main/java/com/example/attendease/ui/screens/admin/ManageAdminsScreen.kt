@@ -28,6 +28,7 @@ import com.example.attendease.dto.response.UserResponse
 import com.example.attendease.data.session.SessionManager
 import org.koin.compose.koinInject
 import com.example.attendease.ui.components.ListSkeleton
+import androidx.compose.material3.MaterialTheme
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -75,8 +76,8 @@ fun ManageAdminsScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { navController.navigate(Screen.AddAdmin.route) },
-                containerColor = Color(0xFF006F62),
-                contentColor = Color.White,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Add Administrator")
@@ -95,8 +96,8 @@ fun ManageAdminsScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = Spacing.md, vertical = Spacing.base),
-                placeholder = { Text("Search admins by name or email...", color = Color.Gray) },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
+                placeholder = { Text("Search admins by name or email...", color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant) },
                 shape = RoundedCornerShape(12.dp),
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
@@ -112,7 +113,7 @@ fun ManageAdminsScreen(
 
                 if (filteredAdmins.isEmpty()) {
                     Box(modifier = Modifier.fillMaxSize().weight(1f), contentAlignment = Alignment.Center) {
-                        Text("No administrators found.", color = Color.Gray)
+                        Text("No administrators found.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 } else {
                     LazyColumn(
@@ -155,7 +156,7 @@ fun AdminUserCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
     ) {
         Row(
@@ -202,7 +203,7 @@ fun AdminUserCard(
                     Text(
                         text = admin.email ?: "",
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color.Gray
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -210,7 +211,7 @@ fun AdminUserCard(
             if (!isCurrentUser) {
                 Row {
                     IconButton(onClick = onEditClick) {
-                        Icon(Icons.Default.Edit, contentDescription = "Edit Info", tint = Color.Gray)
+                        Icon(Icons.Default.Edit, contentDescription = "Edit Info", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     IconButton(onClick = { showDeleteConfirm = true }) {
                         Icon(Icons.Default.Delete, contentDescription = "Deactivate", tint = MaterialTheme.colorScheme.error)

@@ -27,6 +27,7 @@ import com.example.attendease.ui.theme.Spacing
 import org.koin.androidx.compose.koinViewModel
 import com.example.attendease.viewModel.CourseViewModel
 import com.example.attendease.viewModel.DepartmentViewModel
+import androidx.compose.material3.MaterialTheme
 
 @Composable
 fun EditCourseScreen(
@@ -101,14 +102,14 @@ fun EditCourseScreen(
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Row(modifier = Modifier.padding(Spacing.md)) {
-                            Icon(Icons.Default.School, contentDescription = null, tint = Color(0xFF006F62))
+                            Icon(Icons.Default.School, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                             Spacer(modifier = Modifier.width(Spacing.md))
                             Column {
-                                Text("Edit Course Details", fontWeight = FontWeight.Bold, color = Color(0xFF000066))
+                                Text("Edit Course Details", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                                 Text(
                                     "Modify the code, title, credit units, or department of the course.",
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = Color.Gray
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
@@ -130,14 +131,14 @@ fun EditCourseScreen(
                             value = courseCode,
                             onValueChange = { courseCode = it },
                             placeholder = "e.g. CSC401",
-                            trailingIcon = { Icon(Icons.Default.Tag, contentDescription = null, tint = Color.LightGray) }
+                            trailingIcon = { Icon(Icons.Default.Tag, contentDescription = null, tint = MaterialTheme.colorScheme.surfaceVariant) }
                         )
                         AttendEaseFormField(
                             label = "Course Title",
                             value = courseTitle,
                             onValueChange = { courseTitle = it },
                             placeholder = "e.g. Artificial Intelligence",
-                            trailingIcon = { Icon(Icons.Default.Title, contentDescription = null, tint = Color.LightGray) }
+                            trailingIcon = { Icon(Icons.Default.Title, contentDescription = null, tint = MaterialTheme.colorScheme.surfaceVariant) }
                         )
                         
                         val deptOptions = departments.map { it.name }
@@ -202,12 +203,12 @@ fun EditCourseScreen(
                                 )
                             },
                             modifier = Modifier.weight(1.5f).height(56.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF006F62)),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                             shape = RoundedCornerShape(28.dp),
                             enabled = !isLoading && courseTitle.isNotBlank() && courseCode.isNotBlank() && departmentId.isNotBlank()
                         ) {
                             if (isLoading && !showDeleteConfirm) {
-                                CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                                CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(24.dp))
                             } else {
                                 Icon(Icons.Default.Save, contentDescription = null)
                                 Spacer(modifier = Modifier.width(Spacing.base))

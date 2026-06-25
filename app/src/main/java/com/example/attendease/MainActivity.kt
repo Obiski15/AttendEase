@@ -37,7 +37,10 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            Theme {
+            val sessionManager: com.example.attendease.data.session.SessionManager = koinInject()
+            val themePreference by sessionManager.themePreferenceFlow.collectAsState()
+
+            Theme(themePreference = themePreference) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.surface

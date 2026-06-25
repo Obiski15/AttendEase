@@ -25,6 +25,7 @@ import org.koin.androidx.compose.koinViewModel
 import com.example.attendease.viewModel.DepartmentViewModel
 import com.example.attendease.dto.response.DepartmentResponse
 import com.example.attendease.ui.components.ListSkeleton
+import androidx.compose.material3.MaterialTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,8 +69,8 @@ fun DepartmentsScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { showAddDialog = true },
-                containerColor = Color(0xFF006F62),
-                contentColor = Color.White,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Add Department")
@@ -88,7 +89,7 @@ fun DepartmentsScreen(
 
                 if (departments.isEmpty()) {
                     Box(modifier = Modifier.fillMaxSize().weight(1f), contentAlignment = Alignment.Center) {
-                        Text("No departments available.", color = Color.Gray)
+                        Text("No departments available.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 } else {
                     LazyColumn(
@@ -161,7 +162,7 @@ fun DepartmentCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
     ) {
         Row(
@@ -173,7 +174,7 @@ fun DepartmentCard(
                 Icon(
                     imageVector = Icons.Default.Domain,
                     contentDescription = null,
-                    tint = Color(0xFF000066),
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(32.dp)
                 )
                 Spacer(modifier = Modifier.width(Spacing.md))

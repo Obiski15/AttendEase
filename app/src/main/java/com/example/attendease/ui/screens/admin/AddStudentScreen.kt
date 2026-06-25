@@ -27,6 +27,7 @@ import com.example.attendease.ui.theme.Spacing
 import com.example.attendease.viewModel.StudentViewModel
 import com.example.attendease.dto.request.StudentCreateRequest
 import org.koin.androidx.compose.koinViewModel
+import androidx.compose.material3.MaterialTheme
 
 @Composable
 fun AddStudentScreen(
@@ -108,7 +109,7 @@ fun AddStudentScreen(
                                 Icon(
                                     imageVector = Icons.Default.PhotoCamera,
                                     contentDescription = "Upload",
-                                    tint = Color.White,
+                                    tint = MaterialTheme.colorScheme.onPrimary,
                                     modifier = Modifier.size(20.dp)
                                 )
                             }
@@ -260,7 +261,7 @@ fun AddStudentScreen(
                         enabled = !isLoading && fullName.isNotBlank() && email.isNotBlank() && password.isNotBlank() && selectedDepartmentId != null
                     ) {
                         if (isLoading) {
-                            CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                            CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(24.dp))
                         } else {
                             Icon(Icons.Default.Save, contentDescription = null)
                             Spacer(modifier = Modifier.width(Spacing.sm))

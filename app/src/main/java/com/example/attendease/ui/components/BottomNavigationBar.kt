@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.attendease.enums.UserRole
 import com.example.attendease.ui.navigation.Screen
+import androidx.compose.material3.MaterialTheme
 
 data class NavigationItem(
     val label: String,
@@ -51,7 +52,7 @@ fun AttendEaseBottomBar(
     }
 
     NavigationBar(
-        containerColor = Color.White,
+        containerColor = MaterialTheme.colorScheme.surface,
         tonalElevation = 8.dp
     ) {
         bottomNavItems.forEach { item ->

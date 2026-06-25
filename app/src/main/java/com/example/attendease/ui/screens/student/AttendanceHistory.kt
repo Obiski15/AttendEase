@@ -25,6 +25,7 @@ import com.example.attendease.ui.components.AttendEaseBottomBar
 import com.example.attendease.ui.components.AttendEaseTopAppBar
 import com.example.attendease.ui.navigation.Screen
 import com.example.attendease.ui.theme.Spacing
+import androidx.compose.material3.MaterialTheme
 
 data class StudentSession(
     val day: String,
@@ -77,7 +78,7 @@ fun StudentAttendanceHistoryScreen(navController: NavController) {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                 ) {
                     Column(modifier = Modifier.padding(Spacing.lg)) {
@@ -90,12 +91,12 @@ fun StudentAttendanceHistoryScreen(navController: NavController) {
                                 "OVERRALL RATE",
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.Gray
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.TrendingUp,
                                 contentDescription = null,
-                                tint = Color(0xFF006F62)
+                                tint = MaterialTheme.colorScheme.primary
                             )
                         }
                         
@@ -104,12 +105,12 @@ fun StudentAttendanceHistoryScreen(navController: NavController) {
                                 "88%",
                                 style = MaterialTheme.typography.displayMedium,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF000066)
+                                color = MaterialTheme.colorScheme.primary
                             )
                             Text(
                                 "+2.4%",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = Color(0xFF006F62),
+                                color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.padding(bottom = 8.dp, start = 4.dp)
                             )
                         }
@@ -119,7 +120,7 @@ fun StudentAttendanceHistoryScreen(navController: NavController) {
                         LinearProgressIndicator(
                             progress = { 0.88f },
                             modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)),
-                            color = Color(0xFF006F62),
+                            color = MaterialTheme.colorScheme.primary,
                             trackColor = Color(0xFFEEEEEE)
                         )
                     }
@@ -135,7 +136,7 @@ fun StudentAttendanceHistoryScreen(navController: NavController) {
                         title = "TOTAL PRESENT",
                         value = "42",
                         icon = Icons.Default.CheckCircle,
-                        iconColor = Color(0xFF006F62),
+                        iconColor = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.weight(1f)
                     )
                     HistoryStatCard(
@@ -161,7 +162,7 @@ fun StudentAttendanceHistoryScreen(navController: NavController) {
                             val isSelected = selectedFilter == filter
                             Surface(
                                 modifier = Modifier.weight(1f).height(36.dp).clickable { selectedFilter = filter },
-                                color = if (isSelected) Color(0xFF000066) else Color.Transparent,
+                                color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
                                 shape = RoundedCornerShape(20.dp)
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
@@ -188,7 +189,7 @@ fun StudentAttendanceHistoryScreen(navController: NavController) {
                     Text(
                         "(Last 30 Days)",
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color.Gray
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -209,7 +210,7 @@ fun HistoryStatCard(title: String, value: String, icon: ImageVector, iconColor: 
     Card(
         modifier = modifier.height(180.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEEEEEE))
     ) {
         Column(
@@ -228,7 +229,7 @@ fun HistoryStatCard(title: String, value: String, icon: ImageVector, iconColor: 
             }
             Spacer(modifier = Modifier.height(Spacing.md))
             Text(value, style = MaterialTheme.typography.displayMedium, fontWeight = FontWeight.Bold, color = Color(0xFF333333))
-            Text(title, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = Color.Gray)
+            Text(title, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
@@ -238,7 +239,7 @@ fun SessionItem(session: StudentSession) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEEEEEE))
     ) {
         Column(modifier = Modifier.padding(Spacing.md)) {
@@ -247,10 +248,10 @@ fun SessionItem(session: StudentSession) {
                 Surface(
                     modifier = Modifier.size(56.dp),
                     shape = RoundedCornerShape(12.dp),
-                    color = Color(0xFFF5F5F5)
+                    color = MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                        Text(session.month, style = MaterialTheme.typography.labelSmall, fontSize = 10.sp, color = Color.Gray)
+                        Text(session.month, style = MaterialTheme.typography.labelSmall, fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Text(session.day, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                     }
                 }
@@ -268,7 +269,7 @@ fun SessionItem(session: StudentSession) {
                                 modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF000066)
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
                         Spacer(modifier = Modifier.width(Spacing.base))
@@ -281,9 +282,9 @@ fun SessionItem(session: StudentSession) {
                     }
                     Spacer(modifier = Modifier.height(Spacing.xs))
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.AccessTime, contentDescription = null, modifier = Modifier.size(14.dp), tint = Color.Gray)
+                        Icon(Icons.Default.AccessTime, contentDescription = null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(session.time, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                        Text(session.time, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }
@@ -302,14 +303,14 @@ fun SessionItem(session: StudentSession) {
                         imageVector = if (session.isPresent) Icons.Default.CheckCircle else Icons.Default.Cancel,
                         contentDescription = null,
                         modifier = Modifier.size(14.dp),
-                        tint = if (session.isPresent) Color(0xFF006F62) else Color(0xFFD32F2F)
+                        tint = if (session.isPresent) MaterialTheme.colorScheme.primary else Color(0xFFD32F2F)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         if (session.isPresent) "PRESENT" else "ABSENT",
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold,
-                        color = if (session.isPresent) Color(0xFF006F62) else Color(0xFFD32F2F)
+                        color = if (session.isPresent) MaterialTheme.colorScheme.primary else Color(0xFFD32F2F)
                     )
                 }
             }

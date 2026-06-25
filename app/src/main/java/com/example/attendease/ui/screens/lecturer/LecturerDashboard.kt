@@ -36,6 +36,7 @@ import com.example.attendease.ui.theme.Spacing
 import com.example.attendease.viewModel.LecturerSessionViewModel
 import com.example.attendease.viewModel.DashboardViewModel
 import com.example.attendease.dto.response.AttendanceSessionResponse
+import androidx.compose.material3.MaterialTheme
 
 data class Course(
     val assignmentId: String,
@@ -382,7 +383,7 @@ fun CourseCard(course: Course, onStartClick: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
     ) {

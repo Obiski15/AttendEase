@@ -26,6 +26,7 @@ import com.example.attendease.ui.theme.Spacing
 import org.koin.androidx.compose.koinViewModel
 import com.example.attendease.viewModel.CourseViewModel
 import com.example.attendease.viewModel.DepartmentViewModel
+import androidx.compose.material3.MaterialTheme
 
 @Composable
 fun AddCourseScreen(
@@ -86,14 +87,14 @@ fun AddCourseScreen(
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Row(modifier = Modifier.padding(Spacing.md)) {
-                            Icon(Icons.Default.School, contentDescription = null, tint = Color(0xFF006F62))
+                            Icon(Icons.Default.School, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                             Spacer(modifier = Modifier.width(Spacing.md))
                             Column {
-                                Text("Course Registration", fontWeight = FontWeight.Bold, color = Color(0xFF000066))
+                                Text("Course Registration", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                                 Text(
                                     "Registering a new course will make it available for semester scheduling and attendance tracking.",
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = Color.Gray
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
@@ -112,7 +113,7 @@ fun AddCourseScreen(
                     ) {
                         Text(
                             "Academic Session 2023/2024",
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier.padding(Spacing.md),
                             style = MaterialTheme.typography.labelMedium
                         )
@@ -134,14 +135,14 @@ fun AddCourseScreen(
                             value = courseCode,
                             onValueChange = { courseCode = it },
                             placeholder = "e.g. CSC401",
-                            trailingIcon = { Icon(Icons.Default.Tag, contentDescription = null, tint = Color.LightGray) }
+                            trailingIcon = { Icon(Icons.Default.Tag, contentDescription = null, tint = MaterialTheme.colorScheme.surfaceVariant) }
                         )
                         AttendEaseFormField(
                             label = "Course Title",
                             value = courseTitle,
                             onValueChange = { courseTitle = it },
                             placeholder = "e.g. Artificial Intelligence",
-                            trailingIcon = { Icon(Icons.Default.Title, contentDescription = null, tint = Color.LightGray) }
+                            trailingIcon = { Icon(Icons.Default.Title, contentDescription = null, tint = MaterialTheme.colorScheme.surfaceVariant) }
                         )
                         
                         val deptOptions = departments.map { it.name }
@@ -192,7 +193,7 @@ fun AddCourseScreen(
                             shape = RoundedCornerShape(8.dp)
                         ) {
                             Row(modifier = Modifier.padding(Spacing.md), verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Info, contentDescription = null, tint = Color(0xFF006F62), modifier = Modifier.size(20.dp))
+                                Icon(Icons.Default.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
                                 Spacer(modifier = Modifier.width(Spacing.base))
                                 Text(
                                     "Verification: Please review the course details before submitting.",
@@ -217,12 +218,12 @@ fun AddCourseScreen(
                             )
                         },
                         modifier = Modifier.fillMaxWidth().height(56.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF006F62)),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                         shape = RoundedCornerShape(28.dp),
                         enabled = !isLoading && courseTitle.isNotBlank() && courseCode.isNotBlank() && departmentId.isNotBlank()
                     ) {
                         if (isLoading) {
-                            CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                            CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(24.dp))
                         } else {
                             Icon(Icons.Default.Save, contentDescription = null)
                             Spacer(modifier = Modifier.width(Spacing.base))

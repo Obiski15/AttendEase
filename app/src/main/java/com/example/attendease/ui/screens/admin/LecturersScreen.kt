@@ -29,6 +29,7 @@ import com.example.attendease.viewModel.LecturerViewModel
 import com.example.attendease.dto.response.LecturerResponse
 import org.koin.androidx.compose.koinViewModel
 import com.example.attendease.ui.components.ListSkeleton
+import androidx.compose.material3.MaterialTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,8 +71,8 @@ fun LecturersScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { navController.navigate(Screen.AddLecturer.route) },
-                containerColor = Color(0xFF006F62),
-                contentColor = Color.White,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Icon(Icons.Default.PersonAdd, contentDescription = "Add Lecturer")
@@ -90,8 +91,8 @@ fun LecturersScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(Spacing.md),
-                placeholder = { Text("Search by name or staff ID...", color = Color.Gray) },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
+                placeholder = { Text("Search by name or staff ID...", color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant) },
                 shape = RoundedCornerShape(12.dp),
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
@@ -116,7 +117,7 @@ fun LecturersScreen(
                     ) {
                         Text(
                             text = if (searchQuery.isEmpty()) "No lecturers available." else "No search results found.",
-                            color = Color.Gray,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
@@ -165,7 +166,7 @@ fun LecturerCard(
             .fillMaxWidth()
             .clickable { onCardClick() },
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
     ) {
         Row(

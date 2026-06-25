@@ -32,6 +32,7 @@ import com.example.attendease.viewModel.StudentViewModel
 import com.example.attendease.dto.response.StudentResponse
 import com.example.attendease.dto.response.DepartmentResponse
 import com.example.attendease.ui.components.ListSkeleton
+import androidx.compose.material3.MaterialTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -80,7 +81,7 @@ fun StudentsScreen(
             FloatingActionButton(
                 onClick = { navController.navigate(Screen.AddStudent.route) },
                 containerColor = MaterialTheme.colorScheme.secondary,
-                contentColor = Color.White,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Add Student")
@@ -99,8 +100,8 @@ fun StudentsScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = Spacing.md, vertical = Spacing.base),
-                placeholder = { Text("Search by name or matric number", color = Color.Gray) },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
+                placeholder = { Text("Search by name or matric number", color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant) },
                 shape = RoundedCornerShape(12.dp),
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
@@ -178,7 +179,7 @@ fun StudentsScreen(
                     ) {
                         Text(
                             text = if (searchQuery.isEmpty()) "No students available." else "No search results found.",
-                            color = Color.Gray,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
@@ -229,7 +230,7 @@ fun StudentCard(
             .fillMaxWidth()
             .clickable { onCardClick() },
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
     ) {
         Row(

@@ -59,12 +59,75 @@ private val LightColorScheme = lightColorScheme(
     outlineVariant = OutlineVariant
 )
 
+private val DarkColorScheme = androidx.compose.material3.darkColorScheme(
+    primary = PrimaryDark,
+    onPrimary = OnPrimaryDark,
+    primaryContainer = PrimaryContainerDark,
+    onPrimaryContainer = OnPrimaryContainerDark,
+    inversePrimary = InversePrimaryDark,
+    primaryFixed = PrimaryFixedDark,
+    primaryFixedDim = PrimaryFixedDimDark,
+    onPrimaryFixed = OnPrimaryFixedDark,
+    onPrimaryFixedVariant = OnPrimaryFixedVariantDark,
+
+    secondary = SecondaryDark,
+    onSecondary = OnSecondaryDark,
+    secondaryContainer = SecondaryContainerDark,
+    onSecondaryContainer = OnSecondaryContainerDark,
+    secondaryFixed = SecondaryFixedDark,
+    secondaryFixedDim = SecondaryFixedDimDark,
+    onSecondaryFixed = OnSecondaryFixedDark,
+    onSecondaryFixedVariant = OnSecondaryFixedVariantDark,
+
+    tertiary = TertiaryDark,
+    onTertiary = OnTertiaryDark,
+    tertiaryContainer = TertiaryContainerDark,
+    onTertiaryContainer = OnTertiaryContainerDark,
+    tertiaryFixed = TertiaryFixedDark,
+    tertiaryFixedDim = TertiaryFixedDimDark,
+    onTertiaryFixed = OnTertiaryFixedDark,
+    onTertiaryFixedVariant = OnTertiaryFixedVariantDark,
+
+    background = BackgroundDark,
+    onBackground = OnBackgroundDark,
+
+    surface = SurfaceDark,
+    onSurface = OnSurfaceDark,
+    surfaceVariant = SurfaceVariantDark,
+    onSurfaceVariant = OnSurfaceVariantDark,
+    surfaceTint = SurfaceTintDark,
+    inverseSurface = InverseSurfaceDark,
+    inverseOnSurface = InverseOnSurfaceDark,
+
+    surfaceContainer = SurfaceContainerDark,
+    surfaceContainerLow = SurfaceContainerLowDark,
+    surfaceContainerHigh = SurfaceContainerHighDark,
+    surfaceContainerLowest = SurfaceContainerLowestDark,
+    surfaceContainerHighest = SurfaceContainerHighestDark,
+
+    error = ErrorDark,
+    onError = OnErrorDark,
+    errorContainer = ErrorContainerDark,
+    onErrorContainer = OnErrorContainerDark,
+
+    outline = OutlineDark,
+    outlineVariant = OutlineVariantDark
+)
+
 @Composable
 fun Theme(
+    themePreference: String = "SYSTEM",
     content: @Composable () -> Unit
 ) {
+    val isSystemDark = androidx.compose.foundation.isSystemInDarkTheme()
+    val colorScheme = when (themePreference) {
+        "DARK" -> DarkColorScheme
+        "LIGHT" -> LightColorScheme
+        else -> if (isSystemDark) DarkColorScheme else LightColorScheme
+    }
+
     MaterialTheme(
-        colorScheme = LightColorScheme,
+        colorScheme = colorScheme,
         typography = Typography,
         shapes = AttendEaseShapes,
         content = content

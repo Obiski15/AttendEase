@@ -28,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
 import com.example.attendease.ui.navigation.Screen
 import com.example.attendease.ui.components.DetailSkeleton
+import androidx.compose.material3.MaterialTheme
 
 @Composable
 fun StudentDetailScreen(
@@ -122,7 +123,7 @@ fun StudentDetailScreen(
                                 Icon(
                                     imageVector = Icons.Default.Check,
                                     contentDescription = null,
-                                    tint = Color.White,
+                                    tint = MaterialTheme.colorScheme.onPrimary,
                                     modifier = Modifier.size(16.dp)
                                 )
                             }
@@ -207,7 +208,7 @@ fun StudentDetailScreen(
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
                     ) {
                         Column(modifier = Modifier.padding(Spacing.lg)) {

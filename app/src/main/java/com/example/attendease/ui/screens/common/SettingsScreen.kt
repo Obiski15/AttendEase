@@ -28,8 +28,10 @@ import com.example.attendease.viewModel.AuthViewModel
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.material3.MaterialTheme
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     navController: NavController,
@@ -143,7 +145,7 @@ fun SettingsScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(24.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                 ) {
                     Row(
@@ -226,15 +228,6 @@ fun SettingsScreen(
             }
 
             item {
-                SettingsItem(
-                    icon = Icons.Default.NotificationsNone,
-                    title = "Notifications",
-                    subtitle = "Manage your alert preferences",
-                    onClick = { }
-                )
-            }
-
-            item {
                 Text(
                     text = "App Settings",
                     style = MaterialTheme.typography.titleMedium,
@@ -244,21 +237,40 @@ fun SettingsScreen(
             }
 
             item {
-                SettingsItem(
-                    icon = Icons.Default.Language,
-                    title = "Language",
-                    subtitle = "English (United States)",
-                    onClick = { }
-                )
-            }
-
-            item {
-                SettingsItem(
-                    icon = Icons.Default.HelpOutline,
-                    title = "Help & Support",
-                    subtitle = "FAQs, contact admin, etc.",
-                    onClick = { }
-                )
+                val themePreference by sessionManager.themePreferenceFlow.collectAsState()
+                
+                Card(
+                    modifier = Modifier.fillMaxWidth().padding(bottom = Spacing.md),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                ) {
+                    Column(modifier = Modifier.padding(Spacing.md)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.DarkMode, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                            Spacer(modifier = Modifier.width(Spacing.md))
+                            Column {
+                                Text("App Theme", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                                Text("Choose your preferred look", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
+                        
+                        Spacer(modifier = Modifier.height(Spacing.md))
+                        
+                        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                            val options = listOf("SYSTEM" to "System", "LIGHT" to "Light", "DARK" to "Dark")
+                            options.forEachIndexed { index, (value, label) ->
+                                SegmentedButton(
+                                    selected = themePreference == value,
+                                    onClick = { sessionManager.saveThemePreference(value) },
+                                    shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size)
+                                ) {
+                                    Text(label)
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
             item {
@@ -283,7 +295,7 @@ fun SettingsScreen(
                 ) {
                     Icon(imageVector = Icons.AutoMirrored.Filled.Logout, contentDescription = null)
                     Spacer(modifier = Modifier.width(Spacing.base))
-                    Text(text = "Logout Session", fontWeight = FontWeight.Bold)
+                    Text(text = "Logout", fontWeight = FontWeight.Bold)
                 }
                 Spacer(modifier = Modifier.height(Spacing.xl))
             }
@@ -407,7 +419,7 @@ fun SettingsItem(
     Card(
         modifier = Modifier.fillMaxWidth().clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
     ) {
         Row(
@@ -433,12 +445,12 @@ fun SettingsItem(
             Spacer(modifier = Modifier.width(Spacing.md))
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
-                Text(text = subtitle, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                Text(text = subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Icon(
                 imageVector = Icons.Default.ChevronRight,
                 contentDescription = null,
-                tint = Color.LightGray
+                tint = MaterialTheme.colorScheme.surfaceVariant
             )
         }
     }

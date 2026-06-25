@@ -50,6 +50,7 @@ import com.example.attendease.utils.QrCodeAnalyzer
 import com.example.attendease.viewModel.AttendanceViewModel
 import com.google.android.gms.location.LocationServices
 import org.koin.androidx.compose.koinViewModel
+import androidx.compose.material3.MaterialTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -129,7 +130,7 @@ fun ScanAttendanceScreen(
     var isTorchOn by remember { mutableStateOf(false) }
 
     Scaffold(
-        topBar = { AttendEaseTopAppBar(containerColor = Color.White) },
+        topBar = { AttendEaseTopAppBar(containerColor = MaterialTheme.colorScheme.surface) },
         bottomBar = {
             AttendEaseBottomBar(
                 UserRole.STUDENT,
@@ -168,7 +169,7 @@ fun ScanAttendanceScreen(
             } else {
                 Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.8f)), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Camera permission is required.", color = Color.White)
+                        Text("Camera permission is required.", color = MaterialTheme.colorScheme.surface)
                         Spacer(modifier = Modifier.height(Spacing.md))
                         Button(onClick = { permissionsLauncher.launch(arrayOf(Manifest.permission.CAMERA)) }) { Text("Grant Permission") }
                     }
@@ -179,15 +180,15 @@ fun ScanAttendanceScreen(
 
             // Top Instructions
             Surface(
-                color = Color.Black.copy(alpha = 0.6f),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier
                     .align(Alignment.TopCenter)
                     .padding(top = 40.dp, start = Spacing.lg, end = Spacing.lg)
             ) {
                 Column(modifier = Modifier.padding(Spacing.md), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Scan QR Code", color = Color.White, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                    Text("Position the lecturer's QR code within the frame", color = Color.White.copy(alpha = 0.8f), style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Center)
+                    Text("Scan QR Code", color = MaterialTheme.colorScheme.onPrimary, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Text("Position the lecturer's QR code within the frame", color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f), style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Center)
                 }
             }
 
@@ -211,14 +212,14 @@ fun ScanAttendanceScreen(
                             Icon(
                                 imageVector = if (isTorchOn) Icons.Default.FlashlightOn else Icons.Default.FlashlightOff,
                                 contentDescription = "Flashlight",
-                                tint = Color.White
+                                tint = MaterialTheme.colorScheme.onPrimary
                             )
                         }
                     }
                     Spacer(modifier = Modifier.height(Spacing.xs))
                     Text(
                         text = if (isTorchOn) "Torch On" else "Torch Off",
-                        color = Color.White.copy(alpha = 0.8f),
+                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
                         style = MaterialTheme.typography.labelSmall
                     )
                 }
@@ -232,7 +233,7 @@ fun ScanAttendanceScreen(
                     .padding(horizontal = Spacing.lg, vertical = 32.dp)
                     .fillMaxWidth()
                     .height(56.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Black.copy(alpha = 0.7f), contentColor = Color.White),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Black.copy(alpha = 0.7f), contentColor = MaterialTheme.colorScheme.onPrimary),
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Icon(Icons.Default.Keyboard, contentDescription = null)
@@ -284,7 +285,7 @@ fun ScanAttendanceScreen(
                 Icon(
                     imageVector = Icons.Default.CheckCircle,
                     contentDescription = null,
-                    tint = Color(0xFF006F62),
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(48.dp)
                 )
             },
@@ -304,7 +305,7 @@ fun ScanAttendanceScreen(
                         attendanceViewModel.resetState()
                         navController.popBackStack()
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF006F62))
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
                     Text("OK")
                 }
