@@ -27,6 +27,7 @@ import com.example.attendease.ui.theme.Spacing
 import org.koin.androidx.compose.koinViewModel
 import com.example.attendease.viewModel.CourseViewModel
 import com.example.attendease.viewModel.DepartmentViewModel
+import com.example.attendease.viewModel.CourseAssignmentViewModel
 import com.example.attendease.dto.response.CourseResponse
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -34,12 +35,15 @@ import com.example.attendease.dto.response.CourseResponse
 fun CoursesScreen(
     navController: NavController,
     courseViewModel: CourseViewModel = koinViewModel(),
-    departmentViewModel: DepartmentViewModel = koinViewModel()
+    departmentViewModel: DepartmentViewModel = koinViewModel(),
+    assignmentViewModel: CourseAssignmentViewModel = koinViewModel()
 ) {
     var searchQuery by remember { mutableStateOf("") }
     
     val courses by courseViewModel.courses.collectAsState()
     val departments by departmentViewModel.departments.collectAsState()
+    val assignmentState by assignmentViewModel.uiState.collectAsState()
+    
     val isLoading by courseViewModel.isLoading.collectAsState()
     val error by courseViewModel.error.collectAsState()
     AttendEaseErrorDialog(errorMessage = error, onDismiss = { courseViewModel.clearError() })
@@ -50,6 +54,7 @@ fun CoursesScreen(
     LaunchedEffect(Unit) {
         courseViewModel.loadCourses()
         departmentViewModel.loadDepartments()
+        assignmentViewModel.loadData()
     }
 
     val filteredCourses = courses.filter { course ->
@@ -99,24 +104,25 @@ fun CoursesScreen(
                 shape = RoundedCornerShape(12.dp),
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                    focusedBorderColor = MaterialTheme.colorScheme.primary
+                    unfocusedContainerColor = Color(0xFFF5F5F5),
+                    focusedContainerColor = Color(0xFFF5F5F5),
+                    unfocusedBorderColor = Color.Transparent,
+                    focusedBorderColor = Color(0xFF006F62)
                 )
             )
 
-            // Categories
+            // Department Filter Chips
             LazyRow(
-                modifier = Modifier.fillMaxWidth().padding(vertical = Spacing.base),
-                contentPadding = PaddingValues(horizontal = Spacing.md),
-                horizontalArrangement = Arrangement.spacedBy(Spacing.base)
+                modifier = Modifier.padding(horizontal = Spacing.md),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
             ) {
                 item {
                     FilterChip(
                         selected = selectedDept == "ALL",
                         onClick = { selectedDept = "ALL" },
-                        label = { Text("All Courses") },
+                        label = { Text("All Departments") },
                         colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = Color(0xFF000066),
+                            selectedContainerColor = Color(0xFF006F62),
                             selectedLabelColor = Color.White
                         )
                     )
@@ -127,26 +133,25 @@ fun CoursesScreen(
                         onClick = { selectedDept = dept.id },
                         label = { Text(dept.name) },
                         colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = Color(0xFF000066),
+                            selectedContainerColor = Color(0xFF006F62),
                             selectedLabelColor = Color.White
                         )
                     )
                 }
             }
+            
+            Spacer(modifier = Modifier.height(Spacing.md))
 
-            if (isLoading) {
-                Box(modifier = Modifier.fillMaxSize().weight(1f), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+            if (isLoading || assignmentState.isLoading) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = Color(0xFF006F62))
+                }
+            } else if (filteredCourses.isEmpty()) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("No courses found", style = MaterialTheme.typography.bodyLarge, color = Color.Gray)
                 }
             } else {
-                
-
-                if (filteredCourses.isEmpty()) {
-                    Box(modifier = Modifier.fillMaxSize().weight(1f), contentAlignment = Alignment.Center) {
-                        Text("No courses found.", color = Color.Gray)
-                    }
-                } else {
-                    // Course List
+                Box(modifier = Modifier.fillMaxSize()) {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize().padding(horizontal = Spacing.md),
                         verticalArrangement = Arrangement.spacedBy(Spacing.md),
@@ -154,9 +159,12 @@ fun CoursesScreen(
                     ) {
                         items(filteredCourses) { course ->
                             val deptName = departments.find { it.id == course.departmentId }?.name ?: "Unknown"
+                            val assignedLecturer = assignmentState.assignments.find { it.courseId == course.id }?.lecturerName
+                            
                             AdminCourseCard(
                                 course = course,
                                 departmentName = deptName,
+                                assignedLecturer = assignedLecturer,
                                 onEditClick = {
                                     navController.navigate(Screen.EditCourse.createRoute(course.id))
                                 }
@@ -173,6 +181,7 @@ fun CoursesScreen(
 fun AdminCourseCard(
     course: CourseResponse,
     departmentName: String,
+    assignedLecturer: String?,
     onEditClick: () -> Unit
 ) {
     Card(
@@ -227,8 +236,9 @@ fun AdminCourseCard(
                     color = Color(0xFF000066)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
+                        val initial = assignedLecturer?.firstOrNull()?.uppercase() ?: "?"
                         Text(
-                            "?", // Lecturer assigned info not in CourseResponse directly
+                            initial,
                             color = Color.White,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
@@ -236,7 +246,7 @@ fun AdminCourseCard(
                     }
                 }
                 Spacer(modifier = Modifier.width(Spacing.base))
-                Text("Not Available", style = MaterialTheme.typography.bodyMedium)
+                Text(assignedLecturer ?: "Not Available", style = MaterialTheme.typography.bodyMedium)
             }
         }
     }

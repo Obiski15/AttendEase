@@ -47,4 +47,11 @@ class SessionManager(context: Context) {
     fun clearSession() {
         prefs.edit().clear().apply()
     }
+
+    val sessionExpiredFlow = kotlinx.coroutines.flow.MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+
+    suspend fun clearSessionAndNotify() {
+        clearSession()
+        sessionExpiredFlow.emit(Unit)
+    }
 }

@@ -47,14 +47,14 @@ abstract class BaseApi(
                 val provider = authApiProvider ?: throw IllegalStateException("authApiProvider not initialized")
                 provider().refreshTokens()
             } catch (e: Exception) {
-                sessionManager.clearSession()
+                sessionManager.clearSessionAndNotify()
                 throw UnauthorizedException("Session expired")
             }
 
             response = makeRequest(newTokens.accessToken)
 
             if (response.status.value == 401) {
-                sessionManager.clearSession()
+                sessionManager.clearSessionAndNotify()
                 throw UnauthorizedException("Session expired")
             }
         }

@@ -70,7 +70,8 @@ val appModule = module {
     single { UserRepository(get()) }
     single { AttendanceSessionRepository(get()) }
     single { AttendanceRepository(get()) }
-    single { LecturerSessionViewModel(get()) }
+    single { com.example.attendease.data.api.AttendanceWebSocketClient(get(), get()) }
+    single { LecturerSessionViewModel(get(), get()) }
 
     viewModel { AuthViewModel(get()) }
     viewModel { LecturerViewModel(get()) }

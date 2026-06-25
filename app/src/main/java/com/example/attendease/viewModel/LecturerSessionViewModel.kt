@@ -12,8 +12,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
+import com.example.attendease.data.api.AttendanceWebSocketClient
+
 class LecturerSessionViewModel(
-    private val sessionRepository: AttendanceSessionRepository
+    private val sessionRepository: AttendanceSessionRepository,
+    private val webSocketClient: AttendanceWebSocketClient
 ) : ViewModel() {
 
     private val _activeSession = MutableStateFlow<AttendanceSessionResponse?>(null)
@@ -131,15 +134,31 @@ class LecturerSessionViewModel(
 
     fun startPollingRecords(sessionId: String) {
         pollingJob?.cancel()
+        
+        // Initial fetch to ensure we have all records that occurred before we connected
+        fetchActiveSessionRecords()
+        
         pollingJob = viewModelScope.launch {
-            while (true) {
-                try {
-                    val records = sessionRepository.getSessionRecords(sessionId)
-                    _checkedInRecords.value = records
-                } catch (e: Exception) {
-                    // Ignore errors during polling
+            try {
+                webSocketClient.observeAttendance(sessionId).collect { record ->
+                    // Prepend new record to the list
+                    val currentList = _checkedInRecords.value
+                    if (currentList.none { it.id == record.id }) {
+                        _checkedInRecords.value = listOf(record) + currentList
+                    }
                 }
-                delay(5000) // Poll every 5 seconds
+            } catch (e: Exception) {
+                // If websocket fails, fallback to polling
+                android.util.Log.e("WebSocketError", "WebSocket disconnected, falling back to polling: ${e.message}")
+                while (true) {
+                    try {
+                        val records = sessionRepository.getSessionRecords(sessionId)
+                        _checkedInRecords.value = records
+                    } catch (e: Exception) {
+                        // Ignore errors during polling
+                    }
+                    kotlinx.coroutines.delay(5000)
+                }
             }
         }
     }

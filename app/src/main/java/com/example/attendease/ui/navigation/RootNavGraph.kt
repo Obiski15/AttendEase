@@ -19,6 +19,14 @@ fun RootNavGraph(
 ) {
     val navController = rememberNavController()
 
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        sessionManager.sessionExpiredFlow.collect {
+            navController.navigate(Screen.Login.route) {
+                popUpTo(0) { inclusive = true }
+            }
+        }
+    }
+
     val startDestination = if (sessionManager.isLoggedIn()) {
         when (sessionManager.getUserRole()) {
             UserRole.STUDENT -> Screen.StudentDashboard.route
