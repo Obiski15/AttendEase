@@ -102,7 +102,7 @@ fun SettingsScreen(
             email = user.email ?: cachedEmail
             role = user.role
         } catch (e: Exception) {
-            android.widget.Toast.makeText(context, "Failed to load profile. Using offline mode.", android.widget.Toast.LENGTH_SHORT).show()
+            // Silently fall back to cached data since there's already a global offline banner
         } finally {
             isRefreshing = false
         }

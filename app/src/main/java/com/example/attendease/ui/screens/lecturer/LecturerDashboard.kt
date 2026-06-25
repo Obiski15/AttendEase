@@ -9,6 +9,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -147,13 +148,19 @@ fun LecturerDashboardScreen(
                 CircularProgressIndicator()
             }
         } else {
-            LazyColumn(
+            PullToRefreshBox(
+                isRefreshing = isLoading,
+                onRefresh = { dashboardViewModel.loadLecturerDashboard() },
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .padding(horizontal = Spacing.md),
-                verticalArrangement = Arrangement.spacedBy(Spacing.md)
             ) {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = Spacing.md),
+                    verticalArrangement = Arrangement.spacedBy(Spacing.md)
+                ) {
                 item {
                     Spacer(modifier = Modifier.height(Spacing.base))
                     Text(
@@ -271,6 +278,7 @@ fun LecturerDashboardScreen(
                 }
             }
         }
+    }
     }
 
     if (showDialog) {

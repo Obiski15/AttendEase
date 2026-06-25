@@ -6,6 +6,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -18,6 +19,7 @@ import com.example.attendease.ui.components.AuthenticateUser
 import org.koin.compose.koinInject
 import com.example.attendease.viewModel.DashboardViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminDashboardScreen(
     navController: NavController,
@@ -41,6 +43,7 @@ fun AdminDashboardScreen(
     LaunchedEffect(error) {
         error?.let {
             android.widget.Toast.makeText(context, it, android.widget.Toast.LENGTH_LONG).show()
+            viewModel.clearError()
         }
     }
 
@@ -58,25 +61,21 @@ fun AdminDashboardScreen(
             )
         }
     ) { paddingValues ->
-        LazyColumn(
+        PullToRefreshBox(
+            isRefreshing = isLoading,
+            onRefresh = { viewModel.loadAdminStats() },
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = Spacing.md),
-            verticalArrangement = Arrangement.spacedBy(Spacing.md)
         ) {
-            if (isLoading) {
-                item {
-                    LinearProgressIndicator(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = Spacing.xs),
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = Spacing.md),
+                verticalArrangement = Arrangement.spacedBy(Spacing.md)
+            ) {
 
-            item {
+                item {
                 Spacer(modifier = Modifier.height(Spacing.base))
                 Text(
                     text = "Hello, $userName",
@@ -206,7 +205,7 @@ fun AdminDashboardScreen(
             item {
                 Spacer(modifier = Modifier.height(Spacing.xl))
             }
-
         }
     }
+}
 }
