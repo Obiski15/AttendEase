@@ -28,6 +28,7 @@ import com.example.attendease.ui.theme.Spacing
 import com.example.attendease.viewModel.LecturerViewModel
 import com.example.attendease.dto.response.LecturerResponse
 import org.koin.androidx.compose.koinViewModel
+import com.example.attendease.ui.components.ListSkeleton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -101,14 +102,7 @@ fun LecturersScreen(
 
             // Loading state
             if (isLoading && lecturers.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .weight(1f),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-                }
+                ListSkeleton()
             } else {
                 // Error state
                 

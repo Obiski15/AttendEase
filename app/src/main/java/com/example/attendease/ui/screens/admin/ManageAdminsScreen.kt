@@ -27,6 +27,7 @@ import com.example.attendease.viewModel.UserViewModel
 import com.example.attendease.dto.response.UserResponse
 import com.example.attendease.data.session.SessionManager
 import org.koin.compose.koinInject
+import com.example.attendease.ui.components.ListSkeleton
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -105,9 +106,7 @@ fun ManageAdminsScreen(
             )
 
             if (isLoading && users.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize().weight(1f), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-                }
+                ListSkeleton()
             } else {
                 
 

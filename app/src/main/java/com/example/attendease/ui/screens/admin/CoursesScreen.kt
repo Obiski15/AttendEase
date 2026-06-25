@@ -29,6 +29,7 @@ import com.example.attendease.viewModel.CourseViewModel
 import com.example.attendease.viewModel.DepartmentViewModel
 import com.example.attendease.viewModel.CourseAssignmentViewModel
 import com.example.attendease.dto.response.CourseResponse
+import com.example.attendease.ui.components.ListSkeleton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -143,9 +144,7 @@ fun CoursesScreen(
             Spacer(modifier = Modifier.height(Spacing.md))
 
             if (isLoading || assignmentState.isLoading) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = Color(0xFF006F62))
-                }
+                ListSkeleton()
             } else if (filteredCourses.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text("No courses found", style = MaterialTheme.typography.bodyLarge, color = Color.Gray)

@@ -31,6 +31,7 @@ import org.koin.androidx.compose.koinViewModel
 import com.example.attendease.viewModel.StudentViewModel
 import com.example.attendease.dto.response.StudentResponse
 import com.example.attendease.dto.response.DepartmentResponse
+import com.example.attendease.ui.components.ListSkeleton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -164,14 +165,7 @@ fun StudentsScreen(
             Spacer(modifier = Modifier.height(Spacing.xs))
 
             if (isLoading) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .weight(1f),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-                }
+                ListSkeleton()
             } else {
                 
 

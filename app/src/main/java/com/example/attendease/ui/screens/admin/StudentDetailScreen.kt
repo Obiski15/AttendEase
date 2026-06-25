@@ -27,6 +27,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
 import com.example.attendease.ui.navigation.Screen
+import com.example.attendease.ui.components.DetailSkeleton
 
 @Composable
 fun StudentDetailScreen(
@@ -61,14 +62,7 @@ fun StudentDetailScreen(
         }
     ) { paddingValues ->
         if (isLoading) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-            }
+            DetailSkeleton()
         } else if (error != null) {
             Box(
                 modifier = Modifier

@@ -63,7 +63,7 @@ fun AdminDashboardScreen(
     ) { paddingValues ->
         PullToRefreshBox(
             isRefreshing = isLoading,
-            onRefresh = { viewModel.loadAdminStats() },
+            onRefresh = { viewModel.loadAdminStats(isRefresh = true) },
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)

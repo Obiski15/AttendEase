@@ -21,6 +21,7 @@ import com.example.attendease.ui.navigation.Screen
 import com.example.attendease.ui.theme.Spacing
 import org.koin.androidx.compose.koinViewModel
 import com.example.attendease.viewModel.LecturerViewModel
+import com.example.attendease.ui.components.DetailSkeleton
 
 @Composable
 fun LecturerDetailScreen(
@@ -55,14 +56,7 @@ fun LecturerDetailScreen(
         }
     ) { paddingValues ->
         if (isLoading) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-            }
+            DetailSkeleton()
         } else if (error != null) {
             Box(
                 modifier = Modifier

@@ -29,6 +29,7 @@ import com.example.attendease.dto.response.CourseResponse
 import com.example.attendease.dto.response.LecturerResponse
 import com.example.attendease.dto.response.AcademicSessionResponse
 import org.koin.androidx.compose.koinViewModel
+import com.example.attendease.ui.components.ListSkeleton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -165,12 +166,7 @@ fun CourseAssignmentScreen(
 
             // Assignments & Unassigned courses list
             if (uiState.isLoading && uiState.assignments.isEmpty() && uiState.unassignedCourses.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize().weight(1f),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-                }
+                ListSkeleton()
             } else if (filteredAssignments.isEmpty() && filteredUnassigned.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize().weight(1f),

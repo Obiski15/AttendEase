@@ -30,6 +30,7 @@ import com.example.attendease.ui.theme.Spacing
 import com.example.attendease.viewModel.AcademicSessionViewModel
 import com.example.attendease.dto.response.AcademicSessionResponse
 import org.koin.androidx.compose.koinViewModel
+import com.example.attendease.ui.components.ListSkeleton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -97,9 +98,7 @@ fun AcademicSessionsScreen(
                 .padding(paddingValues)
         ) {
             if (isLoading && sessions.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-                }
+                ListSkeleton()
             } else if (sessions.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {

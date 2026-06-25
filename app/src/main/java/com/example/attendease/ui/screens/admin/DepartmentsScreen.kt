@@ -24,6 +24,7 @@ import com.example.attendease.ui.theme.Spacing
 import org.koin.androidx.compose.koinViewModel
 import com.example.attendease.viewModel.DepartmentViewModel
 import com.example.attendease.dto.response.DepartmentResponse
+import com.example.attendease.ui.components.ListSkeleton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -81,9 +82,7 @@ fun DepartmentsScreen(
                 .padding(paddingValues)
         ) {
             if (isLoading && departments.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize().weight(1f), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-                }
+                ListSkeleton()
             } else {
                 
 

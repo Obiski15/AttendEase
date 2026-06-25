@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.secrets.gradle.plugin)
+    alias(libs.plugins.ksp.plugin)
 }
 
 android {
@@ -79,4 +80,12 @@ dependencies {
     implementation(libs.play.services.location)
     implementation(libs.mlkit.barcode.scanning)
     implementation(libs.zxing.core)
+
+    // Room
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
+
+    // WorkManager
+    implementation(libs.androidx.work.runtime.ktx)
 }

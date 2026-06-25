@@ -41,15 +41,31 @@ import com.example.attendease.viewModel.LecturerSessionViewModel
 import com.example.attendease.viewModel.AttendanceViewModel
 
 
+import androidx.room.Room
+import androidx.work.WorkManager
+import com.example.attendease.data.local.AppDatabase
 
 val appModule = module {
+    single {
+        Room.databaseBuilder(
+            get(),
+            AppDatabase::class.java,
+            "attendease-db"
+        )
+        .fallbackToDestructiveMigration()
+        .build()
+    }
+    single { get<AppDatabase>().syncDao() }
+    single { get<AppDatabase>().dashboardDao() }
+    single { get<AppDatabase>().apiCacheDao() }
+    single { WorkManager.getInstance(get()) }
     single<ConnectivityObserver> { NetworkConnectivityObserver(get()) }
     single { SessionManager(get()) }
     single { NetworkClient.client }
     single { AuthApi(get(), get()) }
     single { AuthRepository(get(), get()) }
     single { DashboardApi(get(), get(), get()) }
-    single { DashboardRepository(get()) }
+    single { DashboardRepository(get(), get()) }
     single { UserApi(get(), get(), get()) }
 
     single { LecturerApi(get(), get(), get()) }
@@ -67,9 +83,9 @@ val appModule = module {
     single { AcademicSessionRepository(get()) }
     single { DepartmentRepository(get()) }
     single { CourseRepository(get()) }
-    single { UserRepository(get()) }
-    single { AttendanceSessionRepository(get()) }
-    single { AttendanceRepository(get()) }
+    single { UserRepository(get(), get()) }
+    single { AttendanceSessionRepository(get(), get(), get(), get()) }
+    single { AttendanceRepository(get(), get(), get(), get()) }
     single { com.example.attendease.data.api.AttendanceWebSocketClient(get(), get()) }
     single { LecturerSessionViewModel(get(), get()) }
 

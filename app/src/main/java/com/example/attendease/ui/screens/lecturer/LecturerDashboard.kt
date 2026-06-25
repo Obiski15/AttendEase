@@ -143,24 +143,19 @@ fun LecturerDashboardScreen(
             )
         }
     ) { paddingValues ->
-        if (isLoading) {
-            Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
-        } else {
-            PullToRefreshBox(
-                isRefreshing = isLoading,
-                onRefresh = { dashboardViewModel.loadLecturerDashboard() },
+        PullToRefreshBox(
+            isRefreshing = isLoading,
+            onRefresh = { dashboardViewModel.loadLecturerDashboard(isRefresh = true) },
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues)
+                    .padding(horizontal = Spacing.md),
+                verticalArrangement = Arrangement.spacedBy(Spacing.md)
             ) {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = Spacing.md),
-                    verticalArrangement = Arrangement.spacedBy(Spacing.md)
-                ) {
                 item {
                     Spacer(modifier = Modifier.height(Spacing.base))
                     Text(
@@ -278,7 +273,6 @@ fun LecturerDashboardScreen(
                 }
             }
         }
-    }
     }
 
     if (showDialog) {
