@@ -3,6 +3,7 @@ package com.example.attendease.ui.navigation
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.composable
 import com.example.attendease.ui.navigation.admin.adminGraph
 import com.example.attendease.ui.navigation.auth.authGraph
 import com.example.attendease.ui.navigation.lecturer.lecturerGraph
@@ -10,7 +11,6 @@ import com.example.attendease.ui.navigation.student.studentGraph
 import com.example.attendease.ui.navigation.settings.settingsGraph
 
 import com.example.attendease.data.session.SessionManager
-import com.example.attendease.enums.UserRole
 import org.koin.compose.koinInject
 
 @Composable
@@ -27,21 +27,16 @@ fun RootNavGraph(
         }
     }
 
-    val startDestination = if (sessionManager.isLoggedIn()) {
-        when (sessionManager.getUserRole()) {
-            UserRole.STUDENT -> Screen.StudentDashboard.route
-            UserRole.LECTURER -> Screen.LecturerDashboard.route
-            UserRole.ADMIN -> Screen.AdminDashboard.route
-            null -> Screen.Login.route
-        }
-    } else {
-        Screen.Login.route
-    }
+    val startDestination = Screen.Splash.route
 
     NavHost(
         navController,
         startDestination = startDestination
     ) {
+
+        composable(Screen.Splash.route) {
+            com.example.attendease.ui.screens.common.SplashScreen(navController = navController)
+        }
 
         authGraph(navController)
 

@@ -234,7 +234,8 @@ fun LecturerActiveSessionScreen(
 
                 item {
                     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-                        val clipboardManager = LocalClipboardManager.current
+                        @Suppress("DEPRECATION")
+                        val clipboardManager = androidx.compose.ui.platform.LocalClipboardManager.current
                         val context = LocalContext.current
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(

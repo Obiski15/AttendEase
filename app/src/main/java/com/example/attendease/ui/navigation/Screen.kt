@@ -2,6 +2,9 @@ package com.example.attendease.ui.navigation
 
 sealed class Screen(val route: String) {
 
+    // Splash
+    data object Splash : Screen("splash")
+
     // Setting
     data object Settings: Screen("settings?role={role}&name={name}&email={email}") {
         fun createRoute(role: String, name: String, email: String): String {

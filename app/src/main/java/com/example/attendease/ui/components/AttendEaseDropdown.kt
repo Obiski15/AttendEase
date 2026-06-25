@@ -53,7 +53,7 @@ fun AttendEaseDropdown(
                     ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                 },
                 modifier = Modifier
-                    .menuAnchor()
+                    .menuAnchor(androidx.compose.material3.ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
                     .fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
