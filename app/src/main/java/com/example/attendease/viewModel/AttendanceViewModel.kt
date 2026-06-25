@@ -48,4 +48,8 @@ class AttendanceViewModel(
         _error.value = null
         _isLoading.value = false
     }
+
+    fun clearError() {
+        _error.value = null
+    }
 }

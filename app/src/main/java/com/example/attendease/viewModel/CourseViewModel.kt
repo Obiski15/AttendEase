@@ -107,4 +107,8 @@ class CourseViewModel(
             }
         }
     }
+
+    fun clearError() {
+        _error.value = null
+    }
 }

@@ -1,35 +1,65 @@
 package com.example.attendease.ui.screens.admin
 
 import androidx.compose.foundation.background
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import androidx.compose.foundation.clickable
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import androidx.compose.foundation.layout.*
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import androidx.compose.foundation.lazy.LazyColumn
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import androidx.compose.foundation.lazy.LazyRow
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import androidx.compose.foundation.lazy.items
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import androidx.compose.foundation.shape.CircleShape
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import androidx.compose.foundation.shape.RoundedCornerShape
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import androidx.compose.material.icons.Icons
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import androidx.compose.material.icons.filled.*
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import androidx.compose.material3.*
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import androidx.compose.runtime.*
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import androidx.compose.ui.Alignment
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import androidx.compose.ui.Modifier
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import androidx.compose.ui.draw.clip
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import androidx.compose.ui.graphics.Color
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import androidx.compose.ui.text.font.FontWeight
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import androidx.compose.ui.unit.dp
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import androidx.compose.ui.unit.sp
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import androidx.navigation.NavController
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import com.example.attendease.enums.UserRole
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import com.example.attendease.ui.components.AttendEaseBottomBar
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import com.example.attendease.ui.components.AttendEaseTopAppBar
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import com.example.attendease.ui.components.AttendEaseConfirmDialog
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import com.example.attendease.ui.navigation.Screen
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import com.example.attendease.ui.theme.Spacing
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import org.koin.androidx.compose.koinViewModel
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import com.example.attendease.viewModel.StudentViewModel
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import com.example.attendease.dto.response.StudentResponse
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import com.example.attendease.dto.response.DepartmentResponse
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,6 +72,8 @@ fun StudentsScreen(
     val departments by viewModel.departments.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
+    AttendEaseErrorDialog(errorMessage = error, onDismiss = { viewModel.clearError() })
+
 
     var selectedDept by remember { mutableStateOf("ALL") }
     var selectedLevel by remember { mutableStateOf("ALL") }
@@ -170,21 +202,7 @@ fun StudentsScreen(
                     CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 }
             } else {
-                error?.let { err ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = Spacing.md, vertical = Spacing.xs),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
-                    ) {
-                        Text(
-                            text = err,
-                            color = MaterialTheme.colorScheme.onErrorContainer,
-                            modifier = Modifier.padding(Spacing.md),
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
-                }
+                
 
                 if (filteredStudents.isEmpty()) {
                     Box(

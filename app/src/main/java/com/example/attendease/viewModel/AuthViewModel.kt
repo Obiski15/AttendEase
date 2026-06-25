@@ -37,6 +37,10 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
 
     }
 
+    fun clearError() {
+        _uiState.value = _uiState.value.copy(error = null)
+    }
+
     fun login(navController: NavController) {
 
         viewModelScope.launch {

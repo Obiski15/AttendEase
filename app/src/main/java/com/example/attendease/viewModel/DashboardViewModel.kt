@@ -51,4 +51,8 @@ class DashboardViewModel(
             }
         }
     }
+
+    fun clearError() {
+        _error.value = null
+    }
 }

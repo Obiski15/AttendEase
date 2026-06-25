@@ -1,6 +1,7 @@
 package com.example.attendease.ui.screens.admin
 
 import androidx.compose.foundation.background
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -40,6 +41,8 @@ fun AcademicSessionsScreen(
     val sessions by viewModel.sessions.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
+    AttendEaseErrorDialog(errorMessage = error, onDismiss = { viewModel.clearError() })
+
     val saveSuccess by viewModel.saveSuccess.collectAsState()
 
     var showCreateDialog by remember { mutableStateOf(false) }
@@ -60,12 +63,7 @@ fun AcademicSessionsScreen(
         }
     }
 
-    LaunchedEffect(error) {
-        error?.let { err ->
-            android.widget.Toast.makeText(context, "Error: $err", android.widget.Toast.LENGTH_LONG).show()
-            viewModel.resetSaveState()
-        }
-    }
+    
 
     Scaffold(
         topBar = {

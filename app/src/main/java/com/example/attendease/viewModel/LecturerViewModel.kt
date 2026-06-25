@@ -123,4 +123,8 @@ class LecturerViewModel(private val repository: LecturerRepository) : ViewModel(
         _saveSuccess.value = false
         _error.value = null
     }
+
+    fun clearError() {
+        _error.value = null
+    }
 }

@@ -104,4 +104,8 @@ class CourseAssignmentViewModel(
     fun resetSaveState() {
         _uiState.update { it.copy(saveSuccess = false, deleteSuccess = false, error = null) }
     }
+
+    fun clearError() {
+        _uiState.update { it.copy(error = null) }
+    }
 }

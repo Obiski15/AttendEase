@@ -1,28 +1,51 @@
 package com.example.attendease.ui.screens.admin
 
 import androidx.compose.foundation.background
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import androidx.compose.foundation.border
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import androidx.compose.foundation.layout.*
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import androidx.compose.foundation.lazy.LazyColumn
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import androidx.compose.foundation.shape.RoundedCornerShape
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import androidx.compose.material.icons.Icons
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import androidx.compose.material.icons.filled.*
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import androidx.compose.material3.*
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import androidx.compose.runtime.*
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import androidx.compose.ui.Alignment
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import androidx.compose.ui.Modifier
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import androidx.compose.ui.draw.clip
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import androidx.compose.ui.graphics.Color
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import androidx.compose.ui.text.font.FontWeight
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import androidx.compose.ui.unit.dp
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import androidx.compose.ui.unit.sp
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import androidx.navigation.NavController
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import com.example.attendease.ui.components.AttendEaseFormField
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import com.example.attendease.ui.components.AttendEaseTopAppBar
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import com.example.attendease.ui.components.SuccessModal
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import com.example.attendease.ui.theme.Spacing
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import org.koin.androidx.compose.koinViewModel
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import com.example.attendease.viewModel.UserViewModel
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 
 @Composable
 fun AddAdminScreen(
@@ -38,6 +61,8 @@ fun AddAdminScreen(
     val saveSuccess by viewModel.saveSuccess.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
+    AttendEaseErrorDialog(errorMessage = error, onDismiss = { viewModel.clearError() })
+
 
     LaunchedEffect(Unit) {
         viewModel.resetSaveState()
@@ -123,14 +148,7 @@ fun AddAdminScreen(
                             trailingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = Color.LightGray) }
                         )
 
-                        if (error != null) {
-                            Text(
-                                text = error ?: "An error occurred",
-                                color = MaterialTheme.colorScheme.error,
-                                style = MaterialTheme.typography.bodySmall,
-                                modifier = Modifier.padding(top = Spacing.sm)
-                            )
-                        }
+                        
                     }
                 }
 

@@ -70,11 +70,24 @@ fun LecturerSessionHistoryScreen(
             val dateString = session.sessionDate ?: "Unknown Date"
             val timeString = if (session.startTime != null && session.expiresAt != null) {
                 try {
-                    val cleanStart = session.startTime.replace(" ", "T")
-                    val cleanEnd = session.expiresAt.replace(" ", "T")
-                    val startStr = cleanStart.substringAfter('T').substringBefore(':') + ":" + cleanStart.substringAfter('T').substringAfter(':').substringBefore(':')
-                    val endStr = cleanEnd.substringAfter('T').substringBefore(':') + ":" + cleanEnd.substringAfter('T').substringAfter(':').substringBefore(':')
-                    "$startStr - $endStr"
+                    fun formatTime(isoStr: String): String {
+                        var clean = isoStr.replace(" ", "T")
+                        if (clean.contains(".")) clean = clean.substringBefore(".")
+                        else if (clean.contains("+")) clean = clean.substringBefore("+")
+                        else if (clean.contains("Z")) clean = clean.replace("Z", "")
+                        
+                        val inputFormat = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault())
+                        inputFormat.timeZone = java.util.TimeZone.getTimeZone("UTC")
+                        val date = inputFormat.parse(clean)
+                        
+                        val outputFormat = java.text.SimpleDateFormat("h:mm a", java.util.Locale.getDefault())
+                        outputFormat.timeZone = java.util.TimeZone.getDefault()
+                        return date?.let { outputFormat.format(it) } ?: ""
+                    }
+                    
+                    val startStr = formatTime(session.startTime)
+                    val endStr = formatTime(session.expiresAt)
+                    if (startStr.isNotEmpty() && endStr.isNotEmpty()) "$startStr - $endStr" else "Open Session"
                 } catch (e: Exception) {
                     "Open Session"
                 }
@@ -106,7 +119,7 @@ fun LecturerSessionHistoryScreen(
             }
 
             if (matchesSearch && matchesFilter) item else null
-        }
+        }.sortedByDescending { it.originalResponse?.startTime ?: it.originalResponse?.createdAt ?: "" }
     }
 
     Scaffold(

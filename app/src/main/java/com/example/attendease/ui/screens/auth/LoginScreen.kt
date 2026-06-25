@@ -1,6 +1,7 @@
 package com.example.attendease.ui.screens.auth
 
 import androidx.compose.foundation.background
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -144,14 +145,7 @@ fun LoginScreen(
                         Spacer(modifier = Modifier.height(Spacing.md))
 
                         // Error Message
-                        if (state.error != null) {
-                            Text(
-                                text = state.error ?: "An unexpected error occurred",
-                                color = MaterialTheme.colorScheme.error,
-                                style = MaterialTheme.typography.bodySmall,
-                                modifier = Modifier.padding(bottom = Spacing.md)
-                            )
-                        }
+                        
 
                         // Login Button
                         Button(

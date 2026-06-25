@@ -107,4 +107,8 @@ class AcademicSessionViewModel(
         _error.value = null
     }
 
+
+    fun clearError() {
+        _error.value = null
+    }
 }

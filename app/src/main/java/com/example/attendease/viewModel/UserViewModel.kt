@@ -122,4 +122,8 @@ class UserViewModel(
         _error.value = null
         _currentUser.value = null
     }
+
+    fun clearError() {
+        _error.value = null
+    }
 }

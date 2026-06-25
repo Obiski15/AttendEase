@@ -66,12 +66,7 @@ fun CourseAssignmentScreen(
         }
     }
 
-    LaunchedEffect(uiState.error) {
-        uiState.error?.let { err ->
-            android.widget.Toast.makeText(context, "Error: $err", android.widget.Toast.LENGTH_LONG).show()
-            viewModel.resetSaveState()
-        }
-    }
+    
 
     // Dynamic categories from fetched department lists could be added, but for now we filter in code
     val categories = listOf("All Departments", "Computer Science", "Engineering", "Mathematics")

@@ -123,4 +123,8 @@ class StudentViewModel(private val repository: StudentRepository) : ViewModel() 
         _saveSuccess.value = false
         _error.value = null
     }
+
+    fun clearError() {
+        _error.value = null
+    }
 }
