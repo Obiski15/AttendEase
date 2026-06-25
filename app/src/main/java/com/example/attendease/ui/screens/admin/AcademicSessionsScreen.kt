@@ -30,6 +30,8 @@ import com.example.attendease.ui.theme.Spacing
 import com.example.attendease.viewModel.AcademicSessionViewModel
 import com.example.attendease.dto.response.AcademicSessionResponse
 import org.koin.androidx.compose.koinViewModel
+import com.example.attendease.ui.components.ListSkeleton
+import androidx.compose.material3.MaterialTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -83,8 +85,8 @@ fun AcademicSessionsScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { showCreateDialog = true },
-                containerColor = Color(0xFF006F62),
-                contentColor = Color.White,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Add Session")
@@ -97,15 +99,13 @@ fun AcademicSessionsScreen(
                 .padding(paddingValues)
         ) {
             if (isLoading && sessions.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-                }
+                ListSkeleton()
             } else if (sessions.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(Icons.Default.WifiOff, contentDescription = null, modifier = Modifier.size(48.dp), tint = Color.Gray)
+                        Icon(Icons.Default.WifiOff, contentDescription = null, modifier = Modifier.size(48.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                         Spacer(modifier = Modifier.height(Spacing.base))
-                        Text("No academic sessions registered", color = Color.Gray)
+                        Text("No academic sessions registered", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             } else {
@@ -165,7 +165,7 @@ fun AcademicSessionCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEEEEEE))
     ) {
         Column(modifier = Modifier.padding(Spacing.md)) {
@@ -183,14 +183,14 @@ fun AcademicSessionCard(
                     Text(
                         text = "${session.semester} Semester",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Gray
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     if (session.startDate.isNotBlank() && session.endDate.isNotBlank()) {
                         Spacer(modifier = Modifier.height(Spacing.xs))
                         Text(
                             text = "${session.startDate} to ${session.endDate}",
                             style = MaterialTheme.typography.bodySmall,
-                            color = Color.Gray
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -200,7 +200,7 @@ fun AcademicSessionCard(
                         Icon(
                             Icons.Default.Edit,
                             contentDescription = "Edit Session",
-                            tint = Color.Gray,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -213,7 +213,7 @@ fun AcademicSessionCard(
                             text = if (session.isActive) "ACTIVE" else "INACTIVE",
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                             style = MaterialTheme.typography.labelSmall,
-                            color = if (session.isActive) Color(0xFF006F62) else Color.Gray,
+                            color = if (session.isActive) MaterialTheme.colorScheme.primary else Color.Gray,
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -230,7 +230,7 @@ fun AcademicSessionCard(
                     Button(
                         onClick = onActivate,
                         modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF006F62)),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp))
@@ -260,7 +260,7 @@ fun AcademicSessionCard(
                         modifier = Modifier.padding(Spacing.sm),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Default.Info, contentDescription = null, tint = Color(0xFF006F62), modifier = Modifier.size(16.dp))
+                        Icon(Icons.Default.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(Spacing.xs))
                         Text(
                             text = "This is the active semester for all attendance check-ins.",
@@ -315,7 +315,7 @@ fun AddAcademicSessionDialog(
                     value = sessionName,
                     onValueChange = { sessionName = it },
                     placeholder = "e.g. 2023/2024",
-                    trailingIcon = { Icon(Icons.Default.Tag, contentDescription = null, tint = Color.LightGray) }
+                    trailingIcon = { Icon(Icons.Default.Tag, contentDescription = null, tint = MaterialTheme.colorScheme.surfaceVariant) }
                 )
 
                 AttendEaseDropdown(
@@ -330,7 +330,7 @@ fun AddAcademicSessionDialog(
                     value = startDate,
                     onValueChange = { startDate = it },
                     placeholder = "e.g. 2026-09-01",
-                    trailingIcon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = Color.LightGray) }
+                    trailingIcon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = MaterialTheme.colorScheme.surfaceVariant) }
                 )
 
                 AttendEaseFormField(
@@ -338,7 +338,7 @@ fun AddAcademicSessionDialog(
                     value = endDate,
                     onValueChange = { endDate = it },
                     placeholder = "e.g. 2027-01-30",
-                    trailingIcon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = Color.LightGray) }
+                    trailingIcon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = MaterialTheme.colorScheme.surfaceVariant) }
                 )
 
                 Row(
@@ -348,7 +348,7 @@ fun AddAcademicSessionDialog(
                     Checkbox(
                         checked = isActive,
                         onCheckedChange = { isActive = it },
-                        colors = CheckboxDefaults.colors(checkedColor = Color(0xFF006F62))
+                        colors = CheckboxDefaults.colors(checkedColor = MaterialTheme.colorScheme.primary)
                     )
                     Spacer(modifier = Modifier.width(Spacing.xs))
                     Text("Set as active session immediately", style = MaterialTheme.typography.bodyMedium)
@@ -359,14 +359,14 @@ fun AddAcademicSessionDialog(
             Button(
                 onClick = { onConfirm(sessionName, selectedSemester, isActive, startDate, endDate) },
                 enabled = sessionName.isNotBlank() && startDate.isNotBlank() && endDate.isNotBlank(),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF006F62))
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
                 Text("Create", fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel", color = Color.Gray)
+                Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     )
@@ -403,7 +403,7 @@ fun EditAcademicSessionDialog(
                     value = sessionName,
                     onValueChange = { sessionName = it },
                     placeholder = "e.g. 2023/2024",
-                    trailingIcon = { Icon(Icons.Default.Tag, contentDescription = null, tint = Color.LightGray) }
+                    trailingIcon = { Icon(Icons.Default.Tag, contentDescription = null, tint = MaterialTheme.colorScheme.surfaceVariant) }
                 )
 
                 AttendEaseDropdown(
@@ -418,7 +418,7 @@ fun EditAcademicSessionDialog(
                     value = startDate,
                     onValueChange = { startDate = it },
                     placeholder = "e.g. 2026-09-01",
-                    trailingIcon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = Color.LightGray) }
+                    trailingIcon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = MaterialTheme.colorScheme.surfaceVariant) }
                 )
 
                 AttendEaseFormField(
@@ -426,7 +426,7 @@ fun EditAcademicSessionDialog(
                     value = endDate,
                     onValueChange = { endDate = it },
                     placeholder = "e.g. 2027-01-30",
-                    trailingIcon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = Color.LightGray) }
+                    trailingIcon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = MaterialTheme.colorScheme.surfaceVariant) }
                 )
 
                 Row(
@@ -436,7 +436,7 @@ fun EditAcademicSessionDialog(
                     Checkbox(
                         checked = isActive,
                         onCheckedChange = { isActive = it },
-                        colors = CheckboxDefaults.colors(checkedColor = Color(0xFF006F62))
+                        colors = CheckboxDefaults.colors(checkedColor = MaterialTheme.colorScheme.primary)
                     )
                     Spacer(modifier = Modifier.width(Spacing.xs))
                     Text("Set as active session immediately", style = MaterialTheme.typography.bodyMedium)
@@ -447,14 +447,14 @@ fun EditAcademicSessionDialog(
             Button(
                 onClick = { onConfirm(sessionName, selectedSemester, isActive, startDate, endDate) },
                 enabled = sessionName.isNotBlank() && startDate.isNotBlank() && endDate.isNotBlank(),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF006F62))
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
                 Text("Save", fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel", color = Color.Gray)
+                Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     )

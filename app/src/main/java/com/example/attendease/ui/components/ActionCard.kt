@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.attendease.ui.theme.Spacing
+import androidx.compose.material3.MaterialTheme
 
 @Composable
 fun ActionCard(
@@ -53,7 +54,7 @@ fun ActionCard(
             Surface(
                 modifier = Modifier.size(48.dp),
                 shape = CircleShape,
-                color = Color.White.copy(alpha = 0.2f)
+                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f)
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(

@@ -26,6 +26,7 @@ import com.example.attendease.ui.theme.Spacing
 import com.example.attendease.viewModel.LecturerViewModel
 import com.example.attendease.dto.request.LecturerCreateRequest
 import org.koin.androidx.compose.koinViewModel
+import androidx.compose.material3.MaterialTheme
 
 @Composable
 fun AddLecturerScreen(
@@ -87,7 +88,7 @@ fun AddLecturerScreen(
                             modifier = Modifier.size(120.dp),
                             shape = CircleShape,
                             color = MaterialTheme.colorScheme.surfaceVariant,
-                            border = androidx.compose.foundation.BorderStroke(1.dp, Color.LightGray)
+                            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceVariant)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Person,
@@ -99,14 +100,14 @@ fun AddLecturerScreen(
                         Surface(
                             modifier = Modifier.size(36.dp),
                             shape = CircleShape,
-                            color = Color(0xFF006F62),
+                            color = MaterialTheme.colorScheme.primary,
                             border = androidx.compose.foundation.BorderStroke(2.dp, Color.White)
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
                                     imageVector = Icons.Default.PhotoCamera,
                                     contentDescription = "Upload",
-                                    tint = Color.White,
+                                    tint = MaterialTheme.colorScheme.onPrimary,
                                     modifier = Modifier.size(20.dp)
                                 )
                             }
@@ -146,7 +147,7 @@ fun AddLecturerScreen(
                         value = staffId,
                         onValueChange = { if (!isLoading) staffId = it },
                         placeholder = "L-2023-001",
-                        trailingIcon = { Icon(Icons.Default.Badge, contentDescription = null, tint = Color.LightGray) }
+                        trailingIcon = { Icon(Icons.Default.Badge, contentDescription = null, tint = MaterialTheme.colorScheme.surfaceVariant) }
                     )
                 }
 
@@ -179,7 +180,7 @@ fun AddLecturerScreen(
                         value = email,
                         onValueChange = { if (!isLoading) email = it },
                         placeholder = "sarah.johnson@university.edu",
-                        trailingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = Color.LightGray) },
+                        trailingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = MaterialTheme.colorScheme.surfaceVariant) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
                     )
                 }
@@ -224,12 +225,12 @@ fun AddLecturerScreen(
                             .fillMaxWidth()
                             .height(56.dp),
                         shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF000066))
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                     ) {
                         if (isLoading) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(24.dp),
-                                color = Color.White,
+                                color = MaterialTheme.colorScheme.onPrimary,
                                 strokeWidth = 2.dp
                             )
                         } else {

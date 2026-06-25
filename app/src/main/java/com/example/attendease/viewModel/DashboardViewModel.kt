@@ -24,28 +24,50 @@ class DashboardViewModel(
     private val _error = MutableStateFlow<String?>(null)
     val error = _error.asStateFlow()
 
-    fun loadAdminStats() {
+    fun loadAdminStats(isRefresh: Boolean = false) {
         viewModelScope.launch {
-            _isLoading.value = true
             _error.value = null
+
+            val cache = repository.getCachedAdminDashboard()
+            if (cache != null && !isRefresh) {
+                _adminStats.value = cache
+            }
+
+            if (cache == null || isRefresh) {
+                _isLoading.value = true
+            }
+
             try {
                 _adminStats.value = repository.getAdminDashboard()
             } catch (e: Exception) {
-                _error.value = e.message
+                if (_adminStats.value == null) {
+                    _error.value = e.message
+                }
             } finally {
                 _isLoading.value = false
             }
         }
     }
 
-    fun loadLecturerDashboard() {
+    fun loadLecturerDashboard(isRefresh: Boolean = false) {
         viewModelScope.launch {
-            _isLoading.value = true
             _error.value = null
+
+            val cache = repository.getCachedLecturerDashboard()
+            if (cache != null && !isRefresh) {
+                _lecturerStats.value = cache
+            }
+
+            if (cache == null || isRefresh) {
+                _isLoading.value = true
+            }
+
             try {
                 _lecturerStats.value = repository.getLecturerDashboard()
             } catch (e: Exception) {
-                _error.value = e.message
+                if (_lecturerStats.value == null) {
+                    _error.value = e.message
+                }
             } finally {
                 _isLoading.value = false
             }

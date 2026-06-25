@@ -13,6 +13,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.attendease.ui.theme.Spacing
+import androidx.compose.material3.MaterialTheme
 
 @Composable
 fun AttendEaseFormField(
@@ -41,7 +42,7 @@ fun AttendEaseFormField(
             value = value,
             onValueChange = onValueChange,
             enabled = enabled,
-            placeholder = { Text(placeholder, color = Color.LightGray) },
+            placeholder = { Text(placeholder, color = MaterialTheme.colorScheme.surfaceVariant) },
             leadingIcon = leadingIcon?.let {
                 {
                     Icon(

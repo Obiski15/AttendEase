@@ -29,6 +29,8 @@ import com.example.attendease.viewModel.CourseViewModel
 import com.example.attendease.viewModel.DepartmentViewModel
 import com.example.attendease.viewModel.CourseAssignmentViewModel
 import com.example.attendease.dto.response.CourseResponse
+import com.example.attendease.ui.components.ListSkeleton
+import androidx.compose.material3.MaterialTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -78,8 +80,8 @@ fun CoursesScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { navController.navigate(Screen.AddCourse.route) },
-                containerColor = Color(0xFF006F62),
-                contentColor = Color.White,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Add Course")
@@ -98,16 +100,16 @@ fun CoursesScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = Spacing.md, vertical = Spacing.base),
-                placeholder = { Text("Search courses or codes...", color = Color.Gray) },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
-                trailingIcon = { Icon(Icons.Default.FilterList, contentDescription = "Filter", tint = Color.Gray) },
+                placeholder = { Text("Search courses or codes...", color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant) },
+                trailingIcon = { Icon(Icons.Default.FilterList, contentDescription = "Filter", tint = MaterialTheme.colorScheme.onSurfaceVariant) },
                 shape = RoundedCornerShape(12.dp),
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedContainerColor = Color(0xFFF5F5F5),
-                    focusedContainerColor = Color(0xFFF5F5F5),
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                     unfocusedBorderColor = Color.Transparent,
-                    focusedBorderColor = Color(0xFF006F62)
+                    focusedBorderColor = MaterialTheme.colorScheme.primary
                 )
             )
 
@@ -122,7 +124,7 @@ fun CoursesScreen(
                         onClick = { selectedDept = "ALL" },
                         label = { Text("All Departments") },
                         colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = Color(0xFF006F62),
+                            selectedContainerColor = MaterialTheme.colorScheme.primary,
                             selectedLabelColor = Color.White
                         )
                     )
@@ -133,7 +135,7 @@ fun CoursesScreen(
                         onClick = { selectedDept = dept.id },
                         label = { Text(dept.name) },
                         colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = Color(0xFF006F62),
+                            selectedContainerColor = MaterialTheme.colorScheme.primary,
                             selectedLabelColor = Color.White
                         )
                     )
@@ -143,12 +145,10 @@ fun CoursesScreen(
             Spacer(modifier = Modifier.height(Spacing.md))
 
             if (isLoading || assignmentState.isLoading) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = Color(0xFF006F62))
-                }
+                ListSkeleton()
             } else if (filteredCourses.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("No courses found", style = MaterialTheme.typography.bodyLarge, color = Color.Gray)
+                    Text("No courses found", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             } else {
                 Box(modifier = Modifier.fillMaxSize()) {
@@ -187,7 +187,7 @@ fun AdminCourseCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
     ) {
         Column(modifier = Modifier.padding(Spacing.md)) {
@@ -198,12 +198,12 @@ fun AdminCourseCard(
             ) {
                 Text(
                     text = course.courseCode,
-                    color = Color(0xFF006F62),
+                    color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold
                 )
                 IconButton(onClick = onEditClick) {
-                    Icon(Icons.Default.Edit, contentDescription = "Edit Course", tint = Color.Gray)
+                    Icon(Icons.Default.Edit, contentDescription = "Edit Course", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
             
@@ -217,29 +217,29 @@ fun AdminCourseCard(
             
             Row(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("DEPARTMENT", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+                    Text("DEPARTMENT", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(departmentName, style = MaterialTheme.typography.bodySmall)
                 }
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("CREDITS", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+                    Text("CREDITS", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text("${course.creditUnits} Units", style = MaterialTheme.typography.bodySmall)
                 }
             }
             
             Spacer(modifier = Modifier.height(Spacing.md))
             
-            Text("ASSIGNED LECTURER", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+            Text("ASSIGNED LECTURER", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 4.dp)) {
                 Surface(
                     modifier = Modifier.size(32.dp),
                     shape = CircleShape,
-                    color = Color(0xFF000066)
+                    color = MaterialTheme.colorScheme.primary
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         val initial = assignedLecturer?.firstOrNull()?.uppercase() ?: "?"
                         Text(
                             initial,
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onPrimary,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
                         )

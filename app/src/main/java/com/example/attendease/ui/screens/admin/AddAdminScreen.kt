@@ -24,6 +24,7 @@ import com.example.attendease.ui.components.SuccessModal
 import com.example.attendease.ui.theme.Spacing
 import org.koin.androidx.compose.koinViewModel
 import com.example.attendease.viewModel.UserViewModel
+import androidx.compose.material3.MaterialTheme
 
 @Composable
 fun AddAdminScreen(
@@ -80,14 +81,14 @@ fun AddAdminScreen(
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Row(modifier = Modifier.padding(Spacing.md)) {
-                            Icon(Icons.Default.Security, contentDescription = null, tint = Color(0xFF006F62))
+                            Icon(Icons.Default.Security, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                             Spacer(modifier = Modifier.width(Spacing.md))
                             Column {
-                                Text("New Administrator", fontWeight = FontWeight.Bold, color = Color(0xFF000066))
+                                Text("New Administrator", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                                 Text(
                                     "Registering a new system administrator allows them full database read and write access.",
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = Color.Gray
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
@@ -109,21 +110,21 @@ fun AddAdminScreen(
                             value = name,
                             onValueChange = { name = it },
                             placeholder = "e.g. John Doe",
-                            trailingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = Color.LightGray) }
+                            trailingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.surfaceVariant) }
                         )
                         AttendEaseFormField(
                             label = "Email Address",
                             value = email,
                             onValueChange = { email = it },
                             placeholder = "e.g. admin@school.com",
-                            trailingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = Color.LightGray) }
+                            trailingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = MaterialTheme.colorScheme.surfaceVariant) }
                         )
                         AttendEaseFormField(
                             label = "Password",
                             value = password,
                             onValueChange = { password = it },
                             placeholder = "Password string",
-                            trailingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = Color.LightGray) }
+                            trailingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = MaterialTheme.colorScheme.surfaceVariant) }
                         )
 
                         
@@ -139,12 +140,12 @@ fun AddAdminScreen(
                             }
                         },
                         modifier = Modifier.fillMaxWidth().height(56.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF006F62)),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                         shape = RoundedCornerShape(28.dp),
                         enabled = !isLoading && name.isNotBlank() && email.isNotBlank() && password.isNotBlank()
                     ) {
                         if (isLoading) {
-                            CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                            CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(24.dp))
                         } else {
                             Icon(Icons.Default.Save, contentDescription = null)
                             Spacer(modifier = Modifier.width(Spacing.base))

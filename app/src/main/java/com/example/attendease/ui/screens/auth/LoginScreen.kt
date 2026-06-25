@@ -27,6 +27,7 @@ import org.koin.compose.koinInject
 import com.example.attendease.data.session.SessionManager
 import com.example.attendease.enums.UserRole
 import com.example.attendease.ui.navigation.Screen
+import androidx.compose.material3.MaterialTheme
 
 @Composable
 fun LoginScreen(
@@ -68,7 +69,7 @@ fun LoginScreen(
                         .fillMaxWidth()
                         .padding(Spacing.containerMargin),
                     shape = RoundedCornerShape(24.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Column(
@@ -89,7 +90,7 @@ fun LoginScreen(
                             Icon(
                                 imageVector = Icons.Default.Check,
                                 contentDescription = "Logo",
-                                tint = Color.White,
+                                tint = MaterialTheme.colorScheme.onPrimary,
                                 modifier = Modifier.size(40.dp)
                             )
                         }
@@ -164,7 +165,7 @@ fun LoginScreen(
                             if (state.isLoading) {
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(24.dp),
-                                    color = Color.White,
+                                    color = MaterialTheme.colorScheme.onPrimary,
                                     strokeWidth = 2.dp
                                 )
                             } else {
@@ -175,14 +176,14 @@ fun LoginScreen(
                                     Text(
                                         text = "Login",
                                         style = MaterialTheme.typography.titleMedium,
-                                        color = Color.White,
+                                        color = MaterialTheme.colorScheme.onPrimary,
                                         fontWeight = FontWeight.Bold
                                     )
                                     Spacer(modifier = Modifier.width(Spacing.base))
                                     Icon(
                                         imageVector = Icons.Default.ArrowForward,
                                         contentDescription = null,
-                                        tint = Color.White
+                                        tint = MaterialTheme.colorScheme.onPrimary
                                     )
                                 }
                             }

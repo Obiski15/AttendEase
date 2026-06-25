@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.attendease.ui.theme.Spacing
+import androidx.compose.material3.MaterialTheme
 
 @Composable
 fun SuccessModal(
@@ -41,7 +42,7 @@ fun SuccessModal(
                     .fillMaxWidth(0.85f)
                     .wrapContentHeight(),
                 shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
             ) {
                 Column(
@@ -62,7 +63,7 @@ fun SuccessModal(
                                 Icon(
                                     imageVector = Icons.Default.Check,
                                     contentDescription = null,
-                                    tint = Color.White,
+                                    tint = MaterialTheme.colorScheme.onPrimary,
                                     modifier = Modifier.padding(12.dp)
                                 )
                             }

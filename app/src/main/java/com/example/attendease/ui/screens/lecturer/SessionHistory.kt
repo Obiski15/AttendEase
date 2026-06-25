@@ -28,6 +28,8 @@ import com.example.attendease.ui.components.AttendEaseBottomBar
 import com.example.attendease.ui.components.AttendEaseTopAppBar
 import com.example.attendease.ui.navigation.Screen
 import com.example.attendease.ui.theme.Spacing
+import com.example.attendease.ui.components.ListSkeleton
+import androidx.compose.material3.MaterialTheme
 
 data class LecturerSession(
     val code: String,
@@ -145,8 +147,8 @@ fun LecturerSessionHistoryScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(Spacing.md),
-                placeholder = { Text("Search by course code or date...", color = Color.Gray) },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
+                placeholder = { Text("Search by course code or date...", color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant) },
                 shape = RoundedCornerShape(12.dp),
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
@@ -166,7 +168,7 @@ fun LecturerSessionHistoryScreen(
                         onClick = { selectedFilter = filter },
                         label = { Text(filter) },
                         colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = Color(0xFF006F62),
+                            selectedContainerColor = MaterialTheme.colorScheme.primary,
                             selectedLabelColor = Color.White
                         )
                     )
@@ -174,17 +176,15 @@ fun LecturerSessionHistoryScreen(
             }
 
             if (isLoading && sessions.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
+                ListSkeleton()
             } else if (sessions.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(Icons.Default.History, contentDescription = null, modifier = Modifier.size(48.dp), tint = Color.Gray)
+                        Icon(Icons.Default.History, contentDescription = null, modifier = Modifier.size(48.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                         Spacer(modifier = Modifier.height(Spacing.base))
                         Text(
                             text = if (error != null) "Error: $error" else "No sessions found",
-                            color = Color.Gray
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -221,7 +221,7 @@ fun LecturerSessionCard(session: LecturerSession, onClick: (() -> Unit)? = null)
             .fillMaxWidth()
             .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEEEEEE))
     ) {
         Column(modifier = Modifier.padding(Spacing.md)) {
@@ -239,7 +239,7 @@ fun LecturerSessionCard(session: LecturerSession, onClick: (() -> Unit)? = null)
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF000066)
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
                 
@@ -255,14 +255,14 @@ fun LecturerSessionCard(session: LecturerSession, onClick: (() -> Unit)? = null)
                             modifier = Modifier
                                 .size(6.dp)
                                 .clip(CircleShape)
-                                .background(if (session.isActive) Color(0xFF000066) else Color(0xFF006F62))
+                                .background(if (session.isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = if (session.isActive) "ACTIVE" else "COMPLETED",
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
-                            color = if (session.isActive) Color(0xFF000066) else Color(0xFF006F62)
+                            color = if (session.isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary
                         )
                     }
                 }
@@ -279,7 +279,7 @@ fun LecturerSessionCard(session: LecturerSession, onClick: (() -> Unit)? = null)
             Spacer(modifier = Modifier.height(Spacing.md))
             
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.CalendarToday, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.Gray)
+                Icon(Icons.Default.CalendarToday, contentDescription = null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(modifier = Modifier.width(Spacing.base))
                 Text(session.date, style = MaterialTheme.typography.bodySmall)
             }
@@ -287,7 +287,7 @@ fun LecturerSessionCard(session: LecturerSession, onClick: (() -> Unit)? = null)
             Spacer(modifier = Modifier.height(Spacing.xs))
             
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.AccessTime, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.Gray)
+                Icon(Icons.Default.AccessTime, contentDescription = null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(modifier = Modifier.width(Spacing.base))
                 Text(session.time, style = MaterialTheme.typography.bodySmall)
             }
@@ -308,7 +308,7 @@ fun LecturerSessionCard(session: LecturerSession, onClick: (() -> Unit)? = null)
                     text = "$percentage%",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF000066)
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
             
@@ -317,7 +317,7 @@ fun LecturerSessionCard(session: LecturerSession, onClick: (() -> Unit)? = null)
             LinearProgressIndicator(
                 progress = { progress },
                 modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)),
-                color = if (session.isActive) Color(0xFF000066) else Color(0xFF006F62),
+                color = if (session.isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary,
                 trackColor = Color(0xFFEEEEEE)
             )
         }

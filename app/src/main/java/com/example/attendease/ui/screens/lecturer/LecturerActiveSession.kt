@@ -30,6 +30,7 @@ import com.example.attendease.ui.theme.Spacing
 import com.example.attendease.utils.QrCodeGenerator
 import com.example.attendease.viewModel.LecturerSessionViewModel
 import kotlinx.coroutines.delay
+import androidx.compose.material3.MaterialTheme
 
 @Composable
 fun LecturerActiveSessionScreen(
@@ -121,7 +122,7 @@ fun LecturerActiveSessionScreen(
                     enabled = !isLoading
                 ) {
                     if (isLoading) {
-                        CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(24.dp))
                     } else {
                         Icon(
                             imageVector = Icons.Default.StopCircle,

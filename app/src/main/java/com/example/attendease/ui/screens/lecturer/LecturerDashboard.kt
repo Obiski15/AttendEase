@@ -9,6 +9,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,6 +36,7 @@ import com.example.attendease.ui.theme.Spacing
 import com.example.attendease.viewModel.LecturerSessionViewModel
 import com.example.attendease.viewModel.DashboardViewModel
 import com.example.attendease.dto.response.AttendanceSessionResponse
+import androidx.compose.material3.MaterialTheme
 
 data class Course(
     val assignmentId: String,
@@ -142,15 +144,16 @@ fun LecturerDashboardScreen(
             )
         }
     ) { paddingValues ->
-        if (isLoading) {
-            Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
-        } else {
+        PullToRefreshBox(
+            isRefreshing = isLoading,
+            onRefresh = { dashboardViewModel.loadLecturerDashboard(isRefresh = true) },
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues)
                     .padding(horizontal = Spacing.md),
                 verticalArrangement = Arrangement.spacedBy(Spacing.md)
             ) {
@@ -380,7 +383,7 @@ fun CourseCard(course: Course, onStartClick: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
     ) {

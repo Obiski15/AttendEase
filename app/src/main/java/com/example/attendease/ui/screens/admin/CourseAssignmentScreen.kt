@@ -29,6 +29,8 @@ import com.example.attendease.dto.response.CourseResponse
 import com.example.attendease.dto.response.LecturerResponse
 import com.example.attendease.dto.response.AcademicSessionResponse
 import org.koin.androidx.compose.koinViewModel
+import com.example.attendease.ui.components.ListSkeleton
+import androidx.compose.material3.MaterialTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -114,8 +116,8 @@ fun CourseAssignmentScreen(
                     selectedCourseTitle = null
                     showAssignDialog = true
                 },
-                containerColor = Color(0xFF006F62),
-                contentColor = Color.White,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Add Assignment")
@@ -134,8 +136,8 @@ fun CourseAssignmentScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = Spacing.md, vertical = Spacing.base),
-                placeholder = { Text("Search courses or lecturers...", color = Color.Gray) },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
+                placeholder = { Text("Search courses or lecturers...", color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant) },
                 shape = RoundedCornerShape(12.dp),
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
@@ -156,7 +158,7 @@ fun CourseAssignmentScreen(
                         onClick = { selectedCategory = category },
                         label = { Text(category) },
                         colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = Color(0xFF000066),
+                            selectedContainerColor = MaterialTheme.colorScheme.primary,
                             selectedLabelColor = Color.White
                         )
                     )
@@ -165,21 +167,16 @@ fun CourseAssignmentScreen(
 
             // Assignments & Unassigned courses list
             if (uiState.isLoading && uiState.assignments.isEmpty() && uiState.unassignedCourses.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize().weight(1f),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-                }
+                ListSkeleton()
             } else if (filteredAssignments.isEmpty() && filteredUnassigned.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize().weight(1f),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(Icons.Default.Inbox, contentDescription = null, modifier = Modifier.size(48.dp), tint = Color.Gray)
+                        Icon(Icons.Default.Inbox, contentDescription = null, modifier = Modifier.size(48.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                         Spacer(modifier = Modifier.height(Spacing.base))
-                        Text("No courses or assignments found", color = Color.Gray)
+                        Text("No courses or assignments found", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             } else {
@@ -286,7 +283,7 @@ fun AssignmentCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEEEEEE))
     ) {
         Column(modifier = Modifier.padding(Spacing.md)) {
@@ -297,13 +294,13 @@ fun AssignmentCard(
             ) {
                 Text(
                     text = assignment.courseCode,
-                    color = Color(0xFF006F62),
+                    color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = assignment.sessionName,
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.labelSmall
                 )
             }
@@ -319,7 +316,7 @@ fun AssignmentCard(
             // Lecturer Info
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                color = Color(0xFFF5F5F5),
+                color = MaterialTheme.colorScheme.surfaceVariant,
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Row(
@@ -332,13 +329,13 @@ fun AssignmentCard(
                         color = MaterialTheme.colorScheme.primaryContainer
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Icon(Icons.Default.Person, contentDescription = null, tint = Color.White)
+                            Icon(Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary)
                         }
                     }
                     Spacer(modifier = Modifier.width(Spacing.md))
                     Column {
                         Text(assignment.lecturerName, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
-                        Text(assignment.lecturerRole, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                        Text(assignment.lecturerRole, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }
@@ -352,7 +349,7 @@ fun AssignmentCard(
                 Button(
                     onClick = onReassign,
                     modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFB2EBF2), contentColor = Color(0xFF006F62)),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFB2EBF2), contentColor = MaterialTheme.colorScheme.primary),
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text("Reassign", fontWeight = FontWeight.Bold)
@@ -404,17 +401,17 @@ fun UnassignedCourseCard(
                 color = Color(0xFFEEEEEE)
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    Icon(Icons.Default.Add, contentDescription = null, tint = Color.Gray)
+                    Icon(Icons.Default.Add, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
             Spacer(modifier = Modifier.height(Spacing.md))
             Text("Course Unassigned", fontWeight = FontWeight.Bold)
-            Text(course.courseCode, style = MaterialTheme.typography.labelSmall, color = Color.Gray)
-            Text(course.title, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+            Text(course.courseCode, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(course.title, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(modifier = Modifier.height(Spacing.md))
             Button(
                 onClick = onAssign,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF000066)),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                 shape = RoundedCornerShape(24.dp)
             ) {
                 Text("Quick Assign", modifier = Modifier.padding(horizontal = 16.dp))
@@ -472,7 +469,7 @@ fun AssignLecturerDialog(
                         Spacer(modifier = Modifier.height(Spacing.xs))
                         Surface(
                             modifier = Modifier.fillMaxWidth(),
-                            color = Color(0xFFF5F5F5),
+                            color = MaterialTheme.colorScheme.surfaceVariant,
                             shape = RoundedCornerShape(12.dp),
                             border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEEEEEE))
                         ) {
@@ -527,14 +524,14 @@ fun AssignLecturerDialog(
                     onConfirm(courseId, lecturerId, sessionId)
                 },
                 enabled = isConfirmEnabled,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF006F62))
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
                 Text("Confirm", fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel", color = Color.Gray)
+                Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     )

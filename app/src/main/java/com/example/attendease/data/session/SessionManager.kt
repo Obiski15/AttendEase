@@ -14,7 +14,17 @@ class SessionManager(context: Context) {
         private const val KEY_USER_ROLE = "user_role"
         private const val KEY_USER_NAME = "user_name"
         private const val KEY_USER_EMAIL = "user_email"
+        private const val KEY_THEME_PREFERENCE = "theme_preference"
     }
+
+    val themePreferenceFlow = kotlinx.coroutines.flow.MutableStateFlow(getThemePreference())
+
+    fun saveThemePreference(theme: String) {
+        prefs.edit().putString(KEY_THEME_PREFERENCE, theme).apply()
+        themePreferenceFlow.value = theme
+    }
+
+    fun getThemePreference(): String = prefs.getString(KEY_THEME_PREFERENCE, "SYSTEM") ?: "SYSTEM"
 
     fun saveSession(
         accessToken: String,

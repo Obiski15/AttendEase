@@ -24,6 +24,7 @@ import com.example.attendease.ui.components.AttendEaseTopAppBar
 import com.example.attendease.ui.components.CircularProgressWithText
 import com.example.attendease.ui.navigation.Screen
 import com.example.attendease.ui.theme.Spacing
+import androidx.compose.material3.MaterialTheme
 
 data class AttendanceRecord(
     val courseCode: String,
@@ -95,7 +96,7 @@ fun StudentDashboardScreen(
                     subtitle = "Join class instantly via QR",
                     icon = Icons.Default.QrCodeScanner,
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = Color.White,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
                     onClick = { navController.navigate(Screen.ScanAttendance.route) }
                 )
             }
@@ -211,7 +212,7 @@ fun AttendanceRecordItem(record: AttendanceRecord) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
     ) {
         Row(
