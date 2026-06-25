@@ -212,5 +212,10 @@ fun LoginScreen(
                 }
             }
         }
+    
+        AttendEaseErrorDialog(
+            errorMessage = state.error,
+            onDismiss = { viewModel.clearError() }
+        )
     }
 }
