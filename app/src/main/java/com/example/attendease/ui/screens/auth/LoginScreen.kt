@@ -28,6 +28,11 @@ import com.example.attendease.data.session.SessionManager
 import com.example.attendease.enums.UserRole
 import com.example.attendease.ui.navigation.Screen
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.platform.LocalContext
+import androidx.fragment.app.FragmentActivity
+import com.example.attendease.utils.BiometricHelper
+import kotlinx.coroutines.launch
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun LoginScreen(
@@ -36,6 +41,9 @@ fun LoginScreen(
 ) {
     val sessionManager: SessionManager = koinInject()
     val isLoggedIn = remember { sessionManager.isLoggedIn() }
+
+    val context = LocalContext.current
+    var hasPromptedBiometric by remember { mutableStateOf(false) }
 
     LaunchedEffect(isLoggedIn) {
         if (isLoggedIn) {
@@ -50,16 +58,38 @@ fun LoginScreen(
                     popUpTo(Screen.Login.route) { inclusive = true }
                 }
             }
+        } else if (!hasPromptedBiometric && sessionManager.isBiometricEnabled() && sessionManager.getSecureCredentials() != null) {
+            hasPromptedBiometric = true
+            val activity = context as? FragmentActivity
+            if (activity != null && BiometricHelper.isBiometricAvailable(activity)) {
+                val success = BiometricHelper.authenticate(
+                    activity = activity,
+                    title = "Fast Login",
+                    subtitle = "Verify your identity to log in"
+                )
+                if (success) {
+                    viewModel.loginWithSavedCredentials(navController)
+                }
+            }
         }
     }
 
     val state by viewModel.uiState.collectAsState()
     var passwordVisible by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
+            .background(
+                brush = androidx.compose.ui.graphics.Brush.verticalGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                        MaterialTheme.colorScheme.background,
+                        MaterialTheme.colorScheme.background
+                    )
+                )
+            ),
         contentAlignment = Alignment.Center
     ) {
         LazyColumn {
@@ -68,22 +98,27 @@ fun LoginScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(Spacing.containerMargin),
-                    shape = RoundedCornerShape(24.dp),
+                    shape = RoundedCornerShape(32.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
                 ) {
                     Column(
                         modifier = Modifier
-                            .padding(horizontal = Spacing.lg, vertical = Spacing.xl),
+                            .padding(horizontal = Spacing.xl, vertical = Spacing.xl),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         // Logo placeholder
                         Box(
                             modifier = Modifier
-                                .size(80.dp)
+                                .size(88.dp)
                                 .background(
-                                    color = MaterialTheme.colorScheme.primaryContainer,
-                                    shape = RoundedCornerShape(20.dp)
+                                    brush = androidx.compose.ui.graphics.Brush.linearGradient(
+                                        colors = listOf(
+                                            MaterialTheme.colorScheme.primary,
+                                            MaterialTheme.colorScheme.secondary
+                                        )
+                                    ),
+                                    shape = RoundedCornerShape(24.dp)
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
@@ -91,21 +126,25 @@ fun LoginScreen(
                                 imageVector = Icons.Default.Check,
                                 contentDescription = "Logo",
                                 tint = MaterialTheme.colorScheme.onPrimary,
-                                modifier = Modifier.size(40.dp)
+                                modifier = Modifier.size(48.dp)
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(Spacing.md))
+                        Spacer(modifier = Modifier.height(Spacing.lg))
 
                         Text(
                             text = "AttendEase",
-                            style = MaterialTheme.typography.displayLarge,
-                            color = MaterialTheme.colorScheme.primary
+                            style = MaterialTheme.typography.displayMedium,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = MaterialTheme.colorScheme.primary,
+                            letterSpacing = (-1).sp
                         )
+
+                        Spacer(modifier = Modifier.height(Spacing.xs))
 
                         Text(
                             text = "Sign in to your account",
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
 
@@ -149,41 +188,78 @@ fun LoginScreen(
                         
 
                         // Login Button
-                        Button(
-                            onClick = {
-                                viewModel.login(navController)
-                            },
-                            enabled = !state.isLoading,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(56.dp),
-                            shape = RoundedCornerShape(28.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.secondary
-                            )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            if (state.isLoading) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(24.dp),
-                                    color = MaterialTheme.colorScheme.onPrimary,
-                                    strokeWidth = 2.dp
+                            Button(
+                                onClick = {
+                                    viewModel.login(navController)
+                                },
+                                enabled = !state.isLoading,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(56.dp),
+                                shape = RoundedCornerShape(28.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.secondary
                                 )
-                            } else {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.Center
-                                ) {
-                                    Text(
-                                        text = "Login",
-                                        style = MaterialTheme.typography.titleMedium,
+                            ) {
+                                if (state.isLoading) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(24.dp),
                                         color = MaterialTheme.colorScheme.onPrimary,
-                                        fontWeight = FontWeight.Bold
+                                        strokeWidth = 2.dp
                                     )
-                                    Spacer(modifier = Modifier.width(Spacing.base))
+                                } else {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.Center
+                                    ) {
+                                        Text(
+                                            text = "Login",
+                                            style = MaterialTheme.typography.titleMedium,
+                                            color = MaterialTheme.colorScheme.onPrimary,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                        Spacer(modifier = Modifier.width(Spacing.base))
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.onPrimary
+                                        )
+                                    }
+                                }
+                            }
+
+                            if (sessionManager.isBiometricEnabled() && sessionManager.getSecureCredentials() != null) {
+                                Spacer(modifier = Modifier.width(Spacing.md))
+                                FilledIconButton(
+                                    onClick = {
+                                        val activity = context as? FragmentActivity
+                                        if (activity != null && BiometricHelper.isBiometricAvailable(activity)) {
+                                            coroutineScope.launch {
+                                                val success = BiometricHelper.authenticate(
+                                                    activity = activity,
+                                                    title = "Fast Login",
+                                                    subtitle = "Verify your identity to log in"
+                                                )
+                                                if (success) {
+                                                    viewModel.loginWithSavedCredentials(navController)
+                                                }
+                                            }
+                                        }
+                                    },
+                                    modifier = Modifier.size(56.dp),
+                                    shape = RoundedCornerShape(28.dp),
+                                    colors = IconButtonDefaults.filledIconButtonColors(
+                                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                                    )
+                                ) {
                                     Icon(
-                                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.onPrimary
+                                        imageVector = Icons.Default.Fingerprint,
+                                        contentDescription = "Biometric Login",
+                                        tint = MaterialTheme.colorScheme.onPrimaryContainer
                                     )
                                 }
                             }

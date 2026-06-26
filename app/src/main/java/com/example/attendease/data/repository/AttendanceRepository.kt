@@ -27,6 +27,7 @@ class AttendanceRepository(
         return try {
             attendanceApi.checkIn(request)
         } catch (e: Exception) {
+            if (e is com.example.attendease.data.api.ApiException || e is com.example.attendease.data.api.UnauthorizedException) throw e
             Log.e("AttendanceRepo", "Network failed, queueing CHECK_IN", e)
             
             val payload = Json.encodeToString(request)
@@ -72,6 +73,7 @@ class AttendanceRepository(
             }
             response
         } catch (e: Exception) {
+            if (e is com.example.attendease.data.api.ApiException || e is com.example.attendease.data.api.UnauthorizedException) throw e
             Log.w("AttendanceRepo", "Network failed, loading my_attendance cache", e)
             val cache = withContext(Dispatchers.IO) { apiCacheDao.getApiCache("my_attendance") }
             if (cache != null) {

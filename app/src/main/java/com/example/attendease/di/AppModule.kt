@@ -89,7 +89,7 @@ val appModule = module {
     single { com.example.attendease.data.api.AttendanceWebSocketClient(get(), get()) }
     single { LecturerSessionViewModel(get(), get()) }
 
-    viewModel { AuthViewModel(get()) }
+    viewModel { AuthViewModel(get(), get()) }
     viewModel { LecturerViewModel(get()) }
     viewModel { StudentViewModel(get()) }
     viewModel { CourseAssignmentViewModel(get()) }

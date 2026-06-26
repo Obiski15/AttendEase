@@ -29,6 +29,7 @@ class DashboardRepository(
             }
             response
         } catch (e: Exception) {
+            if (e is com.example.attendease.data.api.ApiException || e is com.example.attendease.data.api.UnauthorizedException) throw e
             Log.w("DashboardRepo", "Network failed, loading ADMIN cache", e)
             val cache = withContext(Dispatchers.IO) { dashboardDao.getDashboardCache("ADMIN") }
             if (cache != null) {
@@ -52,6 +53,7 @@ class DashboardRepository(
             }
             response
         } catch (e: Exception) {
+            if (e is com.example.attendease.data.api.ApiException || e is com.example.attendease.data.api.UnauthorizedException) throw e
             Log.w("DashboardRepo", "Network failed, loading LECTURER cache", e)
             val cache = withContext(Dispatchers.IO) { dashboardDao.getDashboardCache("LECTURER") }
             if (cache != null) {
@@ -75,6 +77,7 @@ class DashboardRepository(
             }
             response
         } catch (e: Exception) {
+            if (e is com.example.attendease.data.api.ApiException || e is com.example.attendease.data.api.UnauthorizedException) throw e
             Log.w("DashboardRepo", "Network failed, loading STUDENT cache", e)
             val cache = withContext(Dispatchers.IO) { dashboardDao.getDashboardCache("STUDENT") }
             if (cache != null) {

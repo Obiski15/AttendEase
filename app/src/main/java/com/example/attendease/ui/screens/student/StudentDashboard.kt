@@ -11,6 +11,7 @@ import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -71,14 +72,20 @@ fun StudentDashboardScreen(
             )
         }
     ) { paddingValues ->
-        LazyColumn(
+        PullToRefreshBox(
+            isRefreshing = isLoading,
+            onRefresh = { viewModel.loadStudentDashboard(isRefresh = true) },
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = Spacing.md),
-            verticalArrangement = Arrangement.spacedBy(Spacing.md)
         ) {
-            item {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = Spacing.md),
+                verticalArrangement = Arrangement.spacedBy(Spacing.md)
+            ) {
+                item {
                 Spacer(modifier = Modifier.height(Spacing.base))
                 Text(
                     text = "Hi, ${studentStats?.fullName ?: userName}",
@@ -179,6 +186,7 @@ fun StudentDashboardScreen(
             }
         }
     }
+}
 }
 
 @Composable
@@ -304,7 +312,7 @@ fun AttendanceRecordItem(record: RecentAttendanceResponse) {
             Surface(
                 modifier = Modifier.size(48.dp),
                 shape = CircleShape,
-                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.1f)
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
@@ -318,19 +326,35 @@ fun AttendanceRecordItem(record: RecentAttendanceResponse) {
 
             Spacer(modifier = Modifier.width(Spacing.md))
 
-            Column(modifier = Modifier.weight(1f)) {
+            Column(modifier = Modifier.weight(1f).padding(end = Spacing.sm)) {
                 Text(
                     text = record.courseCode,
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold
                 )
+                Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = record.courseTitle,
                     style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
+                Spacer(modifier = Modifier.height(2.dp))
+                
+                val formattedTime = try {
+                    if (record.checkInTime.contains("T")) {
+                        record.checkInTime.substringAfter("T").substringBefore(".").take(5)
+                    } else if (record.checkInTime.contains(":")) {
+                        record.checkInTime.take(5)
+                    } else {
+                        record.checkInTime
+                    }
+                } catch(e: Exception) { record.checkInTime }
+
                 Text(
-                    text = "${record.sessionDate}, ${record.checkInTime}",
+                    text = "${record.sessionDate} • $formattedTime",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -338,19 +362,19 @@ fun AttendanceRecordItem(record: RecentAttendanceResponse) {
 
             Surface(
                 color = if (record.status == "PRESENT")
-                    MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f)
+                    MaterialTheme.colorScheme.secondaryContainer
                 else
-                    MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f),
+                    MaterialTheme.colorScheme.errorContainer,
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text(
                     text = record.status,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                     style = MaterialTheme.typography.labelSmall,
                     color = if (record.status == "PRESENT")
-                        MaterialTheme.colorScheme.secondary
+                        MaterialTheme.colorScheme.onSecondaryContainer
                     else
-                        MaterialTheme.colorScheme.error,
+                        MaterialTheme.colorScheme.onErrorContainer,
                     fontWeight = FontWeight.Bold
                 )
             }

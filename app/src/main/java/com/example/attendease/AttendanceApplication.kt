@@ -16,7 +16,7 @@ class AttendanceApplication : Application() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channelId = "offline_sync_channel"
-            val channelName = "Offline Sync Notifications"
+            val channelName = "Data Synchronization"
             val channel = NotificationChannel(
                 channelId,
                 channelName,

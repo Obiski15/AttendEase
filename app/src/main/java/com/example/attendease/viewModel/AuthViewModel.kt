@@ -11,7 +11,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
+class AuthViewModel(
+    private val repository: AuthRepository,
+    private val sessionManager: com.example.attendease.data.session.SessionManager
+) : ViewModel() {
 
     private val _uiState =
         MutableStateFlow(LoginUiState())
@@ -59,6 +62,10 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
                         uiState.value.password
                     )
 
+                if (sessionManager.isBiometricEnabled()) {
+                    sessionManager.saveSecureCredentials(uiState.value.email, uiState.value.password)
+                }
+
                 val destination = when (response.user.role) {
                     UserRole.STUDENT -> Screen.StudentDashboard.route
                     UserRole.LECTURER -> Screen.LecturerDashboard.route
@@ -84,6 +91,14 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
                     )
 
             }
+        }
+    }
+
+    fun loginWithSavedCredentials(navController: NavController) {
+        val creds = sessionManager.getSecureCredentials()
+        if (creds != null) {
+            _uiState.value = _uiState.value.copy(email = creds.first, password = creds.second)
+            login(navController)
         }
     }
 

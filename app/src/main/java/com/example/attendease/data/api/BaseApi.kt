@@ -15,6 +15,8 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
+class ApiException(message: String) : Exception(message)
+
 abstract class BaseApi(
     @PublishedApi internal val client: HttpClient,
     @PublishedApi internal val sessionManager: SessionManager
@@ -86,6 +88,6 @@ abstract class BaseApi(
             if (errorText.isNotBlank()) errorText else "An error occurred (Status: ${response.status.value})"
         }
 
-        throw Exception(errorMessage)
+        throw ApiException(errorMessage)
     }
 }

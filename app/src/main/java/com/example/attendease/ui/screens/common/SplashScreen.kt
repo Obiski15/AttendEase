@@ -17,15 +17,18 @@ import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavController
 import com.example.attendease.data.session.SessionManager
 import com.example.attendease.enums.UserRole
 import com.example.attendease.ui.navigation.Screen
+import com.example.attendease.utils.BiometricHelper
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
@@ -35,6 +38,7 @@ fun SplashScreen(
     navController: NavController,
     sessionManager: SessionManager = koinInject()
 ) {
+    val context = LocalContext.current
     val configuration = LocalConfiguration.current
     val density = LocalDensity.current
     val screenHeightPx = with(density) { configuration.screenHeightDp.dp.toPx() }
@@ -95,8 +99,10 @@ fun SplashScreen(
 
         delay(800) // Hold for effect before transitioning
 
+        val isLoggedIn = sessionManager.isLoggedIn()
+
         // Route to the correct destination
-        val nextDestination = if (sessionManager.isLoggedIn()) {
+        val nextDestination = if (isLoggedIn) {
             when (sessionManager.getUserRole()) {
                 UserRole.STUDENT -> Screen.StudentDashboard.route
                 UserRole.LECTURER -> Screen.LecturerDashboard.route
