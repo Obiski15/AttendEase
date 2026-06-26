@@ -119,7 +119,7 @@ fun StudentDashboardScreen(
                     subtitle = "Join class instantly via QR",
                     icon = Icons.Default.QrCodeScanner,
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                     onClick = { navController.navigate(Screen.ScanAttendance.route) }
                 )
             }
@@ -158,9 +158,10 @@ fun StudentDashboardScreen(
                 }
             }
 
-            // Show real recent attendance logs from API
-            if (studentStats != null) {
-                items(studentStats!!.recentAttendance) { record ->
+            // Show recent attendance logs
+            val records = studentStats?.recentAttendance ?: emptyList()
+            if (records.isNotEmpty()) {
+                items(records) { record ->
                     AttendanceRecordItem(record)
                 }
             } else if (!isLoading) {
