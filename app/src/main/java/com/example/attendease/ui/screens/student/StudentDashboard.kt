@@ -7,16 +7,19 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.example.attendease.dto.response.RecentAttendanceResponse
 import com.example.attendease.enums.UserRole
+import com.example.attendease.ui.components.AttendEaseErrorDialog
 import com.example.attendease.ui.components.AuthenticateUser
 import com.example.attendease.ui.components.ActionCard
 import com.example.attendease.ui.components.AttendEaseBottomBar
@@ -25,31 +28,35 @@ import com.example.attendease.ui.components.CircularProgressWithText
 import com.example.attendease.ui.navigation.Screen
 import com.example.attendease.ui.theme.Spacing
 import androidx.compose.material3.MaterialTheme
-
-data class AttendanceRecord(
-    val courseCode: String,
-    val courseName: String,
-    val date: String,
-    val time: String,
-    val status: String,
-    val icon: ImageVector
-)
+import com.example.attendease.viewModel.DashboardViewModel
+import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StudentDashboardScreen(
-    navController: NavController
+    navController: NavController,
+    viewModel: DashboardViewModel = koinViewModel() // KOIN gives us the ViewModel
 ) {
     var userName by remember { mutableStateOf("User") }
+
+    // Collect live data from the ViewModel
+    val studentStats by viewModel.studentStats.collectAsStateWithLifecycle()
+    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+    val error by viewModel.error.collectAsStateWithLifecycle()
+
+    // Fetch data when the screen first opens
+    LaunchedEffect(Unit) {
+        viewModel.loadStudentDashboard()
+    }
 
     AuthenticateUser(navController) { user ->
         userName = user.name ?: "User"
     }
 
-    val recentAttendance = listOf(
-        AttendanceRecord("CS301", "Operating Systems", "24 Oct", "10:00 AM", "Present", Icons.Default.Computer),
-        AttendanceRecord("MATH204", "Discrete Mathematics", "23 Oct", "2:00 PM", "Present", Icons.Default.Functions),
-        AttendanceRecord("PHY101", "Physics I", "22 Oct", "9:00 AM", "Present", Icons.Default.Lightbulb)
+    // Show error dialog if something goes wrong
+    AttendEaseErrorDialog(
+        errorMessage = error,
+        onDismiss = { viewModel.clearError() }
     )
 
     Scaffold(
@@ -74,7 +81,7 @@ fun StudentDashboardScreen(
             item {
                 Spacer(modifier = Modifier.height(Spacing.base))
                 Text(
-                    text = "Hi, $userName",
+                    text = "Hi, ${studentStats?.fullName ?: userName}",
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -87,7 +94,23 @@ fun StudentDashboardScreen(
             }
 
             item {
-                AttendanceOverviewCard()
+                // Show loading or real attendance overview card
+                if (isLoading && studentStats == null) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                } else {
+                    AttendanceOverviewCard(
+                        attendancePercentage = studentStats?.attendancePercentage ?: 0.0,
+                        presentCount = studentStats?.presentCount ?: 0,
+                        totalCount = studentStats?.totalCount ?: 0
+                    )
+                }
             }
 
             item {
@@ -125,7 +148,7 @@ fun StudentDashboardScreen(
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
-                    TextButton(onClick = { }) {
+                    TextButton(onClick = { navController.navigate(Screen.AttendanceHistory.route) }) {
                         Text(
                             "View All",
                             color = MaterialTheme.colorScheme.primary,
@@ -135,8 +158,19 @@ fun StudentDashboardScreen(
                 }
             }
 
-            items(recentAttendance) { record ->
-                AttendanceRecordItem(record)
+            // Show real recent attendance logs from API
+            if (studentStats != null) {
+                items(studentStats!!.recentAttendance) { record ->
+                    AttendanceRecordItem(record)
+                }
+            } else if (!isLoading) {
+                item {
+                    Text(
+                        text = "No recent attendance records.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
 
             item {
@@ -147,12 +181,23 @@ fun StudentDashboardScreen(
 }
 
 @Composable
-fun AttendanceOverviewCard() {
+fun AttendanceOverviewCard(
+    attendancePercentage: Double,
+    presentCount: Int,
+    totalCount: Int
+) {
+    val absentCount = totalCount - presentCount
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)),
-        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)
+        ),
+        border = androidx.compose.foundation.BorderStroke(
+            1.dp,
+            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+        )
     ) {
         Column(
             modifier = Modifier.padding(Spacing.lg),
@@ -170,50 +215,86 @@ fun AttendanceOverviewCard() {
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.height(Spacing.sm))
-            
-            Surface(
-                color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
-                shape = RoundedCornerShape(16.dp)
+
+            // Present / Absent counts
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.md)
             ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                Surface(
+                    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier.weight(1f)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.TrendingUp,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.size(14.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "Top 15% of Class",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.secondary,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Column(
+                        modifier = Modifier.padding(12.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "$presentCount",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                        Text(
+                            text = "Present",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                Surface(
+                    color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f),
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(12.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "$absentCount",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                        Text(
+                            text = "Absent",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(Spacing.md))
-            
+
+            // Circular progress with real percentage
             Box(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressWithText(0.88f, "88")
+                CircularProgressWithText(
+                    progress = (attendancePercentage / 100).toFloat(),
+                    percentage = "${attendancePercentage.toInt()}"
+                )
             }
         }
     }
 }
 
 @Composable
-fun AttendanceRecordItem(record: AttendanceRecord) {
+fun AttendanceRecordItem(record: RecentAttendanceResponse) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        border = androidx.compose.foundation.BorderStroke(
+            1.dp,
+            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+        )
     ) {
         Row(
             modifier = Modifier.padding(Spacing.md),
@@ -226,16 +307,16 @@ fun AttendanceRecordItem(record: AttendanceRecord) {
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
-                        imageVector = record.icon,
+                        imageVector = Icons.Default.School,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(24.dp)
                     )
                 }
             }
-            
+
             Spacer(modifier = Modifier.width(Spacing.md))
-            
+
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = record.courseCode,
@@ -243,26 +324,32 @@ fun AttendanceRecordItem(record: AttendanceRecord) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = record.courseName,
+                    text = record.courseTitle,
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "${record.date}, ${record.time}",
+                    text = "${record.sessionDate}, ${record.checkInTime}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            
+
             Surface(
-                color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f),
+                color = if (record.status == "PRESENT")
+                    MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f)
+                else
+                    MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f),
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text(
                     text = record.status,
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.secondary,
+                    color = if (record.status == "PRESENT")
+                        MaterialTheme.colorScheme.secondary
+                    else
+                        MaterialTheme.colorScheme.error,
                     fontWeight = FontWeight.Bold
                 )
             }

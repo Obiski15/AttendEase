@@ -59,7 +59,7 @@ fun ScanAttendanceScreen(
     attendanceViewModel: AttendanceViewModel = koinViewModel()
 ) {
     val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
 
     val isLoading by attendanceViewModel.isLoading.collectAsState()
     val error by attendanceViewModel.error.collectAsState()

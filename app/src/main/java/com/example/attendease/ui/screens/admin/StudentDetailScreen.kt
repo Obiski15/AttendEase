@@ -24,8 +24,8 @@ import com.example.attendease.ui.theme.Spacing
 import org.koin.androidx.compose.koinViewModel
 import com.example.attendease.viewModel.StudentViewModel
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import com.example.attendease.ui.navigation.Screen
 import com.example.attendease.ui.components.DetailSkeleton
 import androidx.compose.material3.MaterialTheme
