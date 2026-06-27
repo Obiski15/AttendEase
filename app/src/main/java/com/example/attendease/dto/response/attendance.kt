@@ -31,5 +31,7 @@ data class AttendanceRecordResponse(
     val latitude: Double?,
     val longitude: Double?,
     val status: String?,
-    @SerialName("created_at") val createdAt: String? = null
+    @SerialName("created_at") val createdAt: String? = null,
+    @SerialName("course_code") val courseCode: String? = null,
+    @SerialName("course_title") val courseTitle: String? = null
 )

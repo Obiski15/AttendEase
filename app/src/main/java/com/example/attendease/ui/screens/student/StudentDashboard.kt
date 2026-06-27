@@ -20,6 +20,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.attendease.dto.response.RecentAttendanceResponse
 import com.example.attendease.enums.UserRole
+import com.example.attendease.utils.DateUtils
 import com.example.attendease.ui.components.AttendEaseErrorDialog
 import com.example.attendease.ui.components.AuthenticateUser
 import com.example.attendease.ui.components.ActionCard
@@ -343,15 +344,7 @@ fun AttendanceRecordItem(record: RecentAttendanceResponse) {
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 
-                val formattedTime = try {
-                    if (record.checkInTime.contains("T")) {
-                        record.checkInTime.substringAfter("T").substringBefore(".").take(5)
-                    } else if (record.checkInTime.contains(":")) {
-                        record.checkInTime.take(5)
-                    } else {
-                        record.checkInTime
-                    }
-                } catch(e: Exception) { record.checkInTime }
+                val formattedTime = DateUtils.parseIsoTimeToDisplay(record.checkInTime)
 
                 Text(
                     text = "${record.sessionDate} • $formattedTime",

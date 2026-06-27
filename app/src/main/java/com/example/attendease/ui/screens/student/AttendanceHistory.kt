@@ -32,6 +32,7 @@ import androidx.compose.runtime.getValue
 import com.example.attendease.viewModel.AttendanceViewModel
 import com.example.attendease.ui.components.AttendEaseErrorDialog
 import org.koin.androidx.compose.koinViewModel
+import com.example.attendease.utils.DateUtils
 data class StudentSession(
     val day: String,
     val month: String,
@@ -48,6 +49,19 @@ fun StudentAttendanceHistoryScreen(navController: NavController, viewModel: Atte
     val attendanceHistory by viewModel.attendanceHistory.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+
+    val totalRecords = attendanceHistory.size
+    val presentCount = attendanceHistory.count { it.status == "PRESENT" }
+    val absentCount = totalRecords - presentCount
+    val attendanceRate = if (totalRecords > 0) (presentCount.toFloat() / totalRecords) * 100 else 0f
+    
+    val filteredHistory = remember(attendanceHistory, selectedFilter) {
+        when (selectedFilter) {
+            "PRESENT" -> attendanceHistory.filter { it.status == "PRESENT" }
+            "ABSENT" -> attendanceHistory.filter { it.status != "PRESENT" }
+            else -> attendanceHistory
+        }
+    }
 
     LaunchedEffect(Unit) { viewModel.getMyAttendance() }
 
@@ -110,23 +124,17 @@ fun StudentAttendanceHistoryScreen(navController: NavController, viewModel: Atte
                         
                         Row(verticalAlignment = Alignment.Bottom) {
                             Text(
-                                "88%",
+                                "${attendanceRate.toInt()}%",
                                 style = MaterialTheme.typography.displayMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
-                            )
-                            Text(
-                                "+2.4%",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(bottom = 8.dp, start = 4.dp)
                             )
                         }
                         
                         Spacer(modifier = Modifier.height(Spacing.sm))
                         
                         LinearProgressIndicator(
-                            progress = { 0.88f },
+                            progress = { if (totalRecords > 0) presentCount.toFloat() / totalRecords else 0f },
                             modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)),
                             color = MaterialTheme.colorScheme.primary,
                             trackColor = Color(0xFFEEEEEE)
@@ -142,14 +150,14 @@ fun StudentAttendanceHistoryScreen(navController: NavController, viewModel: Atte
                 ) {
                     HistoryStatCard(
                         title = "TOTAL PRESENT",
-                        value = "42",
+                        value = presentCount.toString(),
                         icon = Icons.Default.CheckCircle,
                         iconColor = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.weight(1f)
                     )
                     HistoryStatCard(
                         title = "TOTAL ABSENT",
-                        value = "06",
+                        value = absentCount.toString(),
                         icon = Icons.Default.Cancel,
                         iconColor = Color(0xFFD32F2F),
                         modifier = Modifier.weight(1f)
@@ -202,17 +210,59 @@ fun StudentAttendanceHistoryScreen(navController: NavController, viewModel: Atte
                 }
             }
 
-            items(attendanceHistory) { record ->
-                SessionItem(
-                    StudentSession(
-                        day = record.checkInTime.take(2),
-                        month = record.checkInTime.drop(3).take(3),
-                        code = record.sessionId.take(8),
-                        title = record.status,
-                        time = record.checkInTime,
-                        isPresent = record.status == "PRESENT"
+            if (filteredHistory.isEmpty()) {
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 48.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Surface(
+                            modifier = Modifier.size(72.dp),
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.surfaceVariant
+                        ) {
+                            Icon(
+                                Icons.Default.EventBusy,
+                                contentDescription = null,
+                                modifier = Modifier.padding(16.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            "No Recent Sessions",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            "You haven't attended any sessions matching the selected filter yet.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                            modifier = Modifier.padding(horizontal = 32.dp)
+                        )
+                    }
+                }
+            } else {
+                items(filteredHistory) { record ->
+                    val (day, month, time) = DateUtils.parseIsoDateToDayMonthTime(record.checkInTime)
+                    val codeStr = record.courseCode ?: record.sessionId?.take(8) ?: "Unknown"
+                    
+                    SessionItem(
+                        StudentSession(
+                            day = day,
+                            month = month,
+                            code = codeStr,
+                            title = record.courseTitle ?: "Unknown Course",
+                            time = time,
+                            isPresent = record.status == "PRESENT"
+                        )
                     )
-                )
+                }
             }
             
             item {
@@ -294,7 +344,8 @@ fun SessionItem(session: StudentSession) {
                             session.title,
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Bold,
-                            maxLines = 1
+                            maxLines = 2,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                         )
                     }
                     Spacer(modifier = Modifier.height(Spacing.xs))
