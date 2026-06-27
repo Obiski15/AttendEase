@@ -29,6 +29,7 @@ import com.example.attendease.ui.components.AttendEaseTopAppBar
 import com.example.attendease.ui.components.CircularProgressWithText
 import com.example.attendease.ui.navigation.Screen
 import com.example.attendease.ui.theme.Spacing
+import com.example.attendease.ui.components.DonutChart
 import androidx.compose.material3.MaterialTheme
 import com.example.attendease.viewModel.DashboardViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -279,15 +280,25 @@ fun AttendanceOverviewCard(
 
             Spacer(modifier = Modifier.height(Spacing.md))
 
-            // Circular progress with real percentage
             Box(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressWithText(
-                    progress = (attendancePercentage / 100).toFloat(),
-                    percentage = "${attendancePercentage.toInt()}"
-                )
+                Box(contentAlignment = Alignment.Center) {
+                    DonutChart(
+                        percentage = attendancePercentage.toFloat(),
+                        modifier = Modifier.size(120.dp),
+                        primaryColor = MaterialTheme.colorScheme.primary,
+                        secondaryColor = MaterialTheme.colorScheme.errorContainer,
+                        strokeWidth = 24f
+                    )
+                    Text(
+                        text = "${attendancePercentage.toInt()}%",
+                        style = MaterialTheme.typography.displaySmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
         }
     }

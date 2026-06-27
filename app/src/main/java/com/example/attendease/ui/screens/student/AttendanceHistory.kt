@@ -26,6 +26,7 @@ import com.example.attendease.ui.components.AttendEaseTopAppBar
 import com.example.attendease.ui.navigation.Screen
 import com.example.attendease.ui.theme.Spacing
 import androidx.compose.material3.MaterialTheme
+import com.example.attendease.ui.components.DonutChart
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -122,23 +123,28 @@ fun StudentAttendanceHistoryScreen(navController: NavController, viewModel: Atte
                             )
                         }
                         
-                        Row(verticalAlignment = Alignment.Bottom) {
-                            Text(
-                                "${attendanceRate.toInt()}%",
-                                style = MaterialTheme.typography.displayMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(verticalAlignment = Alignment.Bottom) {
+                                Text(
+                                    "${attendanceRate.toInt()}%",
+                                    style = MaterialTheme.typography.displayMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                            
+                            DonutChart(
+                                percentage = attendanceRate,
+                                modifier = Modifier.padding(end = 16.dp),
+                                primaryColor = MaterialTheme.colorScheme.primary,
+                                secondaryColor = Color(0xFFEEEEEE),
+                                strokeWidth = 30f
                             )
                         }
-                        
-                        Spacer(modifier = Modifier.height(Spacing.sm))
-                        
-                        LinearProgressIndicator(
-                            progress = { if (totalRecords > 0) presentCount.toFloat() / totalRecords else 0f },
-                            modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)),
-                            color = MaterialTheme.colorScheme.primary,
-                            trackColor = Color(0xFFEEEEEE)
-                        )
                     }
                 }
             }

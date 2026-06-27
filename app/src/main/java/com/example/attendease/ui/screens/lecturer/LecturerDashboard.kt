@@ -35,6 +35,7 @@ import com.example.attendease.ui.theme.Spacing
 import com.example.attendease.viewModel.LecturerSessionViewModel
 import com.example.attendease.viewModel.DashboardViewModel
 import com.example.attendease.dto.response.AttendanceSessionResponse
+import com.example.attendease.ui.components.CourseDistributionChart
 import androidx.compose.material3.MaterialTheme
 
 data class Course(
@@ -234,6 +235,27 @@ fun LecturerDashboardScreen(
                         icon = Icons.Default.CalendarToday,
                         containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
                     )
+                }
+
+                if (lecturerStats?.courseDistribution?.isNotEmpty() == true) {
+                    item {
+                        Spacer(modifier = Modifier.height(Spacing.md))
+                        Text(
+                            text = "Sessions per Course",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(Spacing.xs))
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                        ) {
+                            CourseDistributionChart(
+                                distribution = lecturerStats!!.courseDistribution
+                            )
+                        }
+                    }
                 }
 
                 item {
