@@ -30,7 +30,11 @@ class AttendanceRepository(
             if (e is com.example.attendease.data.api.ApiException || e is com.example.attendease.data.api.UnauthorizedException) throw e
             Log.e("AttendanceRepo", "Network failed, queueing CHECK_IN", e)
             
-            val payload = Json.encodeToString(request)
+            // Record the exact offline check-in time
+            val offlineTime = java.time.Instant.now().toString()
+            val requestWithTime = request.copy(checkInTime = offlineTime)
+
+            val payload = Json.encodeToString(requestWithTime)
             withContext(Dispatchers.IO) {
                 syncDao.insertSyncAction(
                     PendingSyncActionEntity(
@@ -50,9 +54,9 @@ class AttendanceRepository(
 
             AttendanceRecordResponse(
                 id = UUID.randomUUID().toString(),
-                sessionId = "PENDING_SYNC",
-                studentId = "PENDING_SYNC",
-                checkInTime = "Pending...",
+                sessionId = request.sessionCode,
+                studentId = "offline",
+                checkInTime = offlineTime,
                 latitude = request.latitude,
                 longitude = request.longitude,
                 status = "PRESENT"

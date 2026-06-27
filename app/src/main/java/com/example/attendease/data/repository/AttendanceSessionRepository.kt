@@ -32,8 +32,15 @@ class AttendanceSessionRepository(
             if (e is com.example.attendease.data.api.ApiException || e is com.example.attendease.data.api.UnauthorizedException) throw e
             Log.e("AttendanceSessionRepo", "Network failed, queueing offline action", e)
             
+            // Generate UUID and Session Code locally
+            val localId = UUID.randomUUID().toString()
+            val localCode = (100000..999999).random().toString() // simple 6 digit code for offline
+
+            // Create a new request object with the injected ID
+            val requestWithId = request.copy(id = localId, sessionCode = localCode)
+
             // Queue for offline sync
-            val payload = Json.encodeToString(request)
+            val payload = Json.encodeToString(requestWithId)
             withContext(Dispatchers.IO) {
                 syncDao.insertSyncAction(
                     PendingSyncActionEntity(
@@ -52,14 +59,14 @@ class AttendanceSessionRepository(
                 .build()
             workManager.enqueue(syncRequest)
 
-            // Return a local pending response so the UI proceeds immediately
+            // Return a local pending response so the UI proceeds immediately with the valid ID and Code
             AttendanceSessionResponse(
-                id = UUID.randomUUID().toString(),
+                id = localId,
                 courseAssignmentId = request.courseAssignmentId,
                 sessionDate = null,
                 startTime = null,
                 expiresAt = null,
-                sessionCode = "PENDING_SYNC",
+                sessionCode = localCode,
                 status = "PENDING",
                 geofencingEnabled = request.geofencingEnabled,
                 latitude = request.latitude,

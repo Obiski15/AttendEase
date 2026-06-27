@@ -55,9 +55,30 @@ class SyncWorker(
                     // Mark as synced
                     syncDao.updateSyncAction(action.copy(status = "SYNCED"))
                     successCount++
+                } catch (e: com.example.attendease.data.api.ApiException) {
+                    if (e.code == 400) {
+                        Log.e("SyncWorker", "Action ${action.id} rejected by server (400). Dropping.", e)
+                        syncDao.updateSyncAction(action.copy(status = "FAILED_PERMANENTLY"))
+                    } 
+
+                    // else if (e.code == 404) {
+                    //    val ageHours = (System.currentTimeMillis() - action.createdAt) / (1000 * 60 * 60)
+                    //    if (ageHours > 168) { // 7 days
+                    //        Log.e("SyncWorker", "Action ${action.id} is 404 and older than 7 days. Dropping.", e)
+                    //        syncDao.updateSyncAction(action.copy(status = "FAILED_PERMANENTLY"))
+                    //    } else {
+                    //        Log.w("SyncWorker", "Action ${action.id} is 404. Will retry later. Age: $ageHours hours.", e)
+                    //        throw e // bubble up to retry
+                    //    }
+                    // }
+                    
+                    else {
+                        Log.e("SyncWorker", "API error for action ${action.id}: ${e.code}. Will retry.", e)
+                        throw e
+                    }
                 } catch (e: Exception) {
-                    Log.e("SyncWorker", "Failed to sync action: ${action.id}", e)
-                    // Continue with other actions, we'll retry this one later
+                    Log.e("SyncWorker", "Network/Unknown error for action: ${action.id}", e)
+                    throw e // Bubble up to cause WorkManager to retry
                 }
             }
             

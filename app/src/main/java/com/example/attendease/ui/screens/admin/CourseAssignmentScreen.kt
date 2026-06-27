@@ -61,6 +61,8 @@ fun CourseAssignmentScreen(
             android.widget.Toast.makeText(context, "Assignment saved successfully!", android.widget.Toast.LENGTH_SHORT).show()
             viewModel.resetSaveState()
             showAssignDialog = false
+            isReassign = false
+            reassignOldAssignmentId = null
         }
         if (uiState.deleteSuccess) {
             android.widget.Toast.makeText(context, "Assignment removed!", android.widget.Toast.LENGTH_SHORT).show()
@@ -68,7 +70,16 @@ fun CourseAssignmentScreen(
         }
     }
 
-    
+    LaunchedEffect(uiState.error) {
+        uiState.error?.let { errorMessage ->
+            android.widget.Toast.makeText(context, errorMessage, android.widget.Toast.LENGTH_LONG).show()
+            viewModel.clearError()
+            showAssignDialog = false
+            isReassign = false
+            reassignOldAssignmentId = null
+        }
+    }
+
 
     // Dynamic categories from fetched department lists could be added, but for now we filter in code
     val categories = listOf("All Departments", "Computer Science", "Engineering", "Mathematics")
@@ -159,7 +170,7 @@ fun CourseAssignmentScreen(
                         label = { Text(category) },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = MaterialTheme.colorScheme.primary,
-                            selectedLabelColor = Color.White
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimary
                         )
                     )
                 }
@@ -284,7 +295,7 @@ fun AssignmentCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEEEEEE))
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Column(modifier = Modifier.padding(Spacing.md)) {
             Row(
@@ -329,7 +340,7 @@ fun AssignmentCard(
                         color = MaterialTheme.colorScheme.primaryContainer
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Icon(Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary)
+                            Icon(Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimaryContainer)
                         }
                     }
                     Spacer(modifier = Modifier.width(Spacing.md))
@@ -349,7 +360,7 @@ fun AssignmentCard(
                 Button(
                     onClick = onReassign,
                     modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFB2EBF2), contentColor = MaterialTheme.colorScheme.primary),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer, contentColor = MaterialTheme.colorScheme.onSecondaryContainer),
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text("Reassign", fontWeight = FontWeight.Bold)
@@ -357,8 +368,8 @@ fun AssignmentCard(
                 OutlinedButton(
                     onClick = { showRemoveConfirm = true },
                     modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFD32F2F)),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEEEEEE)),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text("Remove", fontWeight = FontWeight.Bold)
@@ -388,8 +399,8 @@ fun UnassignedCourseCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFF9FAFB)),
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEEEEEE))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Column(
             modifier = Modifier.padding(Spacing.xl).fillMaxWidth(),
@@ -398,7 +409,7 @@ fun UnassignedCourseCard(
             Surface(
                 modifier = Modifier.size(48.dp),
                 shape = CircleShape,
-                color = Color(0xFFEEEEEE)
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(Icons.Default.Add, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -471,7 +482,7 @@ fun AssignLecturerDialog(
                             modifier = Modifier.fillMaxWidth(),
                             color = MaterialTheme.colorScheme.surfaceVariant,
                             shape = RoundedCornerShape(12.dp),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEEEEEE))
+                            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
                         ) {
                             Text(
                                 text = "${preselectedCourseCode ?: ""} - ${preselectedCourseTitle ?: ""}",

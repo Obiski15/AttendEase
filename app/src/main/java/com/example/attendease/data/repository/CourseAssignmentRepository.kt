@@ -45,7 +45,7 @@ class CourseAssignmentRepository(
         return courseAssignmentApi.createCourseAssignment(request)
     }
 
-    suspend fun deleteCourseAssignment(assignmentId: String) {
-        courseAssignmentApi.deleteCourseAssignment(assignmentId)
+    suspend fun deleteCourseAssignment(assignmentId: String): CourseAssignmentResponse {
+        return courseAssignmentApi.deleteCourseAssignment(assignmentId)
     }
 }

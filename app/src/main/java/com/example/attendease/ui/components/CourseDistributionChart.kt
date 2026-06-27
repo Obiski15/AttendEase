@@ -7,6 +7,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.attendease.dto.response.PiePointResponse
 import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
@@ -44,7 +45,10 @@ fun CourseDistributionChart(
     val axisLineColor = MaterialTheme.colorScheme.outlineVariant
 
     // Create dynamic components for Vico
-    val labelComponent = textComponent(color = axisLabelColor)
+    val labelComponent = textComponent(
+        color = axisLabelColor,
+        textSize = 12.sp
+    )
     val axisLineComponent = lineComponent(color = axisLineColor, thickness = 1.dp)
     val guidelineComponent = lineComponent(color = axisLineColor.copy(alpha = 0.5f), thickness = 1.dp)
 

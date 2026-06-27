@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class AttendanceSessionCreateRequest(
+    val id: String? = null,
     @SerialName("course_assignment_id") val courseAssignmentId: String,
     @SerialName("session_date") val sessionDate: String? = null,
     @SerialName("duration_minutes") val durationMinutes: Int? = null,
@@ -19,5 +20,6 @@ data class AttendanceSessionCreateRequest(
 data class AttendanceCheckInRequest(
     @SerialName("session_code") val sessionCode: String,
     val latitude: Double? = null,
-    val longitude: Double? = null
+    val longitude: Double? = null,
+    @SerialName("check_in_time") val checkInTime: String? = null
 )
