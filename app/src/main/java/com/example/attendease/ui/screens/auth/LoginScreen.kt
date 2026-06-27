@@ -3,7 +3,12 @@ package com.example.attendease.ui.screens.auth
 import androidx.compose.foundation.background
 import com.example.attendease.ui.components.AttendEaseErrorDialog
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.draw.clip
+import com.example.attendease.R
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -107,28 +112,14 @@ fun LoginScreen(
                             .padding(horizontal = Spacing.xl, vertical = Spacing.xl),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        // Logo placeholder
-                        Box(
+                        // App Logo
+                        Image(
+                            painter = painterResource(id = R.drawable.app_logo),
+                            contentDescription = "App Logo",
                             modifier = Modifier
                                 .size(88.dp)
-                                .background(
-                                    brush = androidx.compose.ui.graphics.Brush.linearGradient(
-                                        colors = listOf(
-                                            MaterialTheme.colorScheme.primary,
-                                            MaterialTheme.colorScheme.secondary
-                                        )
-                                    ),
-                                    shape = RoundedCornerShape(24.dp)
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Check,
-                                contentDescription = "Logo",
-                                tint = MaterialTheme.colorScheme.onPrimary,
-                                modifier = Modifier.size(48.dp)
-                            )
-                        }
+                                .clip(RoundedCornerShape(24.dp))
+                        )
 
                         Spacer(modifier = Modifier.height(Spacing.lg))
 
@@ -232,8 +223,14 @@ fun LoginScreen(
                                 }
                             }
 
-                            if (sessionManager.isBiometricEnabled() && sessionManager.getSecureCredentials() != null) {
-                                Spacer(modifier = Modifier.width(Spacing.md))
+                        }
+
+                        if (sessionManager.isBiometricEnabled() && sessionManager.getSecureCredentials() != null) {
+                            Spacer(modifier = Modifier.height(Spacing.lg))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center
+                            ) {
                                 FilledIconButton(
                                     onClick = {
                                         val activity = context as? FragmentActivity
@@ -250,8 +247,8 @@ fun LoginScreen(
                                             }
                                         }
                                     },
-                                    modifier = Modifier.size(56.dp),
-                                    shape = RoundedCornerShape(28.dp),
+                                    modifier = Modifier.size(64.dp),
+                                    shape = CircleShape,
                                     colors = IconButtonDefaults.filledIconButtonColors(
                                         containerColor = MaterialTheme.colorScheme.primaryContainer
                                     )
@@ -259,7 +256,8 @@ fun LoginScreen(
                                     Icon(
                                         imageVector = Icons.Default.Fingerprint,
                                         contentDescription = "Biometric Login",
-                                        tint = MaterialTheme.colorScheme.onPrimaryContainer
+                                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                        modifier = Modifier.size(32.dp)
                                     )
                                 }
                             }
