@@ -33,6 +33,7 @@ class UserRepository(
             }
             response
         } catch (e: Exception) {
+            if (e is com.example.attendease.data.api.ApiException || e is com.example.attendease.data.api.UnauthorizedException) throw e
             Log.w("UserRepo", "Network failed, loading user cache", e)
             val cache = withContext(Dispatchers.IO) { apiCacheDao.getApiCache("user_$userId") }
             if (cache != null) {

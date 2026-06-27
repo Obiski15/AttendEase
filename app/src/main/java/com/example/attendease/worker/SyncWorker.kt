@@ -49,7 +49,7 @@ class SyncWorker(
                             val sessionId = map["session_id"] ?: throw IllegalArgumentException("Missing session_id in payload")
                             attendanceSessionApi.closeSession(sessionId)
                         }
-                        // Add more actions like "CHECK_IN" here
+                        // Add more actions here
                     }
                     
                     // Mark as synced
@@ -84,8 +84,8 @@ class SyncWorker(
         ) {
             val builder = NotificationCompat.Builder(context, "offline_sync_channel")
                 .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle("Offline Sync Complete")
-                .setContentText("Successfully synced $successCount offline action(s).")
+                .setContentTitle("Data Synchronization")
+                .setContentText("$successCount pending ${if (successCount == 1) "record was" else "records were"} securely synced.")
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 
             NotificationManagerCompat.from(context).notify(1001, builder.build())

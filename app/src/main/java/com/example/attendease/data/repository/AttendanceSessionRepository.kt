@@ -29,6 +29,7 @@ class AttendanceSessionRepository(
         return try {
             attendanceSessionApi.openSession(request)
         } catch (e: Exception) {
+            if (e is com.example.attendease.data.api.ApiException || e is com.example.attendease.data.api.UnauthorizedException) throw e
             Log.e("AttendanceSessionRepo", "Network failed, queueing offline action", e)
             
             // Queue for offline sync
@@ -72,6 +73,7 @@ class AttendanceSessionRepository(
         return try {
             attendanceSessionApi.closeSession(sessionId)
         } catch (e: Exception) {
+            if (e is com.example.attendease.data.api.ApiException || e is com.example.attendease.data.api.UnauthorizedException) throw e
             if (sessionId == "PENDING_SYNC") {
                 throw IllegalStateException("Cannot close an offline session before it has been synced.")
             }
@@ -107,6 +109,7 @@ class AttendanceSessionRepository(
             }
             response
         } catch (e: Exception) {
+            if (e is com.example.attendease.data.api.ApiException || e is com.example.attendease.data.api.UnauthorizedException) throw e
             Log.w("AttendanceSessionRepo", "Network failed, loading session records cache", e)
             val cache = withContext(Dispatchers.IO) { apiCacheDao.getApiCache("session_records_$sessionId") }
             if (cache != null) Json.decodeFromString(cache.payloadJson) else throw e
@@ -121,6 +124,7 @@ class AttendanceSessionRepository(
             }
             response
         } catch (e: Exception) {
+            if (e is com.example.attendease.data.api.ApiException || e is com.example.attendease.data.api.UnauthorizedException) throw e
             Log.w("AttendanceSessionRepo", "Network failed, loading sessions cache", e)
             val cache = withContext(Dispatchers.IO) { apiCacheDao.getApiCache("lecturer_sessions") }
             if (cache != null) Json.decodeFromString(cache.payloadJson) else throw e

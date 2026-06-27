@@ -28,6 +28,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.material3.MaterialTheme
+import androidx.fragment.app.FragmentActivity
+import com.example.attendease.utils.BiometricHelper
+import android.widget.Toast
+import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -62,6 +66,8 @@ fun SettingsScreen(
     
     val changePasswordState by authViewModel.changePasswordState.collectAsState()
     val updateProfileState by authViewModel.updateProfileState.collectAsState()
+
+    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(changePasswordState) {
         changePasswordState?.let { result ->
@@ -237,6 +243,7 @@ fun SettingsScreen(
 
             item {
                 val themePreference by sessionManager.themePreferenceFlow.collectAsState()
+                var biometricEnabled by remember { mutableStateOf(sessionManager.isBiometricEnabled()) }
                 
                 Card(
                     modifier = Modifier.fillMaxWidth().padding(bottom = Spacing.md),
@@ -270,6 +277,53 @@ fun SettingsScreen(
                         }
                     }
                 }
+                
+                Spacer(modifier = Modifier.height(Spacing.sm))
+                
+                SettingsSwitchItem(
+                    icon = Icons.Default.Fingerprint,
+                    title = "Biometric Unlock",
+                    subtitle = "Use Face ID / Fingerprint to unlock app & check-in",
+                    isChecked = biometricEnabled,
+                    onCheckedChange = { isEnabled ->
+                        if (isEnabled) {
+                            val activity = context as? FragmentActivity
+                            if (activity != null && BiometricHelper.isBiometricAvailable(activity)) {
+                                coroutineScope.launch {
+                                    val success = BiometricHelper.authenticate(
+                                        activity = activity,
+                                        title = "Enable Biometric Unlock",
+                                        subtitle = "Verify your identity to enable biometrics"
+                                    )
+                                    if (success) {
+                                        sessionManager.setBiometricEnabled(true)
+                                        biometricEnabled = true
+                                    }
+                                }
+                            } else {
+                                Toast.makeText(context, "Biometrics not available on this device", Toast.LENGTH_SHORT).show()
+                            }
+                        } else {
+                            val activity = context as? FragmentActivity
+                            if (activity != null && BiometricHelper.isBiometricAvailable(activity)) {
+                                coroutineScope.launch {
+                                    val success = BiometricHelper.authenticate(
+                                        activity = activity,
+                                        title = "Disable Biometric Unlock",
+                                        subtitle = "Verify your identity to disable biometrics"
+                                    )
+                                    if (success) {
+                                        sessionManager.setBiometricEnabled(false)
+                                        biometricEnabled = false
+                                    }
+                                }
+                            } else {
+                                sessionManager.setBiometricEnabled(false)
+                                biometricEnabled = false
+                            }
+                        }
+                    }
+                )
             }
 
             item {
@@ -449,7 +503,54 @@ fun SettingsItem(
             Icon(
                 imageVector = Icons.Default.ChevronRight,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.surfaceVariant
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+fun SettingsSwitchItem(
+    icon: ImageVector,
+    title: String,
+    subtitle: String,
+    isChecked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth().clickable { onCheckedChange(!isChecked) },
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(Spacing.md)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Surface(
+                modifier = Modifier.size(40.dp),
+                shape = RoundedCornerShape(10.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.width(Spacing.md))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(text = title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+                Text(text = subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Switch(
+                checked = isChecked,
+                onCheckedChange = onCheckedChange
             )
         }
     }

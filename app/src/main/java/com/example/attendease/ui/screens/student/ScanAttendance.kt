@@ -51,13 +51,16 @@ import com.example.attendease.viewModel.AttendanceViewModel
 import com.google.android.gms.location.LocationServices
 import org.koin.androidx.compose.koinViewModel
 import androidx.compose.material3.MaterialTheme
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScanAttendanceScreen(
     navController: NavController,
-    attendanceViewModel: AttendanceViewModel = koinViewModel()
+    attendanceViewModel: AttendanceViewModel = koinViewModel(),
+    sessionManager: com.example.attendease.data.session.SessionManager = org.koin.compose.koinInject()
 ) {
+    val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
 
@@ -104,10 +107,7 @@ fun ScanAttendanceScreen(
 
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
 
-    fun processCode(code: String) {
-        val cleanCode = code.trim().uppercase()
-        if (cleanCode.length < 5) return
-
+    fun proceedWithLocationAndCheckIn(cleanCode: String) {
         if (hasLocationPermission) {
             try {
                 fusedLocationClient.lastLocation.addOnSuccessListener { location ->
@@ -122,6 +122,31 @@ fun ScanAttendanceScreen(
             }
         } else {
             attendanceViewModel.checkIn(cleanCode, null, null)
+        }
+    }
+
+    fun processCode(code: String) {
+        val cleanCode = code.trim().uppercase()
+        if (cleanCode.length < 5) return
+
+        if (sessionManager.isBiometricEnabled()) {
+            val activity = context as? androidx.fragment.app.FragmentActivity
+            if (activity != null && com.example.attendease.utils.BiometricHelper.isBiometricAvailable(activity)) {
+                coroutineScope.launch {
+                    val passed = com.example.attendease.utils.BiometricHelper.authenticate(
+                        activity = activity,
+                        title = "Secure Check-in",
+                        subtitle = "Verify your identity to record attendance"
+                    )
+                    if (passed) {
+                        proceedWithLocationAndCheckIn(cleanCode)
+                    }
+                }
+            } else {
+                proceedWithLocationAndCheckIn(cleanCode)
+            }
+        } else {
+            proceedWithLocationAndCheckIn(cleanCode)
         }
     }
 
