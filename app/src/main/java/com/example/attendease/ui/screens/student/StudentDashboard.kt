@@ -20,6 +20,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.attendease.dto.response.RecentAttendanceResponse
 import com.example.attendease.enums.UserRole
+import com.example.attendease.utils.DateUtils
 import com.example.attendease.ui.components.AttendEaseErrorDialog
 import com.example.attendease.ui.components.AuthenticateUser
 import com.example.attendease.ui.components.ActionCard
@@ -28,6 +29,7 @@ import com.example.attendease.ui.components.AttendEaseTopAppBar
 import com.example.attendease.ui.components.CircularProgressWithText
 import com.example.attendease.ui.navigation.Screen
 import com.example.attendease.ui.theme.Spacing
+import com.example.attendease.ui.components.DonutChart
 import androidx.compose.material3.MaterialTheme
 import com.example.attendease.viewModel.DashboardViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -278,15 +280,25 @@ fun AttendanceOverviewCard(
 
             Spacer(modifier = Modifier.height(Spacing.md))
 
-            // Circular progress with real percentage
             Box(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressWithText(
-                    progress = (attendancePercentage / 100).toFloat(),
-                    percentage = "${attendancePercentage.toInt()}"
-                )
+                Box(contentAlignment = Alignment.Center) {
+                    DonutChart(
+                        percentage = attendancePercentage.toFloat(),
+                        modifier = Modifier.size(120.dp),
+                        primaryColor = MaterialTheme.colorScheme.primary,
+                        secondaryColor = MaterialTheme.colorScheme.errorContainer,
+                        strokeWidth = 24f
+                    )
+                    Text(
+                        text = "${attendancePercentage.toInt()}%",
+                        style = MaterialTheme.typography.displaySmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
         }
     }
@@ -343,15 +355,7 @@ fun AttendanceRecordItem(record: RecentAttendanceResponse) {
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 
-                val formattedTime = try {
-                    if (record.checkInTime.contains("T")) {
-                        record.checkInTime.substringAfter("T").substringBefore(".").take(5)
-                    } else if (record.checkInTime.contains(":")) {
-                        record.checkInTime.take(5)
-                    } else {
-                        record.checkInTime
-                    }
-                } catch(e: Exception) { record.checkInTime }
+                val formattedTime = DateUtils.parseIsoTimeToDisplay(record.checkInTime)
 
                 Text(
                     text = "${record.sessionDate} • $formattedTime",

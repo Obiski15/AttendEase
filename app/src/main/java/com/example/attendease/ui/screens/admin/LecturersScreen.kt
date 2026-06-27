@@ -1,7 +1,6 @@
 package com.example.attendease.ui.screens.admin
 
 import androidx.compose.foundation.background
-import com.example.attendease.ui.components.AttendEaseErrorDialog
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -23,13 +22,13 @@ import com.example.attendease.enums.UserRole
 import com.example.attendease.ui.components.AttendEaseBottomBar
 import com.example.attendease.ui.components.AttendEaseTopAppBar
 import com.example.attendease.ui.components.AttendEaseConfirmDialog
+import com.example.attendease.ui.components.AttendEaseErrorDialog
+import com.example.attendease.ui.components.ListSkeleton
 import com.example.attendease.ui.navigation.Screen
 import com.example.attendease.ui.theme.Spacing
 import com.example.attendease.viewModel.LecturerViewModel
 import com.example.attendease.dto.response.LecturerResponse
 import org.koin.androidx.compose.koinViewModel
-import com.example.attendease.ui.components.ListSkeleton
-import androidx.compose.material3.MaterialTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,8 +40,8 @@ fun LecturersScreen(
     val lecturers by viewModel.lecturers.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
-    AttendEaseErrorDialog(errorMessage = error, onDismiss = { viewModel.clearError() })
 
+    AttendEaseErrorDialog(errorMessage = error, onDismiss = { viewModel.clearError() })
 
     LaunchedEffect(Unit) {
         viewModel.loadLecturers()
@@ -105,9 +104,6 @@ fun LecturersScreen(
             if (isLoading && lecturers.isEmpty()) {
                 ListSkeleton()
             } else {
-                // Error state
-                
-
                 if (filteredLecturers.isEmpty()) {
                     Box(
                         modifier = Modifier
@@ -178,7 +174,7 @@ fun LecturerCard(
                 modifier = Modifier
                     .size(56.dp)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.1f)),
+                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -196,7 +192,7 @@ fun LecturerCard(
                     text = lecturer.user?.name ?: "User",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1A237E) // Dark blue
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = lecturer.user?.email ?: "",
@@ -205,7 +201,7 @@ fun LecturerCard(
                 )
                 Spacer(modifier = Modifier.height(Spacing.xs))
                 Surface(
-                    color = Color(0xFFB2EBF2), // Light teal
+                    color = MaterialTheme.colorScheme.secondaryContainer,
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Row(
@@ -215,14 +211,14 @@ fun LecturerCard(
                         Icon(
                             imageVector = Icons.Default.Badge,
                             contentDescription = null,
-                            tint = Color(0xFF006064),
+                            tint = MaterialTheme.colorScheme.onSecondaryContainer,
                             modifier = Modifier.size(14.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = "Staff ID: ${lecturer.staffId ?: "N/A"}",
                             style = MaterialTheme.typography.labelSmall,
-                            color = Color(0xFF006064),
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
                             fontWeight = FontWeight.Bold
                         )
                     }

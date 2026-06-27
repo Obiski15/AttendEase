@@ -10,6 +10,8 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.navigation.NavController
 import com.example.attendease.enums.UserRole
 import com.example.attendease.ui.components.*
@@ -125,6 +127,27 @@ fun AdminDashboardScreen(
                         contentColor = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier.weight(1f)
                     )
+                }
+            }
+
+            if (stats?.weeklyAttendanceTrend?.isNotEmpty() == true) {
+                item {
+                    Spacer(modifier = Modifier.height(Spacing.md))
+                    Text(
+                        text = "Weekly Check-In Trend",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(Spacing.xs))
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                    ) {
+                        WeeklyTrendChart(
+                            trendData = stats!!.weeklyAttendanceTrend
+                        )
+                    }
                 }
             }
 

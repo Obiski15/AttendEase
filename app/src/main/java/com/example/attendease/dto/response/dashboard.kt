@@ -8,7 +8,8 @@ data class AdminDashboardResponse(
     @SerialName("total_students") val totalStudents: Int,
     @SerialName("total_lecturers") val totalLecturers: Int,
     @SerialName("total_courses") val totalCourses: Int,
-    @SerialName("active_sessions") val activeSessions: Int
+    @SerialName("active_sessions") val activeSessions: Int,
+    @SerialName("weekly_attendance_trend") val weeklyAttendanceTrend: List<TrendPointResponse> = emptyList()
 )
 
 @Serializable
@@ -20,6 +21,18 @@ data class LecturerActiveSessionResponse(
     @SerialName("expires_at") val expiresAt: String,
     @SerialName("geofencing_enabled") val geofencingEnabled: Boolean,
     @SerialName("radius_meters") val radiusMeters: Int? = null
+)
+
+@Serializable
+data class PiePointResponse(
+    val label: String,
+    val count: Int
+)
+
+@Serializable
+data class TrendPointResponse(
+    @SerialName("date_str") val dateStr: String,
+    val count: Int
 )
 
 @Serializable
@@ -36,7 +49,8 @@ data class LecturerDashboardResponse(
     @SerialName("assigned_courses") val assignedCourses: Int,
     @SerialName("total_sessions") val totalSessions: Int,
     @SerialName("active_sessions") val activeSessions: List<LecturerActiveSessionResponse>,
-    val courses: List<LecturerCourseResponse>
+    val courses: List<LecturerCourseResponse>,
+    @SerialName("course_distribution") val courseDistribution: List<PiePointResponse> = emptyList()
 )
 
 @Serializable
