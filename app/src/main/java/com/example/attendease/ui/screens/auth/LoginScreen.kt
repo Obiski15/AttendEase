@@ -69,7 +69,7 @@ fun LoginScreen(
             if (activity != null && BiometricHelper.isBiometricAvailable(activity)) {
                 val success = BiometricHelper.authenticate(
                     activity = activity,
-                    title = "Fast Login",
+                    title = "Biometirc Authentication",
                     subtitle = "Verify your identity to log in"
                 )
                 if (success) {
@@ -238,7 +238,7 @@ fun LoginScreen(
                                             coroutineScope.launch {
                                                 val success = BiometricHelper.authenticate(
                                                     activity = activity,
-                                                    title = "Fast Login",
+                                                    title = "Biometirc Authentication",
                                                     subtitle = "Verify your identity to log in"
                                                 )
                                                 if (success) {
