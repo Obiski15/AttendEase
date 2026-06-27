@@ -26,7 +26,12 @@ import com.example.attendease.ui.components.AttendEaseTopAppBar
 import com.example.attendease.ui.navigation.Screen
 import com.example.attendease.ui.theme.Spacing
 import androidx.compose.material3.MaterialTheme
-
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import com.example.attendease.viewModel.AttendanceViewModel
+import com.example.attendease.ui.components.AttendEaseErrorDialog
+import org.koin.androidx.compose.koinViewModel
 data class StudentSession(
     val day: String,
     val month: String,
@@ -38,14 +43,17 @@ data class StudentSession(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StudentAttendanceHistoryScreen(navController: NavController) {
+fun StudentAttendanceHistoryScreen(navController: NavController, viewModel: AttendanceViewModel = koinViewModel()) {
     var selectedFilter by remember { mutableStateOf("ALL") }
-    
-    val dummySessions = listOf(
-        StudentSession("24", "OCT", "CS301", "Data Structures & Algos", "09:00 AM - 10:30 AM", true),
-        StudentSession("22", "OCT", "MATH204", "Linear Algebra", "11:00 AM - 12:30 PM", false),
-        StudentSession("21", "OCT", "ENG102", "Technical Writing", "02:00 PM - 03:30 PM", true)
-    )
+    val attendanceHistory by viewModel.attendanceHistory.collectAsStateWithLifecycle()
+    val error by viewModel.error.collectAsStateWithLifecycle()
+    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) { viewModel.getMyAttendance() }
+
+    error?.let {
+        AttendEaseErrorDialog(errorMessage = it, onDismiss = { viewModel.clearError() })
+    }
 
     Scaffold(
         topBar = {
@@ -194,8 +202,17 @@ fun StudentAttendanceHistoryScreen(navController: NavController) {
                 }
             }
 
-            items(dummySessions) { session ->
-                SessionItem(session)
+            items(attendanceHistory) { record ->
+                SessionItem(
+                    StudentSession(
+                        day = record.checkInTime.take(2),
+                        month = record.checkInTime.drop(3).take(3),
+                        code = record.sessionId.take(8),
+                        title = record.status,
+                        time = record.checkInTime,
+                        isPresent = record.status == "PRESENT"
+                    )
+                )
             }
             
             item {

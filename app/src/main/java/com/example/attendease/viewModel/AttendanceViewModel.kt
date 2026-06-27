@@ -52,4 +52,23 @@ class AttendanceViewModel(
     fun clearError() {
         _error.value = null
     }
+
+    private val _attendanceHistory = MutableStateFlow<List<AttendanceRecordResponse>>(emptyList())
+    val attendanceHistory = _attendanceHistory.asStateFlow()
+
+    fun getMyAttendance() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _error.value = null
+            try {
+                val history = repository.getMyAttendance()
+                _attendanceHistory.value = history
+            } catch (e: Exception) {
+                _error.value = e.message ?: "Failed to load attendance history."
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+}
 }
