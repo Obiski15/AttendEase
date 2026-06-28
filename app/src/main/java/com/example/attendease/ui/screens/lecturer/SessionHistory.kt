@@ -15,7 +15,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -97,7 +96,23 @@ fun LecturerSessionHistoryScreen(
                 "Open Session"
             }
 
-            val isActive = session.status == "ACTIVE"
+            val isExpired = session.expiresAt?.let {
+                try {
+                    var clean = it.replace(" ", "T")
+                    if (clean.contains(".")) clean = clean.substringBefore(".")
+                    else if (clean.contains("+")) clean = clean.substringBefore("+")
+                    else if (clean.contains("Z")) clean = clean.replace("Z", "")
+
+                    val inputFormat = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault())
+                    inputFormat.timeZone = java.util.TimeZone.getTimeZone("UTC")
+                    val date = inputFormat.parse(clean)
+                    date?.before(java.util.Date()) ?: false
+                } catch (e: Exception) {
+                    false
+                }
+            } ?: false
+
+            val isActive = session.status == "ACTIVE" && !isExpired
 
             val item = LecturerSession(
                 code = courseCode,
@@ -169,7 +184,7 @@ fun LecturerSessionHistoryScreen(
                         label = { Text(filter) },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = MaterialTheme.colorScheme.primary,
-                            selectedLabelColor = Color.White
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimary
                         )
                     )
                 }
@@ -223,7 +238,7 @@ fun LecturerSessionCard(session: LecturerSession, onClick: (() -> Unit)? = null)
             .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEEEEEE))
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Column(modifier = Modifier.padding(Spacing.md)) {
             Row(
@@ -232,7 +247,7 @@ fun LecturerSessionCard(session: LecturerSession, onClick: (() -> Unit)? = null)
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Surface(
-                    color = Color(0xFFE8EAF6),
+                    color = MaterialTheme.colorScheme.primaryContainer,
                     shape = RoundedCornerShape(4.dp)
                 ) {
                     Text(
@@ -245,7 +260,7 @@ fun LecturerSessionCard(session: LecturerSession, onClick: (() -> Unit)? = null)
                 }
                 
                 Surface(
-                    color = if (session.isActive) Color(0xFFE8EAF6) else Color(0xFFE0F2F1),
+                    color = if (session.isActive) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Row(
@@ -256,14 +271,14 @@ fun LecturerSessionCard(session: LecturerSession, onClick: (() -> Unit)? = null)
                             modifier = Modifier
                                 .size(6.dp)
                                 .clip(CircleShape)
-                                .background(if (session.isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary)
+                                .background(if (session.isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = if (session.isActive) "ACTIVE" else "COMPLETED",
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
-                            color = if (session.isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary
+                            color = if (session.isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -319,7 +334,7 @@ fun LecturerSessionCard(session: LecturerSession, onClick: (() -> Unit)? = null)
                 progress = { progress },
                 modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)),
                 color = if (session.isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary,
-                trackColor = Color(0xFFEEEEEE)
+                trackColor = MaterialTheme.colorScheme.surfaceVariant
             )
         }
     }

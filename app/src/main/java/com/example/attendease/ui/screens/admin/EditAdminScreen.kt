@@ -10,7 +10,6 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -83,7 +82,7 @@ fun EditAdminScreen(
                     
                     // Info Banner
                     Surface(
-                        color = Color(0xFFF1F3F4),
+                        color = MaterialTheme.colorScheme.surfaceVariant,
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Row(modifier = Modifier.padding(Spacing.md)) {
@@ -107,7 +106,7 @@ fun EditAdminScreen(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .border(1.dp, Color(0xFFEEEEEE), RoundedCornerShape(16.dp))
+                            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp))
                             .padding(Spacing.md),
                         verticalArrangement = Arrangement.spacedBy(Spacing.md)
                     ) {
