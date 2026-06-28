@@ -27,8 +27,11 @@ class AttendanceRepository(
         return try {
             attendanceApi.checkIn(request)
         } catch (e: Exception) {
-            if (e is com.example.attendease.data.api.ApiException || e is com.example.attendease.data.api.UnauthorizedException) throw e
-            Log.e("AttendanceRepo", "Network failed, queueing CHECK_IN", e)
+            val isNotFound = (e as? com.example.attendease.data.api.ApiException)?.code == 404
+            if ((e is com.example.attendease.data.api.ApiException && !isNotFound) || e is com.example.attendease.data.api.UnauthorizedException) {
+                throw e
+            }
+            Log.e("AttendanceRepo", if (isNotFound) "Session not found, queuing CHECK_IN for later" else "Network failed, queueing CHECK_IN", e)
             
             // Record the exact offline check-in time
             val offlineTime = java.time.Instant.now().toString()

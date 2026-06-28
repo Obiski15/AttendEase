@@ -22,6 +22,16 @@ class LecturerSessionViewModel(
     private val _activeSession = MutableStateFlow<AttendanceSessionResponse?>(null)
     val activeSession = _activeSession.asStateFlow()
 
+    private val _activeCourseTitle = MutableStateFlow<String?>(null)
+    val activeCourseTitle = _activeCourseTitle.asStateFlow()
+
+    fun setActiveCourseTitle(title: String) {
+        _activeCourseTitle.value = title
+    }
+
+    private val _locallyClosedSessionIds = MutableStateFlow<Set<String>>(emptySet())
+    val locallyClosedSessionIds = _locallyClosedSessionIds.asStateFlow()
+
     private val _checkedInRecords = MutableStateFlow<List<AttendanceRecordResponse>>(emptyList())
     val checkedInRecords = _checkedInRecords.asStateFlow()
 
@@ -110,6 +120,7 @@ class LecturerSessionViewModel(
                 expirationJob?.cancel()
                 expirationJob = null
                 _activeSession.value = null
+                _locallyClosedSessionIds.value = _locallyClosedSessionIds.value + sessionId
                 _checkedInRecords.value = emptyList()
                 onSuccess()
             } catch (e: Exception) {

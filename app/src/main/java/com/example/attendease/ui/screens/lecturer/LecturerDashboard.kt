@@ -35,6 +35,7 @@ import com.example.attendease.ui.theme.Spacing
 import com.example.attendease.viewModel.LecturerSessionViewModel
 import com.example.attendease.viewModel.DashboardViewModel
 import com.example.attendease.dto.response.AttendanceSessionResponse
+import com.example.attendease.dto.response.LecturerActiveSessionResponse
 import com.example.attendease.ui.components.CourseDistributionChart
 import androidx.compose.material3.MaterialTheme
 
@@ -64,6 +65,9 @@ fun LecturerDashboardScreen(
     LaunchedEffect(Unit) {
         dashboardViewModel.loadLecturerDashboard()
     }
+
+    val currentLocalSession by sessionViewModel.activeSession.collectAsState()
+    val locallyClosedSessionIds by sessionViewModel.locallyClosedSessionIds.collectAsState()
 
     val lecturerStats by dashboardViewModel.lecturerStats.collectAsState()
     val isLoading by dashboardViewModel.isLoading.collectAsState()
@@ -193,7 +197,20 @@ fun LecturerDashboardScreen(
                 }
 
                 item {
-                    val activeSession = lecturerStats?.activeSessions?.firstOrNull()
+                    val dashboardActiveSession = lecturerStats?.activeSessions?.firstOrNull { it.id !in locallyClosedSessionIds }
+                    
+                    val activeSession = currentLocalSession?.let { local ->
+                        LecturerActiveSessionResponse(
+                            id = local.id,
+                            courseCode = "",
+                            courseTitle = "",
+                            sessionCode = local.sessionCode ?: "",
+                            expiresAt = local.expiresAt ?: "",
+                            geofencingEnabled = local.geofencingEnabled ?: false,
+                            radiusMeters = local.radiusMeters
+                        )
+                    } ?: dashboardActiveSession
+
                     val activeSessionCode = activeSession?.sessionCode ?: "None"
                     val isSessionActive = activeSessionCode != "None"
 
@@ -219,6 +236,7 @@ fun LecturerDashboardScreen(
                                     longitude = null,
                                     radiusMeters = activeSession.radiusMeters
                                 )
+                                sessionViewModel.setActiveCourseTitle(activeSession.courseTitle)
                                 sessionViewModel.setActiveSession(sessionResponse)
                                 navController.navigate(Screen.StartSession.route)
                             }
@@ -369,6 +387,10 @@ fun LecturerDashboardScreen(
                         val lat = latitudeText.toDoubleOrNull()
                         val lon = longitudeText.toDoubleOrNull()
                         val rad = radiusText.toIntOrNull()
+                        
+                        val selectedCourse = courses.find { it.assignmentId == selectedAssignmentId }
+                        sessionViewModel.setActiveCourseTitle(selectedCourse?.name ?: "Course")
+                        
                         sessionViewModel.startSession(
                             courseAssignmentId = selectedAssignmentId,
                             durationMinutes = duration,

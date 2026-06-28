@@ -141,7 +141,7 @@ fun StudentAttendanceHistoryScreen(navController: NavController, viewModel: Atte
                                 percentage = attendanceRate,
                                 modifier = Modifier.padding(end = 16.dp),
                                 primaryColor = MaterialTheme.colorScheme.primary,
-                                secondaryColor = Color(0xFFEEEEEE),
+                                secondaryColor = MaterialTheme.colorScheme.surfaceVariant,
                                 strokeWidth = 30f
                             )
                         }
@@ -165,7 +165,7 @@ fun StudentAttendanceHistoryScreen(navController: NavController, viewModel: Atte
                         title = "TOTAL ABSENT",
                         value = absentCount.toString(),
                         icon = Icons.Default.Cancel,
-                        iconColor = Color(0xFFD32F2F),
+                        iconColor = MaterialTheme.colorScheme.error,
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -175,7 +175,7 @@ fun StudentAttendanceHistoryScreen(navController: NavController, viewModel: Atte
                 // Segmented Filter
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
-                    color = Color(0xFFEEEEEE),
+                    color = MaterialTheme.colorScheme.surfaceVariant,
                     shape = RoundedCornerShape(24.dp)
                 ) {
                     Row(modifier = Modifier.padding(4.dp)) {
@@ -192,7 +192,7 @@ fun StudentAttendanceHistoryScreen(navController: NavController, viewModel: Atte
                                         text = filter,
                                         style = MaterialTheme.typography.labelSmall,
                                         fontWeight = FontWeight.Bold,
-                                        color = if (isSelected) Color.White else Color.Gray
+                                        color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
                             }
@@ -284,7 +284,7 @@ fun HistoryStatCard(title: String, value: String, icon: ImageVector, iconColor: 
         modifier = modifier.height(180.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEEEEEE))
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -301,7 +301,7 @@ fun HistoryStatCard(title: String, value: String, icon: ImageVector, iconColor: 
                 }
             }
             Spacer(modifier = Modifier.height(Spacing.md))
-            Text(value, style = MaterialTheme.typography.displayMedium, fontWeight = FontWeight.Bold, color = Color(0xFF333333))
+            Text(value, style = MaterialTheme.typography.displayMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
             Text(title, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
@@ -313,7 +313,7 @@ fun SessionItem(session: StudentSession) {
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEEEEEE))
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
     ) {
         Column(modifier = Modifier.padding(Spacing.md)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -334,7 +334,7 @@ fun SessionItem(session: StudentSession) {
                 Column {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Surface(
-                            color = Color(0xFFE8EAF6),
+                            color = MaterialTheme.colorScheme.primaryContainer,
                             shape = RoundedCornerShape(4.dp)
                         ) {
                             Text(
@@ -366,7 +366,7 @@ fun SessionItem(session: StudentSession) {
             Spacer(modifier = Modifier.height(Spacing.md))
             
             Surface(
-                color = if (session.isPresent) Color(0xFFE0F2F1) else Color(0xFFFFEBEE),
+                color = if (session.isPresent) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f) else MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f),
                 shape = RoundedCornerShape(20.dp)
             ) {
                 Row(
@@ -377,14 +377,14 @@ fun SessionItem(session: StudentSession) {
                         imageVector = if (session.isPresent) Icons.Default.CheckCircle else Icons.Default.Cancel,
                         contentDescription = null,
                         modifier = Modifier.size(14.dp),
-                        tint = if (session.isPresent) MaterialTheme.colorScheme.primary else Color(0xFFD32F2F)
+                        tint = if (session.isPresent) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         if (session.isPresent) "PRESENT" else "ABSENT",
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold,
-                        color = if (session.isPresent) MaterialTheme.colorScheme.primary else Color(0xFFD32F2F)
+                        color = if (session.isPresent) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
                     )
                 }
             }

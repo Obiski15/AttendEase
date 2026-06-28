@@ -199,6 +199,7 @@ fun LecturerSessionHistoryScreen(
                             session = sessionItem,
                             onClick = if (sessionItem.isActive && sessionItem.originalResponse != null) {
                                 {
+                                    sessionViewModel.setActiveCourseTitle(sessionItem.title)
                                     sessionViewModel.setActiveSession(sessionItem.originalResponse)
                                     navController.navigate(Screen.StartSession.route)
                                 }
