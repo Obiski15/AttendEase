@@ -316,7 +316,7 @@ fun ScanAttendanceScreen(
             },
             title = { Text("Check-In Successful", fontWeight = FontWeight.Bold) },
             text = {
-                val timeStr = record.checkInTime?.substringAfter('T')?.substringBefore('.') ?: "..."
+                val timeStr = com.example.attendease.utils.DateUtils.parseIsoTimeToDisplay(record.checkInTime)
                 Text(
                     text = "You have successfully checked in!\nTime: $timeStr",
                     style = MaterialTheme.typography.bodyLarge,

@@ -38,6 +38,7 @@ fun LecturerActiveSessionScreen(
     sessionViewModel: LecturerSessionViewModel
 ) {
     val activeSession by sessionViewModel.activeSession.collectAsState()
+    val activeCourseTitle by sessionViewModel.activeCourseTitle.collectAsState()
     val records by sessionViewModel.checkedInRecords.collectAsState()
     val isLoading by sessionViewModel.isLoading.collectAsState()
     val error by sessionViewModel.error.collectAsState()
@@ -163,8 +164,8 @@ fun LecturerActiveSessionScreen(
                 item {
                     Spacer(modifier = Modifier.height(Spacing.base))
                     Text(
-                        text = "Scan to Attend",
-                        style = MaterialTheme.typography.displaySmall,
+                        text = activeCourseTitle ?: "Scan to Attend",
+                        style = MaterialTheme.typography.headlineMedium,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold
                     )
@@ -436,7 +437,7 @@ fun LecturerActiveSessionScreen(
                                         style = MaterialTheme.typography.bodyMedium
                                     )
                                     Text(
-                                        text = "Time: ${record.checkInTime?.substringAfter("T")?.substringBefore(".") ?: "..."}",
+                                        text = "Time: ${com.example.attendease.utils.DateUtils.parseIsoTimeToDisplay(record.checkInTime)}",
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )

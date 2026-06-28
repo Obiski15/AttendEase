@@ -61,6 +61,8 @@ fun CourseAssignmentScreen(
             android.widget.Toast.makeText(context, "Assignment saved successfully!", android.widget.Toast.LENGTH_SHORT).show()
             viewModel.resetSaveState()
             showAssignDialog = false
+            isReassign = false
+            reassignOldAssignmentId = null
         }
         if (uiState.deleteSuccess) {
             android.widget.Toast.makeText(context, "Assignment removed!", android.widget.Toast.LENGTH_SHORT).show()
@@ -68,7 +70,16 @@ fun CourseAssignmentScreen(
         }
     }
 
-    
+    LaunchedEffect(uiState.error) {
+        uiState.error?.let { errorMessage ->
+            android.widget.Toast.makeText(context, errorMessage, android.widget.Toast.LENGTH_LONG).show()
+            viewModel.clearError()
+            showAssignDialog = false
+            isReassign = false
+            reassignOldAssignmentId = null
+        }
+    }
+
 
     // Dynamic categories from fetched department lists could be added, but for now we filter in code
     val categories = listOf("All Departments", "Computer Science", "Engineering", "Mathematics")
@@ -159,7 +170,7 @@ fun CourseAssignmentScreen(
                         label = { Text(category) },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = MaterialTheme.colorScheme.primary,
-                            selectedLabelColor = Color.White
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimary
                         )
                     )
                 }
@@ -242,13 +253,14 @@ fun CourseAssignmentScreen(
         if (showAssignDialog) {
             AssignLecturerDialog(
                 isReassign = isReassign,
+                isSaving = uiState.isSaving,
                 preselectedCourseCode = selectedCourseCode,
                 preselectedCourseTitle = selectedCourseTitle,
                 preselectedCourseId = selectedCourseId,
                 unassignedCourses = uiState.unassignedCourses,
                 lecturers = uiState.lecturers,
                 academicSessions = uiState.academicSessions,
-                onDismiss = { showAssignDialog = false },
+                onDismiss = { if (!uiState.isSaving) showAssignDialog = false },
                 onConfirm = { courseId, lecturerId, sessionId ->
                     if (isReassign) {
                         reassignOldAssignmentId?.let { oldId ->
@@ -284,7 +296,7 @@ fun AssignmentCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEEEEEE))
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Column(modifier = Modifier.padding(Spacing.md)) {
             Row(
@@ -329,7 +341,7 @@ fun AssignmentCard(
                         color = MaterialTheme.colorScheme.primaryContainer
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Icon(Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary)
+                            Icon(Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimaryContainer)
                         }
                     }
                     Spacer(modifier = Modifier.width(Spacing.md))
@@ -349,7 +361,7 @@ fun AssignmentCard(
                 Button(
                     onClick = onReassign,
                     modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFB2EBF2), contentColor = MaterialTheme.colorScheme.primary),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer, contentColor = MaterialTheme.colorScheme.onSecondaryContainer),
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text("Reassign", fontWeight = FontWeight.Bold)
@@ -357,8 +369,8 @@ fun AssignmentCard(
                 OutlinedButton(
                     onClick = { showRemoveConfirm = true },
                     modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFD32F2F)),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEEEEEE)),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text("Remove", fontWeight = FontWeight.Bold)
@@ -388,8 +400,8 @@ fun UnassignedCourseCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFF9FAFB)),
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEEEEEE))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Column(
             modifier = Modifier.padding(Spacing.xl).fillMaxWidth(),
@@ -398,7 +410,7 @@ fun UnassignedCourseCard(
             Surface(
                 modifier = Modifier.size(48.dp),
                 shape = CircleShape,
-                color = Color(0xFFEEEEEE)
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(Icons.Default.Add, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -424,6 +436,7 @@ fun UnassignedCourseCard(
 @Composable
 fun AssignLecturerDialog(
     isReassign: Boolean,
+    isSaving: Boolean = false,
     preselectedCourseCode: String?,
     preselectedCourseTitle: String?,
     preselectedCourseId: String?,
@@ -471,7 +484,7 @@ fun AssignLecturerDialog(
                             modifier = Modifier.fillMaxWidth(),
                             color = MaterialTheme.colorScheme.surfaceVariant,
                             shape = RoundedCornerShape(12.dp),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEEEEEE))
+                            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
                         ) {
                             Text(
                                 text = "${preselectedCourseCode ?: ""} - ${preselectedCourseTitle ?: ""}",
@@ -511,7 +524,8 @@ fun AssignLecturerDialog(
         confirmButton = {
             val isConfirmEnabled = (isReassign || selectedCourseName.isNotEmpty()) &&
                     selectedLecturerName.isNotEmpty() &&
-                    selectedSessionName.isNotEmpty()
+                    selectedSessionName.isNotEmpty() &&
+                    !isSaving
             Button(
                 onClick = {
                     val courseId = if (isReassign) {
@@ -526,11 +540,19 @@ fun AssignLecturerDialog(
                 enabled = isConfirmEnabled,
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
-                Text("Confirm", fontWeight = FontWeight.Bold)
+                if (isSaving) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                } else {
+                    Text("Confirm", fontWeight = FontWeight.Bold)
+                }
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(onClick = onDismiss, enabled = !isSaving) {
                 Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }

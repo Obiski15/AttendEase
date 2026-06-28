@@ -65,7 +65,7 @@ val appModule = module {
     single { AuthApi(get(), get()) }
     single { AuthRepository(get(), get()) }
     single { DashboardApi(get(), get(), get()) }
-    single { DashboardRepository(get(), get()) }
+    single { DashboardRepository(get(), get(), get()) }
     single { UserApi(get(), get(), get()) }
 
     single { LecturerApi(get(), get(), get()) }

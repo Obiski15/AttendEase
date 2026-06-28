@@ -32,8 +32,19 @@ class AttendanceSessionRepository(
             if (e is com.example.attendease.data.api.ApiException || e is com.example.attendease.data.api.UnauthorizedException) throw e
             Log.e("AttendanceSessionRepo", "Network failed, queueing offline action", e)
             
+            // Generate UUID and Session Code locally
+            val localId = UUID.randomUUID().toString()
+            val localCode = run {
+                val alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+                val secureRandom = java.security.SecureRandom()
+                (1..6).map { alphabet[secureRandom.nextInt(alphabet.length)] }.joinToString("")
+            }
+
+            // Create a new request object with the injected ID
+            val requestWithId = request.copy(id = localId, sessionCode = localCode)
+
             // Queue for offline sync
-            val payload = Json.encodeToString(request)
+            val payload = Json.encodeToString(requestWithId)
             withContext(Dispatchers.IO) {
                 syncDao.insertSyncAction(
                     PendingSyncActionEntity(
@@ -52,14 +63,15 @@ class AttendanceSessionRepository(
                 .build()
             workManager.enqueue(syncRequest)
 
-            // Return a local pending response so the UI proceeds immediately
+            // Return a local pending response so the UI proceeds immediately with the valid ID and Code
+            val localExpiresAt = java.time.Instant.now().plusSeconds((request.durationMinutes ?: 60) * 60L).toString()
             AttendanceSessionResponse(
-                id = UUID.randomUUID().toString(),
+                id = localId,
                 courseAssignmentId = request.courseAssignmentId,
                 sessionDate = null,
                 startTime = null,
-                expiresAt = null,
-                sessionCode = "PENDING_SYNC",
+                expiresAt = localExpiresAt,
+                sessionCode = localCode,
                 status = "PENDING",
                 geofencingEnabled = request.geofencingEnabled,
                 latitude = request.latitude,
@@ -74,9 +86,6 @@ class AttendanceSessionRepository(
             attendanceSessionApi.closeSession(sessionId)
         } catch (e: Exception) {
             if (e is com.example.attendease.data.api.ApiException || e is com.example.attendease.data.api.UnauthorizedException) throw e
-            if (sessionId == "PENDING_SYNC") {
-                throw IllegalStateException("Cannot close an offline session before it has been synced.")
-            }
             Log.e("AttendanceSessionRepo", "Network failed, queueing closeSession", e)
             val payload = Json.encodeToString(mapOf("session_id" to sessionId))
             withContext(Dispatchers.IO) {
@@ -127,7 +136,28 @@ class AttendanceSessionRepository(
             if (e is com.example.attendease.data.api.ApiException || e is com.example.attendease.data.api.UnauthorizedException) throw e
             Log.w("AttendanceSessionRepo", "Network failed, loading sessions cache", e)
             val cache = withContext(Dispatchers.IO) { apiCacheDao.getApiCache("lecturer_sessions") }
-            if (cache != null) Json.decodeFromString(cache.payloadJson) else throw e
+            val cachedSessions = if (cache != null) Json.decodeFromString<List<AttendanceSessionResponse>>(cache.payloadJson) else emptyList()
+            
+            val pendingActions = withContext(Dispatchers.IO) { syncDao.getPendingActions() }
+            val pendingSessions = pendingActions.filter { it.actionType == "START_SESSION" }.map { action ->
+                val req = Json.decodeFromString<AttendanceSessionCreateRequest>(action.payloadJson)
+                AttendanceSessionResponse(
+                    id = req.id ?: "",
+                    courseAssignmentId = req.courseAssignmentId,
+                    sessionDate = req.sessionDate,
+                    startTime = null,
+                    expiresAt = null,
+                    sessionCode = req.sessionCode ?: "",
+                    status = "PENDING",
+                    geofencingEnabled = req.geofencingEnabled,
+                    latitude = req.latitude,
+                    longitude = req.longitude,
+                    radiusMeters = req.radiusMeters
+                )
+            }
+            
+            if (cachedSessions.isEmpty() && pendingSessions.isEmpty()) throw e
+            cachedSessions + pendingSessions
         }
     }
 }

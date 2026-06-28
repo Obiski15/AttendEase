@@ -27,7 +27,7 @@ class CourseAssignmentApi(
         return authenticatedRequest(HttpMethod.Post, "$url/", request)
     }
 
-    suspend fun deleteCourseAssignment(assignmentId: String) {
-        authenticatedRequest<Unit>(HttpMethod.Delete, "$url/$assignmentId")
+    suspend fun deleteCourseAssignment(assignmentId: String): CourseAssignmentResponse {
+        return authenticatedRequest(HttpMethod.Delete, "$url/$assignmentId")
     }
 }

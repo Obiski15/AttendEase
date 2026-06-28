@@ -12,9 +12,12 @@ object DateUtils {
         if (isoString.isNullOrBlank()) return Triple("--", "---", "--:--")
         return try {
             val zdt = try {
-                ZonedDateTime.parse(isoString)
+                ZonedDateTime.parse(isoString).withZoneSameInstant(java.time.ZoneId.systemDefault())
             } catch (e: Exception) {
-                java.time.LocalDateTime.parse(isoString).atZone(java.time.ZoneId.systemDefault())
+                // If it fails to parse as ZonedDateTime (e.g. missing 'Z'), assume it's UTC from backend
+                java.time.LocalDateTime.parse(isoString)
+                    .atZone(java.time.ZoneOffset.UTC)
+                    .withZoneSameInstant(java.time.ZoneId.systemDefault())
             }
             val day = zdt.format(DateTimeFormatter.ofPattern("dd"))
             val month = zdt.format(DateTimeFormatter.ofPattern("MMM"))
@@ -32,9 +35,12 @@ object DateUtils {
         if (isoString.isNullOrBlank()) return "--:--"
         return try {
             val zdt = try {
-                ZonedDateTime.parse(isoString)
+                ZonedDateTime.parse(isoString).withZoneSameInstant(java.time.ZoneId.systemDefault())
             } catch (e: Exception) {
-                java.time.LocalDateTime.parse(isoString).atZone(java.time.ZoneId.systemDefault())
+                // If it fails to parse as ZonedDateTime (e.g. missing 'Z'), assume it's UTC from backend
+                java.time.LocalDateTime.parse(isoString)
+                    .atZone(java.time.ZoneOffset.UTC)
+                    .withZoneSameInstant(java.time.ZoneId.systemDefault())
             }
             zdt.format(DateTimeFormatter.ofPattern("HH:mm"))
         } catch (e: Exception) {

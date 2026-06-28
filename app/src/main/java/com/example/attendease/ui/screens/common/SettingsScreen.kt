@@ -411,7 +411,7 @@ fun SettingsScreen(
                             label = { Text("Full Name") },
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
-                            enabled = !isUpdatingProfile
+                            enabled = !isUpdatingProfile && role == UserRole.ADMIN
                         )
                         Spacer(modifier = Modifier.height(Spacing.sm))
                         OutlinedTextField(
@@ -423,7 +423,7 @@ fun SettingsScreen(
                             keyboardOptions = KeyboardOptions(
                                 keyboardType = KeyboardType.Email
                             ),
-                            enabled = !isUpdatingProfile
+                            enabled = !isUpdatingProfile && role == UserRole.ADMIN
                         )
                         if (isUpdatingProfile) {
                             Spacer(modifier = Modifier.height(Spacing.md))
@@ -433,6 +433,14 @@ fun SettingsScreen(
                             ) {
                                 CircularProgressIndicator()
                             }
+                        }
+                        if (role != UserRole.ADMIN) {
+                            Spacer(modifier = Modifier.height(Spacing.sm))
+                            Text(
+                                text = "Only administrators can edit profile information.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.error
+                            )
                         }
                     }
                 },
@@ -444,7 +452,7 @@ fun SettingsScreen(
                                 authViewModel.updateProfile(editName, editEmail)
                             }
                         },
-                        enabled = editName.isNotBlank() && editEmail.isNotBlank() && !isUpdatingProfile
+                        enabled = editName.isNotBlank() && editEmail.isNotBlank() && !isUpdatingProfile && role == UserRole.ADMIN
                     ) {
                         Text("Save Changes")
                     }
