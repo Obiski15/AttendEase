@@ -121,8 +121,61 @@ fun LecturerDashboardScreen(
         }
     }
 
-    val activeSessionError by sessionViewModel.error.collectAsState()
     val activeSessionIsLoading by sessionViewModel.isLoading.collectAsState()
+    val activeSessionError by sessionViewModel.error.collectAsState()
+
+    var isExpired by remember { mutableStateOf(false) }
+
+    val dashboardActiveSession = lecturerStats?.activeSessions?.firstOrNull { it.id !in locallyClosedSessionIds }
+    
+    val activeSession = currentLocalSession?.let { local ->
+        LecturerActiveSessionResponse(
+            id = local.id,
+            courseCode = "",
+            courseTitle = "",
+            sessionCode = local.sessionCode ?: "",
+            expiresAt = local.expiresAt ?: "",
+            geofencingEnabled = local.geofencingEnabled ?: false,
+            radiusMeters = local.radiusMeters
+        )
+    } ?: dashboardActiveSession
+
+    LaunchedEffect(activeSession) {
+        if (activeSession != null) {
+            val expiresAtStr = activeSession.expiresAt
+            val cleanStr = expiresAtStr.replace(" ", "T")
+
+            val expiryTimeMs = try {
+                var clean = cleanStr
+                if (clean.contains(".")) clean = clean.substringBefore(".")
+                else if (clean.contains("+")) clean = clean.substringBefore("+")
+                else if (clean.contains("Z")) clean = clean.replace("Z", "")
+
+                val sdf = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault())
+                sdf.timeZone = java.util.TimeZone.getTimeZone("UTC")
+                sdf.parse(clean)?.time
+            } catch (e: Exception) {
+                null
+            }
+
+            if (expiryTimeMs != null) {
+                while (true) {
+                    val now = System.currentTimeMillis()
+                    isExpired = now > expiryTimeMs
+                    if (isExpired) {
+                        // Refresh stats to ensure the UI reflects the closed session globally
+                        dashboardViewModel.loadLecturerDashboard(isRefresh = true)
+                        break
+                    }
+                    kotlinx.coroutines.delay(5000) // Check every 5 seconds
+                }
+            } else {
+                isExpired = false
+            }
+        } else {
+            isExpired = false
+        }
+    }
 
     val courses = lecturerStats?.courses?.map {
         Course(
@@ -197,21 +250,7 @@ fun LecturerDashboardScreen(
                 }
 
                 item {
-                    val dashboardActiveSession = lecturerStats?.activeSessions?.firstOrNull { it.id !in locallyClosedSessionIds }
-                    
-                    val activeSession = currentLocalSession?.let { local ->
-                        LecturerActiveSessionResponse(
-                            id = local.id,
-                            courseCode = "",
-                            courseTitle = "",
-                            sessionCode = local.sessionCode ?: "",
-                            expiresAt = local.expiresAt ?: "",
-                            geofencingEnabled = local.geofencingEnabled ?: false,
-                            radiusMeters = local.radiusMeters
-                        )
-                    } ?: dashboardActiveSession
-
-                    val activeSessionCode = activeSession?.sessionCode ?: "None"
+                    val activeSessionCode = if (activeSession != null && !isExpired) activeSession.sessionCode else "None"
                     val isSessionActive = activeSessionCode != "None"
 
                     StatCard(

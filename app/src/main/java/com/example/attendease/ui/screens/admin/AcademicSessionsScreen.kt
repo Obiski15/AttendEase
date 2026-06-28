@@ -12,7 +12,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -164,7 +163,7 @@ fun AcademicSessionCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEEEEEE))
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Column(modifier = Modifier.padding(Spacing.md)) {
             Row(
@@ -204,14 +203,14 @@ fun AcademicSessionCard(
                     }
                     Spacer(modifier = Modifier.width(Spacing.xs))
                     Surface(
-                        color = if (session.isActive) Color(0xFFE0F2F1) else Color(0xFFEEEEEE),
+                        color = if (session.isActive) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceVariant,
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(
                             text = if (session.isActive) "ACTIVE" else "INACTIVE",
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                             style = MaterialTheme.typography.labelSmall,
-                            color = if (session.isActive) MaterialTheme.colorScheme.primary else Color.Gray,
+                            color = if (session.isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -239,8 +238,8 @@ fun AcademicSessionCard(
                     OutlinedButton(
                         onClick = { showDeleteConfirm = true },
                         modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFD32F2F)),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEEEEEE)),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Icon(Icons.Default.DeleteOutline, contentDescription = null, modifier = Modifier.size(16.dp))
@@ -251,7 +250,7 @@ fun AcademicSessionCard(
             } else {
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
-                    color = Color(0xFFE0F2F1).copy(alpha = 0.5f),
+                    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
                     shape = RoundedCornerShape(10.dp)
                 ) {
                     Row(
@@ -263,7 +262,7 @@ fun AcademicSessionCard(
                         Text(
                             text = "This is the active semester for all attendance check-ins.",
                             style = MaterialTheme.typography.bodySmall,
-                            color = Color(0xFF004D40)
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
                         )
                     }
                 }

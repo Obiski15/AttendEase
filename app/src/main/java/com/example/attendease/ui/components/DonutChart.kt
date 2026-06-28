@@ -13,13 +13,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.MaterialTheme
 
 @Composable
 fun DonutChart(
     percentage: Float,
     modifier: Modifier = Modifier,
-    primaryColor: Color = Color(0xFF1E88E5),
-    secondaryColor: Color = Color(0xFFE53935),
+    primaryColor: Color = MaterialTheme.colorScheme.primary,
+    secondaryColor: Color = MaterialTheme.colorScheme.error,
     strokeWidth: Float = 40f
 ) {
     var animationPlayed by remember { mutableStateOf(false) }

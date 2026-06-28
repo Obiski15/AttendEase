@@ -13,7 +13,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -83,7 +82,7 @@ fun AddCourseScreen(
                     
                     // Info Banner
                     Surface(
-                        color = Color(0xFFF1F3F4),
+                        color = MaterialTheme.colorScheme.surfaceVariant,
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Row(modifier = Modifier.padding(Spacing.md)) {
@@ -108,7 +107,7 @@ fun AddCourseScreen(
                             .fillMaxWidth()
                             .height(160.dp)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFF000033)),
+                            .background(MaterialTheme.colorScheme.primaryContainer),
                         contentAlignment = Alignment.BottomStart
                     ) {
                         Text(
@@ -126,7 +125,7 @@ fun AddCourseScreen(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .border(1.dp, Color(0xFFEEEEEE), RoundedCornerShape(16.dp))
+                            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp))
                             .padding(Spacing.md),
                         verticalArrangement = Arrangement.spacedBy(Spacing.md)
                     ) {
@@ -172,7 +171,7 @@ fun AddCourseScreen(
                                 }
                                 Surface(
                                     modifier = Modifier.weight(1f).height(40.dp).padding(horizontal = 8.dp),
-                                    color = Color(0xFFF1F3F4),
+                                    color = MaterialTheme.colorScheme.surfaceVariant,
                                     shape = RoundedCornerShape(8.dp)
                                 ) {
                                     Box(contentAlignment = Alignment.Center) {
@@ -189,7 +188,7 @@ fun AddCourseScreen(
 
                         // Verification Note
                         Surface(
-                            color = Color(0xFFE0F2F1),
+                            color = MaterialTheme.colorScheme.secondaryContainer,
                             shape = RoundedCornerShape(8.dp)
                         ) {
                             Row(modifier = Modifier.padding(Spacing.md), verticalAlignment = Alignment.CenterVertically) {
@@ -199,7 +198,7 @@ fun AddCourseScreen(
                                     "Verification: Please review the course details before submitting.",
                                     style = MaterialTheme.typography.bodySmall,
                                     fontSize = 11.sp,
-                                    color = Color(0xFF004D40)
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
                             }
                         }
