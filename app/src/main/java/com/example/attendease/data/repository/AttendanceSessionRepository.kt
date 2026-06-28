@@ -34,7 +34,11 @@ class AttendanceSessionRepository(
             
             // Generate UUID and Session Code locally
             val localId = UUID.randomUUID().toString()
-            val localCode = (100000..999999).random().toString() // simple 6 digit code for offline
+            val localCode = run {
+                val alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+                val secureRandom = java.security.SecureRandom()
+                (1..6).map { alphabet[secureRandom.nextInt(alphabet.length)] }.joinToString("")
+            }
 
             // Create a new request object with the injected ID
             val requestWithId = request.copy(id = localId, sessionCode = localCode)
