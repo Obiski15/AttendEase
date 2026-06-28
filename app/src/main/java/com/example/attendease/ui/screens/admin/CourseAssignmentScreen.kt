@@ -253,13 +253,14 @@ fun CourseAssignmentScreen(
         if (showAssignDialog) {
             AssignLecturerDialog(
                 isReassign = isReassign,
+                isSaving = uiState.isSaving,
                 preselectedCourseCode = selectedCourseCode,
                 preselectedCourseTitle = selectedCourseTitle,
                 preselectedCourseId = selectedCourseId,
                 unassignedCourses = uiState.unassignedCourses,
                 lecturers = uiState.lecturers,
                 academicSessions = uiState.academicSessions,
-                onDismiss = { showAssignDialog = false },
+                onDismiss = { if (!uiState.isSaving) showAssignDialog = false },
                 onConfirm = { courseId, lecturerId, sessionId ->
                     if (isReassign) {
                         reassignOldAssignmentId?.let { oldId ->
@@ -435,6 +436,7 @@ fun UnassignedCourseCard(
 @Composable
 fun AssignLecturerDialog(
     isReassign: Boolean,
+    isSaving: Boolean = false,
     preselectedCourseCode: String?,
     preselectedCourseTitle: String?,
     preselectedCourseId: String?,
@@ -522,7 +524,8 @@ fun AssignLecturerDialog(
         confirmButton = {
             val isConfirmEnabled = (isReassign || selectedCourseName.isNotEmpty()) &&
                     selectedLecturerName.isNotEmpty() &&
-                    selectedSessionName.isNotEmpty()
+                    selectedSessionName.isNotEmpty() &&
+                    !isSaving
             Button(
                 onClick = {
                     val courseId = if (isReassign) {
@@ -537,11 +540,19 @@ fun AssignLecturerDialog(
                 enabled = isConfirmEnabled,
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
-                Text("Confirm", fontWeight = FontWeight.Bold)
+                if (isSaving) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                } else {
+                    Text("Confirm", fontWeight = FontWeight.Bold)
+                }
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(onClick = onDismiss, enabled = !isSaving) {
                 Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
