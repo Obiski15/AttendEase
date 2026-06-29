@@ -45,16 +45,26 @@ data class StudentSession(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StudentAttendanceHistoryScreen(navController: NavController, viewModel: AttendanceViewModel = koinViewModel()) {
+fun StudentAttendanceHistoryScreen(
+    navController: NavController,
+    viewModel: AttendanceViewModel = koinViewModel(),
+    dashboardViewModel: com.example.attendease.viewModel.DashboardViewModel = koinViewModel()
+) {
     var selectedFilter by remember { mutableStateOf("ALL") }
     val attendanceHistory by viewModel.attendanceHistory.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+    
+    val studentStats by dashboardViewModel.studentStats.collectAsStateWithLifecycle()
 
-    val totalRecords = attendanceHistory.size
-    val presentCount = attendanceHistory.count { it.status == "PRESENT" }
+    val totalRecords = studentStats?.totalCount ?: attendanceHistory.size
+    val presentCount = studentStats?.presentCount ?: attendanceHistory.count { it.status == "PRESENT" }
     val absentCount = totalRecords - presentCount
-    val attendanceRate = if (totalRecords > 0) (presentCount.toFloat() / totalRecords) * 100 else 0f
+    val attendanceRate = studentStats?.attendancePercentage?.toFloat() ?: if (totalRecords > 0) (presentCount.toFloat() / totalRecords) * 100 else 0f
+    
+    LaunchedEffect(Unit) { 
+        if (studentStats == null) dashboardViewModel.loadStudentDashboard()
+    }
     
     val filteredHistory = remember(attendanceHistory, selectedFilter) {
         when (selectedFilter) {
@@ -342,7 +352,7 @@ fun SessionItem(session: StudentSession) {
                                 modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                         }
                         Spacer(modifier = Modifier.width(Spacing.base))

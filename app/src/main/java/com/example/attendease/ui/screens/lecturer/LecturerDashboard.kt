@@ -54,12 +54,14 @@ data class Course(
 fun LecturerDashboardScreen(
     navController: NavController,
     sessionViewModel: LecturerSessionViewModel,
-    dashboardViewModel: DashboardViewModel = org.koin.compose.koinInject()
+    dashboardViewModel: DashboardViewModel = org.koin.compose.koinInject(),
+    sessionManager: com.example.attendease.data.session.SessionManager = org.koin.compose.koinInject()
 ) {
-    var userName by remember { mutableStateOf("User") }
+    val cachedName = sessionManager.getUserName().takeIf { it != "User" && !it.isNullOrBlank() }
+    var userName by remember { mutableStateOf(cachedName ?: "User") }
 
     AuthenticateUser(navController) { user ->
-        userName = user.name ?: "User"
+        userName = user.name ?: userName
     }
 
     LaunchedEffect(Unit) {
@@ -253,36 +255,38 @@ fun LecturerDashboardScreen(
                     val activeSessionCode = if (activeSession != null && !isExpired) activeSession.sessionCode else "None"
                     val isSessionActive = activeSessionCode != "None"
 
-                    StatCard(
-                        title = "ACTIVE SESSION",
-                        value = activeSessionCode,
-                        subtitle = if (isSessionActive) "Ongoing (Tap to View)" else "No live sessions",
-                        icon = Icons.Default.Wifi,
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = if (isSessionActive && activeSession != null) {
-                            Modifier.clickable {
-                                val sessionResponse = AttendanceSessionResponse(
-                                    id = activeSession.id,
-                                    courseAssignmentId = null,
-                                    sessionDate = null,
-                                    startTime = null,
-                                    expiresAt = activeSession.expiresAt,
-                                    sessionCode = activeSession.sessionCode,
-                                    status = "ACTIVE",
-                                    geofencingEnabled = activeSession.geofencingEnabled,
-                                    latitude = null,
-                                    longitude = null,
-                                    radiusMeters = activeSession.radiusMeters
-                                )
-                                sessionViewModel.setActiveCourseTitle(activeSession.courseTitle)
-                                sessionViewModel.setActiveSession(sessionResponse)
-                                navController.navigate(Screen.StartSession.route)
+                    if (isSessionActive) {
+                        StatCard(
+                            title = "ACTIVE SESSION",
+                            value = activeSessionCode,
+                            subtitle = "Ongoing (Tap to View)",
+                            icon = Icons.Default.Wifi,
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = if (activeSession != null) {
+                                Modifier.clickable {
+                                    val sessionResponse = AttendanceSessionResponse(
+                                        id = activeSession.id,
+                                        courseAssignmentId = null,
+                                        sessionDate = null,
+                                        startTime = null,
+                                        expiresAt = activeSession.expiresAt,
+                                        sessionCode = activeSession.sessionCode,
+                                        status = "ACTIVE",
+                                        geofencingEnabled = activeSession.geofencingEnabled,
+                                        latitude = null,
+                                        longitude = null,
+                                        radiusMeters = activeSession.radiusMeters
+                                    )
+                                    sessionViewModel.setActiveCourseTitle(activeSession.courseTitle)
+                                    sessionViewModel.setActiveSession(sessionResponse)
+                                    navController.navigate(Screen.StartSession.route)
+                                }
+                            } else {
+                                Modifier
                             }
-                        } else {
-                            Modifier
-                        }
-                    )
+                        )
+                    }
                 }
 
                 item {
@@ -473,14 +477,14 @@ fun CourseCard(course: Course, onStartClick: () -> Unit) {
             modifier = Modifier.padding(Spacing.md)
         ) {
             Surface(
-                color = MaterialTheme.colorScheme.primaryFixed,
+                color = MaterialTheme.colorScheme.primaryContainer,
                 shape = RoundedCornerShape(4.dp)
             ) {
                 Text(
                     text = course.code,
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
                     style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                     fontWeight = FontWeight.Bold
                 )
             }

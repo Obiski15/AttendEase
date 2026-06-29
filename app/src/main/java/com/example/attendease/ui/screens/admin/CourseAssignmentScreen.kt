@@ -260,8 +260,9 @@ fun CourseAssignmentScreen(
                 unassignedCourses = uiState.unassignedCourses,
                 lecturers = uiState.lecturers,
                 academicSessions = uiState.academicSessions,
-                onDismiss = { if (!uiState.isSaving) showAssignDialog = false },
+                onDismiss = { showAssignDialog = false },
                 onConfirm = { courseId, lecturerId, sessionId ->
+                    showAssignDialog = false
                     if (isReassign) {
                         reassignOldAssignmentId?.let { oldId ->
                             viewModel.reassignLecturer(
@@ -524,8 +525,7 @@ fun AssignLecturerDialog(
         confirmButton = {
             val isConfirmEnabled = (isReassign || selectedCourseName.isNotEmpty()) &&
                     selectedLecturerName.isNotEmpty() &&
-                    selectedSessionName.isNotEmpty() &&
-                    !isSaving
+                    selectedSessionName.isNotEmpty()
             Button(
                 onClick = {
                     val courseId = if (isReassign) {
@@ -540,19 +540,11 @@ fun AssignLecturerDialog(
                 enabled = isConfirmEnabled,
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
-                if (isSaving) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(20.dp),
-                        strokeWidth = 2.dp,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                } else {
-                    Text("Confirm", fontWeight = FontWeight.Bold)
-                }
+                Text("Confirm", fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss, enabled = !isSaving) {
+            TextButton(onClick = onDismiss) {
                 Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }

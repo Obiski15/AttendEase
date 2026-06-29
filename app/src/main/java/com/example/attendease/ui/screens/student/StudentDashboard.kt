@@ -38,9 +38,11 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun StudentDashboardScreen(
     navController: NavController,
-    viewModel: DashboardViewModel = koinViewModel() // KOIN gives us the ViewModel
+    viewModel: DashboardViewModel = koinViewModel(), // KOIN gives us the ViewModel
+    sessionManager: com.example.attendease.data.session.SessionManager = org.koin.compose.koinInject()
 ) {
-    var userName by remember { mutableStateOf("User") }
+    val cachedName = sessionManager.getUserName().takeIf { it != "User" && !it.isNullOrBlank() }
+    var userName by remember { mutableStateOf(cachedName ?: "User") }
 
     // Collect live data from the ViewModel
     val studentStats by viewModel.studentStats.collectAsStateWithLifecycle()
