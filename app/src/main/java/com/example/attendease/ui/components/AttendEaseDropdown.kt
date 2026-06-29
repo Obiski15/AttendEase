@@ -78,3 +78,92 @@ fun AttendEaseDropdown(
         }
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AttendEaseSearchableDropdown(
+    label: String,
+    value: String,
+    onSearchChange: (String) -> Unit,
+    options: List<String>,
+    onOptionSelected: (String) -> Unit,
+    onLoadMore: () -> Unit,
+    isLoading: Boolean,
+    isLastPage: Boolean,
+    modifier: Modifier = Modifier
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Column(modifier = modifier.fillMaxWidth()) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.height(Spacing.xs))
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = it },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            OutlinedTextField(
+                value = value,
+                onValueChange = {
+                    onSearchChange(it)
+                    expanded = true
+                },
+                placeholder = { Text("Search $label") },
+                trailingIcon = {
+                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                },
+                modifier = Modifier
+                    .menuAnchor(androidx.compose.material3.ExposedDropdownMenuAnchorType.PrimaryEditable, true)
+                    .fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                    focusedBorderColor = MaterialTheme.colorScheme.primary
+                )
+            )
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+                modifier = Modifier.fillMaxWidth().heightIn(max = 250.dp)
+            ) {
+                if (options.isEmpty() && !isLoading) {
+                    DropdownMenuItem(
+                        text = { Text("No results found") },
+                        onClick = {}
+                    )
+                }
+                
+                options.forEachIndexed { index, option ->
+                    if (index == options.size - 1 && !isLastPage) {
+                        androidx.compose.runtime.LaunchedEffect(option) {
+                            onLoadMore()
+                        }
+                    }
+                    DropdownMenuItem(
+                        text = { Text(option) },
+                        onClick = {
+                            onOptionSelected(option)
+                            expanded = false
+                        }
+                    )
+                }
+                
+                if (isLoading) {
+                    DropdownMenuItem(
+                        text = { 
+                            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = androidx.compose.ui.Alignment.Center) {
+                                CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                            }
+                        },
+                        onClick = {}
+                    )
+                }
+            }
+        }
+    }
+}

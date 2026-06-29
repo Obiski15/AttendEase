@@ -9,7 +9,9 @@ data class CourseResponse(
     @SerialName("course_code") val courseCode: String,
     val title: String,
     @SerialName("credit_units") val creditUnits: Int,
-    @SerialName("department_id") val departmentId: String
+    @SerialName("department_id") val departmentId: String,
+    val department: DepartmentResponse? = null,
+    @SerialName("course_assignments") val courseAssignments: List<CourseAssignmentResponse>? = null
 )
 
 @Serializable
@@ -28,5 +30,8 @@ data class CourseAssignmentResponse(
     val id: String,
     @SerialName("course_id") val courseId: String?,
     @SerialName("lecturer_id") val lecturerId: String?,
-    @SerialName("academic_session_id") val academicSessionId: String?
+    @SerialName("academic_session_id") val academicSessionId: String?,
+    val course: CourseResponse? = null,
+    val lecturer: LecturerResponse? = null,
+    @SerialName("academic_session") val academicSession: AcademicSessionResponse? = null
 )

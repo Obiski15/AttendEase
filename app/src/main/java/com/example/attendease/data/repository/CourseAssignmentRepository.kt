@@ -20,8 +20,8 @@ class CourseAssignmentRepository(
         return courseApi.getCourses()
     }
 
-    suspend fun getLecturers(): List<LecturerResponse> {
-        return lecturerApi.getLecturers()
+    suspend fun searchLecturers(query: String? = null, skip: Int = 0, limit: Int = 20): com.example.attendease.dto.response.PaginatedResponse<LecturerResponse> {
+        return lecturerApi.getLecturers(skip, limit, query)
     }
 
     suspend fun getAcademicSessions(): List<AcademicSessionResponse> {

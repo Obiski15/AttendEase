@@ -30,6 +30,7 @@ class UserViewModel(
 
     fun loadUsers() {
         viewModelScope.launch {
+            _error.value = null
             _isLoading.value = true
             _error.value = null
             try {
@@ -44,6 +45,7 @@ class UserViewModel(
 
     fun loadUser(userId: String) {
         viewModelScope.launch {
+            _error.value = null
             _isLoading.value = true
             _error.value = null
             try {
@@ -58,6 +60,7 @@ class UserViewModel(
 
     fun createAdmin(name: String, email: String, password: String) {
         viewModelScope.launch {
+            _error.value = null
             _isLoading.value = true
             _error.value = null
             _saveSuccess.value = false
@@ -81,6 +84,7 @@ class UserViewModel(
 
     fun updateAdmin(userId: String, name: String, email: String, password: String?) {
         viewModelScope.launch {
+            _error.value = null
             _isLoading.value = true
             _error.value = null
             _saveSuccess.value = false
@@ -104,6 +108,7 @@ class UserViewModel(
 
     fun deleteUser(userId: String) {
         viewModelScope.launch {
+            _error.value = null
             _isLoading.value = true
             _error.value = null
             try {

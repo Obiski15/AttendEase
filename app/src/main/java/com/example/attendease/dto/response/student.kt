@@ -10,5 +10,6 @@ data class StudentResponse(
     @SerialName("department_id") val departmentId: String?,
     val level: String?,
     @SerialName("user_id") val userId: String,
-    val user: UserResponse? = null
+    val user: UserResponse? = null,
+    val department: DepartmentResponse? = null
 )

@@ -258,10 +258,15 @@ fun CourseAssignmentScreen(
                 preselectedCourseTitle = selectedCourseTitle,
                 preselectedCourseId = selectedCourseId,
                 unassignedCourses = uiState.unassignedCourses,
-                lecturers = uiState.lecturers,
+                lecturers = uiState.dropdownLecturers,
+                isLecturersLoading = uiState.isDropdownLecturersLoading,
+                isLecturersLastPage = uiState.dropdownLecturersIsLastPage,
+                onSearchLecturers = { viewModel.searchLecturers(it) },
+                onLoadMoreLecturers = { viewModel.loadMoreLecturers() },
                 academicSessions = uiState.academicSessions,
-                onDismiss = { if (!uiState.isSaving) showAssignDialog = false },
+                onDismiss = { showAssignDialog = false },
                 onConfirm = { courseId, lecturerId, sessionId ->
+                    showAssignDialog = false
                     if (isReassign) {
                         reassignOldAssignmentId?.let { oldId ->
                             viewModel.reassignLecturer(
@@ -442,6 +447,10 @@ fun AssignLecturerDialog(
     preselectedCourseId: String?,
     unassignedCourses: List<CourseResponse>,
     lecturers: List<LecturerResponse>,
+    isLecturersLoading: Boolean,
+    isLecturersLastPage: Boolean,
+    onSearchLecturers: (String) -> Unit,
+    onLoadMoreLecturers: () -> Unit,
     academicSessions: List<AcademicSessionResponse>,
     onDismiss: () -> Unit,
     onConfirm: (courseId: String, lecturerId: String, academicSessionId: String) -> Unit
@@ -505,11 +514,18 @@ fun AssignLecturerDialog(
                 }
 
                 val lecturerOptions = lecturers.map { it.user?.name ?: "Staff ID: ${it.staffId}" }
-                AttendEaseDropdown(
+                com.example.attendease.ui.components.AttendEaseSearchableDropdown(
                     label = "Lecturer",
                     value = selectedLecturerName,
+                    onSearchChange = {
+                        selectedLecturerName = it
+                        onSearchLecturers(it)
+                    },
                     options = lecturerOptions,
-                    onOptionSelected = { selectedLecturerName = it }
+                    onOptionSelected = { selectedLecturerName = it },
+                    onLoadMore = onLoadMoreLecturers,
+                    isLoading = isLecturersLoading,
+                    isLastPage = isLecturersLastPage
                 )
 
                 val sessionOptions = academicSessions.map { "${it.sessionName} (${it.semester})" }
@@ -524,8 +540,7 @@ fun AssignLecturerDialog(
         confirmButton = {
             val isConfirmEnabled = (isReassign || selectedCourseName.isNotEmpty()) &&
                     selectedLecturerName.isNotEmpty() &&
-                    selectedSessionName.isNotEmpty() &&
-                    !isSaving
+                    selectedSessionName.isNotEmpty()
             Button(
                 onClick = {
                     val courseId = if (isReassign) {
@@ -540,19 +555,11 @@ fun AssignLecturerDialog(
                 enabled = isConfirmEnabled,
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
-                if (isSaving) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(20.dp),
-                        strokeWidth = 2.dp,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                } else {
-                    Text("Confirm", fontWeight = FontWeight.Bold)
-                }
+                Text("Confirm", fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss, enabled = !isSaving) {
+            TextButton(onClick = onDismiss) {
                 Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }

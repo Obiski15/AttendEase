@@ -54,12 +54,14 @@ data class Course(
 fun LecturerDashboardScreen(
     navController: NavController,
     sessionViewModel: LecturerSessionViewModel,
-    dashboardViewModel: DashboardViewModel = org.koin.compose.koinInject()
+    dashboardViewModel: DashboardViewModel = org.koin.compose.koinInject(),
+    sessionManager: com.example.attendease.data.session.SessionManager = org.koin.compose.koinInject()
 ) {
-    var userName by remember { mutableStateOf("User") }
+    val cachedName = sessionManager.getUserName().takeIf { it != "User" && !it.isNullOrBlank() }
+    var userName by remember { mutableStateOf(cachedName ?: "User") }
 
     AuthenticateUser(navController) { user ->
-        userName = user.name ?: "User"
+        userName = user.name ?: userName
     }
 
     LaunchedEffect(Unit) {
@@ -255,8 +257,8 @@ fun LecturerDashboardScreen(
 
                     StatCard(
                         title = "ACTIVE SESSION",
-                        value = activeSessionCode,
-                        subtitle = if (isSessionActive) "Ongoing (Tap to View)" else "No live sessions",
+                        value = if (isSessionActive) activeSessionCode else "No live sessions",
+                        subtitle = if (isSessionActive) "Ongoing (Tap to View)" else "No session currently active",
                         icon = Icons.Default.Wifi,
                         containerColor = MaterialTheme.colorScheme.primaryContainer,
                         contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -473,14 +475,14 @@ fun CourseCard(course: Course, onStartClick: () -> Unit) {
             modifier = Modifier.padding(Spacing.md)
         ) {
             Surface(
-                color = MaterialTheme.colorScheme.primaryFixed,
+                color = MaterialTheme.colorScheme.primaryContainer,
                 shape = RoundedCornerShape(4.dp)
             ) {
                 Text(
                     text = course.code,
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
                     style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                     fontWeight = FontWeight.Bold
                 )
             }

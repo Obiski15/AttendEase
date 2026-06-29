@@ -24,6 +24,7 @@ class AttendanceViewModel(
 
     fun checkIn(sessionCode: String, latitude: Double?, longitude: Double?) {
         viewModelScope.launch {
+            _error.value = null
             _isLoading.value = true
             _error.value = null
             _checkInSuccess.value = null
@@ -56,18 +57,39 @@ class AttendanceViewModel(
     private val _attendanceHistory = MutableStateFlow<List<AttendanceRecordResponse>>(emptyList())
     val attendanceHistory = _attendanceHistory.asStateFlow()
 
-    fun getMyAttendance() {
+    private var currentSkip = 0
+    private val PAGE_SIZE = 20
+    private var isLastPage = false
+
+    fun getMyAttendance(refresh: Boolean = false) {
+        if (refresh) {
+            currentSkip = 0
+            isLastPage = false
+        }
+        if (isLastPage || (_isLoading.value && !refresh)) return
+
         viewModelScope.launch {
-            _isLoading.value = true
             _error.value = null
+            _isLoading.value = true
+            if (refresh) _error.value = null
             try {
-                val history = repository.getMyAttendance()
-                _attendanceHistory.value = history
+                val response = repository.getMyAttendance(skip = currentSkip, limit = PAGE_SIZE)
+                if (refresh) {
+                    _attendanceHistory.value = response.items
+                } else {
+                    _attendanceHistory.value = _attendanceHistory.value + response.items
+                }
+                currentSkip += PAGE_SIZE
+                isLastPage = response.items.isEmpty() || response.items.size < PAGE_SIZE
             } catch (e: Exception) {
                 _error.value = e.message ?: "Failed to load attendance history."
             } finally {
                 _isLoading.value = false
             }
         }
+    }
+
+    fun loadMoreHistory() {
+        getMyAttendance(refresh = false)
     }
 }

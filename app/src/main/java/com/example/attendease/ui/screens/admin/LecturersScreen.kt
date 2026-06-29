@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -44,7 +45,7 @@ fun LecturersScreen(
     AttendEaseErrorDialog(errorMessage = error, onDismiss = { viewModel.clearError() })
 
     LaunchedEffect(Unit) {
-        viewModel.loadLecturers()
+        viewModel.loadLecturers(refresh = true)
     }
 
     val filteredLecturers = lecturers.filter {
@@ -126,7 +127,10 @@ fun LecturersScreen(
                         verticalArrangement = Arrangement.spacedBy(Spacing.md),
                         contentPadding = PaddingValues(bottom = 80.dp)
                     ) {
-                        items(filteredLecturers, key = { it.userId }) { lecturer ->
+                        itemsIndexed(filteredLecturers, key = { _, it -> it.userId }) { index, lecturer ->
+                            if (index == filteredLecturers.size - 1) {
+                                viewModel.loadMore()
+                            }
                             LecturerCard(
                                 lecturer = lecturer,
                                 onCardClick = {
@@ -139,6 +143,16 @@ fun LecturersScreen(
                                     viewModel.deleteLecturer(lecturer.userId)
                                 }
                             )
+                        }
+                        if (isLoading && lecturers.isNotEmpty()) {
+                            item {
+                                Box(
+                                    modifier = Modifier.fillMaxWidth().padding(Spacing.md),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                                }
+                            }
                         }
                     }
                 }

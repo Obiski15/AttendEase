@@ -54,8 +54,6 @@ fun CoursesScreen(
 
     LaunchedEffect(Unit) {
         courseViewModel.loadCourses()
-        departmentViewModel.loadDepartments()
-        assignmentViewModel.loadData()
     }
 
     val filteredCourses = courses.filter { course ->
@@ -157,8 +155,8 @@ fun CoursesScreen(
                         contentPadding = PaddingValues(bottom = 80.dp)
                     ) {
                         items(filteredCourses) { course ->
-                            val deptName = departments.find { it.id == course.departmentId }?.name ?: "Unknown"
-                            val assignedLecturer = assignmentState.assignments.find { it.courseId == course.id }?.lecturerName
+                            val deptName = course.department?.name ?: "Unknown"
+                            val assignedLecturer = course.courseAssignments?.find { it.academicSession?.isActive == true }?.lecturer?.user?.name
                             
                             AdminCourseCard(
                                 course = course,

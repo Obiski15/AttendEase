@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -45,16 +46,26 @@ data class StudentSession(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StudentAttendanceHistoryScreen(navController: NavController, viewModel: AttendanceViewModel = koinViewModel()) {
+fun StudentAttendanceHistoryScreen(
+    navController: NavController,
+    viewModel: AttendanceViewModel = koinViewModel(),
+    dashboardViewModel: com.example.attendease.viewModel.DashboardViewModel = koinViewModel()
+) {
     var selectedFilter by remember { mutableStateOf("ALL") }
     val attendanceHistory by viewModel.attendanceHistory.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+    
+    val studentStats by dashboardViewModel.studentStats.collectAsStateWithLifecycle()
 
-    val totalRecords = attendanceHistory.size
-    val presentCount = attendanceHistory.count { it.status == "PRESENT" }
+    val totalRecords = studentStats?.totalCount ?: attendanceHistory.size
+    val presentCount = studentStats?.presentCount ?: attendanceHistory.count { it.status == "PRESENT" }
     val absentCount = totalRecords - presentCount
-    val attendanceRate = if (totalRecords > 0) (presentCount.toFloat() / totalRecords) * 100 else 0f
+    val attendanceRate = studentStats?.attendancePercentage?.toFloat() ?: if (totalRecords > 0) (presentCount.toFloat() / totalRecords) * 100 else 0f
+    
+    LaunchedEffect(Unit) { 
+        if (studentStats == null) dashboardViewModel.loadStudentDashboard()
+    }
     
     val filteredHistory = remember(attendanceHistory, selectedFilter) {
         when (selectedFilter) {
@@ -64,7 +75,7 @@ fun StudentAttendanceHistoryScreen(navController: NavController, viewModel: Atte
         }
     }
 
-    LaunchedEffect(Unit) { viewModel.getMyAttendance() }
+    LaunchedEffect(Unit) { viewModel.getMyAttendance(refresh = true) }
 
     error?.let {
         AttendEaseErrorDialog(errorMessage = it, onDismiss = { viewModel.clearError() })
@@ -254,7 +265,10 @@ fun StudentAttendanceHistoryScreen(navController: NavController, viewModel: Atte
                     }
                 }
             } else {
-                items(filteredHistory) { record ->
+                itemsIndexed(filteredHistory) { index, record ->
+                    if (index == filteredHistory.size - 1) {
+                        viewModel.loadMoreHistory()
+                    }
                     val (day, month, time) = DateUtils.parseIsoDateToDayMonthTime(record.checkInTime)
                     val codeStr = record.courseCode ?: record.sessionId?.take(8) ?: "Unknown"
                     
@@ -268,6 +282,16 @@ fun StudentAttendanceHistoryScreen(navController: NavController, viewModel: Atte
                             isPresent = record.status == "PRESENT"
                         )
                     )
+                }
+                if (isLoading && attendanceHistory.isNotEmpty()) {
+                    item {
+                        Box(
+                            modifier = Modifier.fillMaxWidth().padding(Spacing.md),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                        }
+                    }
                 }
             }
             
@@ -342,7 +366,7 @@ fun SessionItem(session: StudentSession) {
                                 modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                         }
                         Spacer(modifier = Modifier.width(Spacing.base))

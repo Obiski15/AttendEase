@@ -125,39 +125,54 @@ class AttendanceSessionRepository(
         }
     }
 
-    suspend fun getAttendanceSessions(): List<AttendanceSessionResponse> {
+    suspend fun getAttendanceSessions(skip: Int = 0, limit: Int = 100): com.example.attendease.dto.response.PaginatedResponse<AttendanceSessionResponse> {
         return try {
-            val response = attendanceSessionApi.getAttendanceSessions()
-            withContext(Dispatchers.IO) {
-                apiCacheDao.insertApiCache(ApiCacheEntity(cacheKey = "lecturer_sessions", payloadJson = Json.encodeToString(response)))
+            val response = attendanceSessionApi.getAttendanceSessions(skip, limit)
+            if (skip == 0) {
+                // We only cache the first page (skip == 0) to ensure offline availability 
+                // of recent data. Subsequent pages are not cached to prevent storage bloat 
+                // and stale data issues, meaning offline pagination is not supported.
+                withContext(Dispatchers.IO) {
+                    apiCacheDao.insertApiCache(ApiCacheEntity(cacheKey = "lecturer_sessions_first_page", payloadJson = Json.encodeToString(response)))
+                }
             }
             response
         } catch (e: Exception) {
             if (e is com.example.attendease.data.api.ApiException || e is com.example.attendease.data.api.UnauthorizedException) throw e
-            Log.w("AttendanceSessionRepo", "Network failed, loading sessions cache", e)
-            val cache = withContext(Dispatchers.IO) { apiCacheDao.getApiCache("lecturer_sessions") }
-            val cachedSessions = if (cache != null) Json.decodeFromString<List<AttendanceSessionResponse>>(cache.payloadJson) else emptyList()
-            
-            val pendingActions = withContext(Dispatchers.IO) { syncDao.getPendingActions() }
-            val pendingSessions = pendingActions.filter { it.actionType == "START_SESSION" }.map { action ->
-                val req = Json.decodeFromString<AttendanceSessionCreateRequest>(action.payloadJson)
-                AttendanceSessionResponse(
-                    id = req.id ?: "",
-                    courseAssignmentId = req.courseAssignmentId,
-                    sessionDate = req.sessionDate,
-                    startTime = null,
-                    expiresAt = null,
-                    sessionCode = req.sessionCode ?: "",
-                    status = "PENDING",
-                    geofencingEnabled = req.geofencingEnabled,
-                    latitude = req.latitude,
-                    longitude = req.longitude,
-                    radiusMeters = req.radiusMeters
+            if (skip == 0) {
+                Log.w("AttendanceSessionRepo", "Network failed, loading sessions cache", e)
+                val cache = withContext(Dispatchers.IO) { apiCacheDao.getApiCache("lecturer_sessions_first_page") }
+                val cachedResponse = if (cache != null) Json.decodeFromString<com.example.attendease.dto.response.PaginatedResponse<AttendanceSessionResponse>>(cache.payloadJson) else null
+                val cachedSessions = cachedResponse?.items ?: emptyList()
+                
+                val pendingActions = withContext(Dispatchers.IO) { syncDao.getPendingActions() }
+                val pendingSessions = pendingActions.filter { it.actionType == "START_SESSION" }.map { action ->
+                    val req = Json.decodeFromString<AttendanceSessionCreateRequest>(action.payloadJson)
+                    AttendanceSessionResponse(
+                        id = req.id ?: "",
+                        courseAssignmentId = req.courseAssignmentId,
+                        sessionDate = req.sessionDate,
+                        startTime = null,
+                        expiresAt = null,
+                        sessionCode = req.sessionCode ?: "",
+                        status = "PENDING",
+                        geofencingEnabled = req.geofencingEnabled,
+                        latitude = req.latitude,
+                        longitude = req.longitude,
+                        radiusMeters = req.radiusMeters
+                    )
+                }
+                
+                if (cachedSessions.isEmpty() && pendingSessions.isEmpty()) throw e
+                com.example.attendease.dto.response.PaginatedResponse(
+                    items = pendingSessions + cachedSessions,
+                    total = (cachedResponse?.total ?: 0) + pendingSessions.size,
+                    skip = skip,
+                    limit = limit
                 )
+            } else {
+                throw e
             }
-            
-            if (cachedSessions.isEmpty() && pendingSessions.isEmpty()) throw e
-            cachedSessions + pendingSessions
         }
     }
 }

@@ -11,8 +11,8 @@ class LecturerRepository(
     private val lecturerApi: LecturerApi,
     private val departmentApi: DepartmentApi
 ) {
-    suspend fun getLecturers(): List<LecturerResponse> {
-        return lecturerApi.getLecturers()
+    suspend fun getLecturers(skip: Int = 0, limit: Int = 100): com.example.attendease.dto.response.PaginatedResponse<LecturerResponse> {
+        return lecturerApi.getLecturers(skip, limit)
     }
 
     suspend fun getLecturer(userId: String): LecturerResponse {
