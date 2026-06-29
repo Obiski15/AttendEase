@@ -258,7 +258,11 @@ fun CourseAssignmentScreen(
                 preselectedCourseTitle = selectedCourseTitle,
                 preselectedCourseId = selectedCourseId,
                 unassignedCourses = uiState.unassignedCourses,
-                lecturers = uiState.lecturers,
+                lecturers = uiState.dropdownLecturers,
+                isLecturersLoading = uiState.isDropdownLecturersLoading,
+                isLecturersLastPage = uiState.dropdownLecturersIsLastPage,
+                onSearchLecturers = { viewModel.searchLecturers(it) },
+                onLoadMoreLecturers = { viewModel.loadMoreLecturers() },
                 academicSessions = uiState.academicSessions,
                 onDismiss = { showAssignDialog = false },
                 onConfirm = { courseId, lecturerId, sessionId ->
@@ -443,6 +447,10 @@ fun AssignLecturerDialog(
     preselectedCourseId: String?,
     unassignedCourses: List<CourseResponse>,
     lecturers: List<LecturerResponse>,
+    isLecturersLoading: Boolean,
+    isLecturersLastPage: Boolean,
+    onSearchLecturers: (String) -> Unit,
+    onLoadMoreLecturers: () -> Unit,
     academicSessions: List<AcademicSessionResponse>,
     onDismiss: () -> Unit,
     onConfirm: (courseId: String, lecturerId: String, academicSessionId: String) -> Unit
@@ -506,11 +514,18 @@ fun AssignLecturerDialog(
                 }
 
                 val lecturerOptions = lecturers.map { it.user?.name ?: "Staff ID: ${it.staffId}" }
-                AttendEaseDropdown(
+                com.example.attendease.ui.components.AttendEaseSearchableDropdown(
                     label = "Lecturer",
                     value = selectedLecturerName,
+                    onSearchChange = {
+                        selectedLecturerName = it
+                        onSearchLecturers(it)
+                    },
                     options = lecturerOptions,
-                    onOptionSelected = { selectedLecturerName = it }
+                    onOptionSelected = { selectedLecturerName = it },
+                    onLoadMore = onLoadMoreLecturers,
+                    isLoading = isLecturersLoading,
+                    isLastPage = isLecturersLastPage
                 )
 
                 val sessionOptions = academicSessions.map { "${it.sessionName} (${it.semester})" }

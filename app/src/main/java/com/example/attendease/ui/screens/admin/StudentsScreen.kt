@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -51,8 +52,7 @@ fun StudentsScreen(
     val levels = listOf("ALL", "100L", "200L", "300L", "400L", "500L")
 
     LaunchedEffect(Unit) {
-        viewModel.loadStudents()
-        viewModel.loadDepartments()
+        viewModel.loadStudents(refresh = true)
     }
 
     val filteredStudents = students.filter { student ->
@@ -163,7 +163,7 @@ fun StudentsScreen(
 
             Spacer(modifier = Modifier.height(Spacing.xs))
 
-            if (isLoading) {
+            if (isLoading && students.isEmpty()) {
                 ListSkeleton()
             } else {
                 
@@ -189,8 +189,11 @@ fun StudentsScreen(
                         verticalArrangement = Arrangement.spacedBy(Spacing.md),
                         contentPadding = PaddingValues(bottom = 80.dp)
                     ) {
-                        items(filteredStudents, key = { it.userId }) { student ->
-                            val deptName = departments.find { it.id == student.departmentId }?.name ?: "Unknown Dept"
+                        itemsIndexed(filteredStudents, key = { _, it -> it.userId }) { index, student ->
+                            if (index == filteredStudents.size - 1) {
+                                viewModel.loadMore()
+                            }
+                            val deptName = student.department?.name ?: "Unknown Dept"
                             StudentCard(
                                 student = student,
                                 departmentName = deptName,
@@ -204,6 +207,16 @@ fun StudentsScreen(
                                     viewModel.deleteStudent(student.userId)
                                 }
                             )
+                        }
+                        if (isLoading && students.isNotEmpty()) {
+                            item {
+                                Box(
+                                    modifier = Modifier.fillMaxWidth().padding(Spacing.md),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                                }
+                            }
                         }
                     }
                 }

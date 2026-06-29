@@ -8,5 +8,6 @@ data class LecturerResponse(
     @SerialName("staff_id") val staffId: String?,
     @SerialName("department_id") val departmentId: String?,
     @SerialName("user_id") val userId: String,
-    val user: UserResponse? = null
+    val user: UserResponse? = null,
+    val department: DepartmentResponse? = null
 )

@@ -184,18 +184,39 @@ class LecturerSessionViewModel(
         pollingJob = null
     }
 
-    fun loadSessionHistory() {
+    private var currentSkip = 0
+    private val PAGE_SIZE = 20
+    private var isLastPage = false
+
+    fun loadSessionHistory(refresh: Boolean = false) {
+        if (refresh) {
+            currentSkip = 0
+            isLastPage = false
+        }
+        if (isLastPage || (_isLoading.value && !refresh)) return
+
         viewModelScope.launch {
             _isLoading.value = true
-            _error.value = null
+            if (refresh) _error.value = null
             try {
-                _sessionsHistory.value = sessionRepository.getAttendanceSessions()
+                val response = sessionRepository.getAttendanceSessions(skip = currentSkip, limit = PAGE_SIZE)
+                if (refresh) {
+                    _sessionsHistory.value = response.items
+                } else {
+                    _sessionsHistory.value = _sessionsHistory.value + response.items
+                }
+                currentSkip += PAGE_SIZE
+                isLastPage = response.items.isEmpty() || response.items.size < PAGE_SIZE
             } catch (e: Exception) {
                 _error.value = e.message ?: "Failed to load session history."
             } finally {
                 _isLoading.value = false
             }
         }
+    }
+
+    fun loadMoreHistory() {
+        loadSessionHistory(refresh = false)
     }
 
     fun clearError() {

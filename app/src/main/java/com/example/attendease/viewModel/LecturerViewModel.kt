@@ -30,18 +30,39 @@ class LecturerViewModel(private val repository: LecturerRepository) : ViewModel(
     private val _currentLecturer = MutableStateFlow<LecturerResponse?>(null)
     val currentLecturer = _currentLecturer.asStateFlow()
 
-    fun loadLecturers() {
+    private var currentSkip = 0
+    private val PAGE_SIZE = 20
+    private var isLastPage = false
+
+    fun loadLecturers(refresh: Boolean = false) {
+        if (refresh) {
+            currentSkip = 0
+            isLastPage = false
+        }
+        if (isLastPage || (_isLoading.value && !refresh)) return
+
         viewModelScope.launch {
             _isLoading.value = true
-            _error.value = null
+            if (refresh) _error.value = null
             try {
-                _lecturers.value = repository.getLecturers()
+                val response = repository.getLecturers(skip = currentSkip, limit = PAGE_SIZE)
+                if (refresh) {
+                    _lecturers.value = response.items
+                } else {
+                    _lecturers.value = _lecturers.value + response.items
+                }
+                currentSkip += PAGE_SIZE
+                isLastPage = response.items.isEmpty() || response.items.size < PAGE_SIZE
             } catch (e: Exception) {
                 _error.value = e.message
             } finally {
                 _isLoading.value = false
             }
         }
+    }
+
+    fun loadMore() {
+        loadLecturers(refresh = false)
     }
 
     fun loadDepartments() {

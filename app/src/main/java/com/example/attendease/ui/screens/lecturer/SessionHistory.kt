@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -53,7 +54,7 @@ fun LecturerSessionHistoryScreen(
     val filters = listOf("All", "Active", "Completed")
 
     LaunchedEffect(Unit) {
-        sessionViewModel.loadSessionHistory()
+        sessionViewModel.loadSessionHistory(refresh = true)
         dashboardViewModel.loadLecturerDashboard()
     }
 
@@ -209,7 +210,10 @@ fun LecturerSessionHistoryScreen(
                     verticalArrangement = Arrangement.spacedBy(Spacing.md),
                     contentPadding = PaddingValues(bottom = 80.dp)
                 ) {
-                    items(sessions) { sessionItem ->
+                    itemsIndexed(sessions) { index, sessionItem ->
+                        if (index == sessions.size - 1) {
+                            sessionViewModel.loadMoreHistory()
+                        }
                         LecturerSessionCard(
                             session = sessionItem,
                             onClick = if (sessionItem.isActive && sessionItem.originalResponse != null) {
@@ -220,6 +224,16 @@ fun LecturerSessionHistoryScreen(
                                 }
                             } else null
                         )
+                    }
+                    if (isLoading && sessions.isNotEmpty()) {
+                        item {
+                            Box(
+                                modifier = Modifier.fillMaxWidth().padding(Spacing.md),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                            }
+                        }
                     }
                 }
             }

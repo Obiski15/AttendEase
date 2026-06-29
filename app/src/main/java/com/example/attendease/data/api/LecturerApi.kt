@@ -20,8 +20,13 @@ class LecturerApi(
 
     private val url = "${BuildConfig.BASE_URL}/lecturers"
 
-    suspend fun getLecturers(): List<LecturerResponse> {
-        return authenticatedRequest(HttpMethod.Get, "$url/")
+    suspend fun getLecturers(
+        skip: Int = 0,
+        limit: Int = 100,
+        search: String? = null
+    ): com.example.attendease.dto.response.PaginatedResponse<LecturerResponse> {
+        val searchParam = search?.let { "&search=${java.net.URLEncoder.encode(it, "UTF-8")}" } ?: ""
+        return authenticatedRequest(HttpMethod.Get, "$url/?skip=$skip&limit=$limit$searchParam")
     }
 
     suspend fun getLecturer(userId: String): LecturerResponse {

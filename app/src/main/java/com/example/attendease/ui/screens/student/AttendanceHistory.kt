@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -74,7 +75,7 @@ fun StudentAttendanceHistoryScreen(
         }
     }
 
-    LaunchedEffect(Unit) { viewModel.getMyAttendance() }
+    LaunchedEffect(Unit) { viewModel.getMyAttendance(refresh = true) }
 
     error?.let {
         AttendEaseErrorDialog(errorMessage = it, onDismiss = { viewModel.clearError() })
@@ -264,7 +265,10 @@ fun StudentAttendanceHistoryScreen(
                     }
                 }
             } else {
-                items(filteredHistory) { record ->
+                itemsIndexed(filteredHistory) { index, record ->
+                    if (index == filteredHistory.size - 1) {
+                        viewModel.loadMoreHistory()
+                    }
                     val (day, month, time) = DateUtils.parseIsoDateToDayMonthTime(record.checkInTime)
                     val codeStr = record.courseCode ?: record.sessionId?.take(8) ?: "Unknown"
                     
@@ -278,6 +282,16 @@ fun StudentAttendanceHistoryScreen(
                             isPresent = record.status == "PRESENT"
                         )
                     )
+                }
+                if (isLoading && attendanceHistory.isNotEmpty()) {
+                    item {
+                        Box(
+                            modifier = Modifier.fillMaxWidth().padding(Spacing.md),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                        }
+                    }
                 }
             }
             

@@ -43,7 +43,6 @@ fun StudentDetailScreen(
 
     LaunchedEffect(userId) {
         viewModel.loadStudent(userId)
-        viewModel.loadDepartments()
     }
 
     Scaffold(
@@ -85,7 +84,7 @@ fun StudentDetailScreen(
             }
         } else {
             val student = currentStudent
-            val deptName = departments.find { it.id == student?.departmentId }?.name ?: "Unknown Department"
+            val deptName = student?.department?.name ?: "Unknown Department"
 
             LazyColumn(
                 modifier = Modifier

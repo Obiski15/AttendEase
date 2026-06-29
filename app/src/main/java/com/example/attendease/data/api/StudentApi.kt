@@ -20,8 +20,8 @@ class StudentApi(
 
     private val url = "${BuildConfig.BASE_URL}/students"
 
-    suspend fun getStudents(): List<StudentResponse> {
-        return authenticatedRequest(HttpMethod.Get, "$url/")
+    suspend fun getStudents(skip: Int = 0, limit: Int = 100): com.example.attendease.dto.response.PaginatedResponse<StudentResponse> {
+        return authenticatedRequest(HttpMethod.Get, "$url/?skip=$skip&limit=$limit")
     }
 
     suspend fun getStudent(userId: String): StudentResponse {

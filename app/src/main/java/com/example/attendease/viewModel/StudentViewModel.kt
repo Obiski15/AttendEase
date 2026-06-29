@@ -30,18 +30,39 @@ class StudentViewModel(private val repository: StudentRepository) : ViewModel() 
     private val _currentStudent = MutableStateFlow<StudentResponse?>(null)
     val currentStudent = _currentStudent.asStateFlow()
 
-    fun loadStudents() {
+    private var currentSkip = 0
+    private val PAGE_SIZE = 20
+    private var isLastPage = false
+
+    fun loadStudents(refresh: Boolean = false) {
+        if (refresh) {
+            currentSkip = 0
+            isLastPage = false
+        }
+        if (isLastPage || (_isLoading.value && !refresh)) return
+
         viewModelScope.launch {
             _isLoading.value = true
-            _error.value = null
+            if (refresh) _error.value = null
             try {
-                _students.value = repository.getStudents()
+                val response = repository.getStudents(skip = currentSkip, limit = PAGE_SIZE)
+                if (refresh) {
+                    _students.value = response.items
+                } else {
+                    _students.value = _students.value + response.items
+                }
+                currentSkip += PAGE_SIZE
+                isLastPage = response.items.isEmpty() || response.items.size < PAGE_SIZE
             } catch (e: Exception) {
                 _error.value = e.message
             } finally {
                 _isLoading.value = false
             }
         }
+    }
+
+    fun loadMore() {
+        loadStudents(refresh = false)
     }
 
     fun loadDepartments() {

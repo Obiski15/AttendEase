@@ -11,8 +11,8 @@ class StudentRepository(
     private val studentApi: StudentApi,
     private val departmentApi: DepartmentApi
 ) {
-    suspend fun getStudents(): List<StudentResponse> {
-        return studentApi.getStudents()
+    suspend fun getStudents(skip: Int = 0, limit: Int = 100): com.example.attendease.dto.response.PaginatedResponse<StudentResponse> {
+        return studentApi.getStudents(skip, limit)
     }
 
     suspend fun getStudent(userId: String): StudentResponse {

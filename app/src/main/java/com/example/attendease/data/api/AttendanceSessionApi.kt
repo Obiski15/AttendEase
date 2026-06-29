@@ -32,7 +32,7 @@ class AttendanceSessionApi(
         return authenticatedRequest(HttpMethod.Get, "$url/$sessionId/records")
     }
 
-    suspend fun getAttendanceSessions(): List<AttendanceSessionResponse> {
-        return authenticatedRequest(HttpMethod.Get, "$url/")
+    suspend fun getAttendanceSessions(skip: Int = 0, limit: Int = 100): com.example.attendease.dto.response.PaginatedResponse<AttendanceSessionResponse> {
+        return authenticatedRequest(HttpMethod.Get, "$url/?skip=$skip&limit=$limit")
     }
 }
