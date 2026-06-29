@@ -32,6 +32,6 @@ data class CourseAssignmentResponse(
     @SerialName("lecturer_id") val lecturerId: String?,
     @SerialName("academic_session_id") val academicSessionId: String?,
     val course: CourseResponse? = null,
-    val lecturer: com.example.attendease.dto.response.LecturerResponse? = null,
+    val lecturer: LecturerResponse? = null,
     @SerialName("academic_session") val academicSession: AcademicSessionResponse? = null
 )

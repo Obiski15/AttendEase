@@ -25,6 +25,7 @@ class CourseViewModel(
 
     fun loadCourses() {
         viewModelScope.launch {
+            _error.value = null
             _isLoading.value = true
             _error.value = null
             try {
@@ -39,6 +40,7 @@ class CourseViewModel(
 
     fun createCourse(title: String, courseCode: String, creditUnits: Int, departmentId: String) {
         viewModelScope.launch {
+            _error.value = null
             _isLoading.value = true
             _error.value = null
             _saveSuccess.value = false
@@ -64,6 +66,7 @@ class CourseViewModel(
 
     fun loadCourse(courseId: String) {
         viewModelScope.launch {
+            _error.value = null
             _isLoading.value = true
             _error.value = null
             try {
@@ -78,6 +81,7 @@ class CourseViewModel(
 
     fun updateCourse(courseId: String, title: String, courseCode: String, creditUnits: Int, departmentId: String) {
         viewModelScope.launch {
+            _error.value = null
             _isLoading.value = true
             _error.value = null
             _saveSuccess.value = false
@@ -95,6 +99,7 @@ class CourseViewModel(
 
     fun deleteCourse(courseId: String) {
         viewModelScope.launch {
+            _error.value = null
             _isLoading.value = true
             _error.value = null
             try {

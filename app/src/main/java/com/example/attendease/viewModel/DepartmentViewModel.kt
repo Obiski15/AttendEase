@@ -25,6 +25,7 @@ class DepartmentViewModel(
 
     fun loadDepartments() {
         viewModelScope.launch {
+            _error.value = null
             _isLoading.value = true
             _error.value = null
             try {
@@ -39,6 +40,7 @@ class DepartmentViewModel(
 
     fun createDepartment(name: String) {
         viewModelScope.launch {
+            _error.value = null
             _isLoading.value = true
             _error.value = null
             _saveSuccess.value = false
@@ -56,6 +58,7 @@ class DepartmentViewModel(
 
     fun deleteDepartment(departmentId: String) {
         viewModelScope.launch {
+            _error.value = null
             _isLoading.value = true
             _error.value = null
             try {

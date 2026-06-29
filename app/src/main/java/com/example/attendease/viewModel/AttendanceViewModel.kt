@@ -24,6 +24,7 @@ class AttendanceViewModel(
 
     fun checkIn(sessionCode: String, latitude: Double?, longitude: Double?) {
         viewModelScope.launch {
+            _error.value = null
             _isLoading.value = true
             _error.value = null
             _checkInSuccess.value = null
@@ -68,6 +69,7 @@ class AttendanceViewModel(
         if (isLastPage || (_isLoading.value && !refresh)) return
 
         viewModelScope.launch {
+            _error.value = null
             _isLoading.value = true
             if (refresh) _error.value = null
             try {

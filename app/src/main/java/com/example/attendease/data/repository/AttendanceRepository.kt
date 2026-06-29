@@ -70,7 +70,10 @@ class AttendanceRepository(
     suspend fun getMyAttendance(skip: Int = 0, limit: Int = 100): com.example.attendease.dto.response.PaginatedResponse<AttendanceRecordResponse> {
         return try {
             val response = attendanceApi.getMyAttendance(skip, limit)
-            if (skip == 0) { // Only cache the first page
+            if (skip == 0) { 
+                // We only cache the first page (skip == 0) to ensure offline availability 
+                // of recent data. Subsequent pages are not cached to prevent storage bloat 
+                // and stale data issues, meaning offline pagination is not supported.
                 withContext(Dispatchers.IO) {
                     apiCacheDao.insertApiCache(
                         ApiCacheEntity(

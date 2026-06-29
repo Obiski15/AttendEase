@@ -255,38 +255,36 @@ fun LecturerDashboardScreen(
                     val activeSessionCode = if (activeSession != null && !isExpired) activeSession.sessionCode else "None"
                     val isSessionActive = activeSessionCode != "None"
 
-                    if (isSessionActive) {
-                        StatCard(
-                            title = "ACTIVE SESSION",
-                            value = activeSessionCode,
-                            subtitle = "Ongoing (Tap to View)",
-                            icon = Icons.Default.Wifi,
-                            containerColor = MaterialTheme.colorScheme.primaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = if (activeSession != null) {
-                                Modifier.clickable {
-                                    val sessionResponse = AttendanceSessionResponse(
-                                        id = activeSession.id,
-                                        courseAssignmentId = null,
-                                        sessionDate = null,
-                                        startTime = null,
-                                        expiresAt = activeSession.expiresAt,
-                                        sessionCode = activeSession.sessionCode,
-                                        status = "ACTIVE",
-                                        geofencingEnabled = activeSession.geofencingEnabled,
-                                        latitude = null,
-                                        longitude = null,
-                                        radiusMeters = activeSession.radiusMeters
-                                    )
-                                    sessionViewModel.setActiveCourseTitle(activeSession.courseTitle)
-                                    sessionViewModel.setActiveSession(sessionResponse)
-                                    navController.navigate(Screen.StartSession.route)
-                                }
-                            } else {
-                                Modifier
+                    StatCard(
+                        title = "ACTIVE SESSION",
+                        value = if (isSessionActive) activeSessionCode else "No live sessions",
+                        subtitle = if (isSessionActive) "Ongoing (Tap to View)" else "No session currently active",
+                        icon = Icons.Default.Wifi,
+                        containerColor = if (isSessionActive) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                        contentColor = if (isSessionActive) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
+                        modifier = if (isSessionActive && activeSession != null) {
+                            Modifier.clickable {
+                                val sessionResponse = AttendanceSessionResponse(
+                                    id = activeSession.id,
+                                    courseAssignmentId = null,
+                                    sessionDate = null,
+                                    startTime = null,
+                                    expiresAt = activeSession.expiresAt,
+                                    sessionCode = activeSession.sessionCode,
+                                    status = "ACTIVE",
+                                    geofencingEnabled = activeSession.geofencingEnabled,
+                                    latitude = null,
+                                    longitude = null,
+                                    radiusMeters = activeSession.radiusMeters
+                                )
+                                sessionViewModel.setActiveCourseTitle(activeSession.courseTitle)
+                                sessionViewModel.setActiveSession(sessionResponse)
+                                navController.navigate(Screen.StartSession.route)
                             }
-                        )
-                    }
+                        } else {
+                            Modifier
+                        }
+                    )
                 }
 
                 item {

@@ -42,6 +42,7 @@ class StudentViewModel(private val repository: StudentRepository) : ViewModel() 
         if (isLastPage || (_isLoading.value && !refresh)) return
 
         viewModelScope.launch {
+            _error.value = null
             _isLoading.value = true
             if (refresh) _error.value = null
             try {
@@ -77,6 +78,7 @@ class StudentViewModel(private val repository: StudentRepository) : ViewModel() 
 
     fun loadStudent(userId: String) {
         viewModelScope.launch {
+            _error.value = null
             _isLoading.value = true
             _error.value = null
             try {
@@ -95,6 +97,7 @@ class StudentViewModel(private val repository: StudentRepository) : ViewModel() 
 
     fun createStudent(request: StudentCreateRequest) {
         viewModelScope.launch {
+            _error.value = null
             _isLoading.value = true
             _error.value = null
             _saveSuccess.value = false
@@ -111,6 +114,7 @@ class StudentViewModel(private val repository: StudentRepository) : ViewModel() 
 
     fun updateStudent(userId: String, request: StudentUpdateRequest) {
         viewModelScope.launch {
+            _error.value = null
             _isLoading.value = true
             _error.value = null
             _saveSuccess.value = false
@@ -127,6 +131,7 @@ class StudentViewModel(private val repository: StudentRepository) : ViewModel() 
 
     fun deleteStudent(userId: String) {
         viewModelScope.launch {
+            _error.value = null
             _isLoading.value = true
             _error.value = null
             try {

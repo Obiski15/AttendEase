@@ -25,6 +25,7 @@ class AcademicSessionViewModel(
 
     fun loadSessions() {
         viewModelScope.launch {
+            _error.value = null
             _isLoading.value = true
             _error.value = null
             try {
@@ -39,6 +40,7 @@ class AcademicSessionViewModel(
 
     fun createSession(sessionName: String, semester: String, isActive: Boolean, startDate: String, endDate: String) {
         viewModelScope.launch {
+            _error.value = null
             _isLoading.value = true
             _error.value = null
             _saveSuccess.value = false
@@ -57,6 +59,7 @@ class AcademicSessionViewModel(
 
     fun activateSession(sessionId: String) {
         viewModelScope.launch {
+            _error.value = null
             _isLoading.value = true
             _error.value = null
             try {
@@ -72,6 +75,7 @@ class AcademicSessionViewModel(
 
     fun updateSession(sessionId: String, sessionName: String, semester: String, isActive: Boolean, startDate: String, endDate: String) {
         viewModelScope.launch {
+            _error.value = null
             _isLoading.value = true
             _error.value = null
             _saveSuccess.value = false
@@ -89,6 +93,7 @@ class AcademicSessionViewModel(
 
     fun deleteSession(sessionId: String) {
         viewModelScope.launch {
+            _error.value = null
             _isLoading.value = true
             _error.value = null
             try {

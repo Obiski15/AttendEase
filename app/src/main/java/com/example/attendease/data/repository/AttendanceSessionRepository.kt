@@ -129,6 +129,9 @@ class AttendanceSessionRepository(
         return try {
             val response = attendanceSessionApi.getAttendanceSessions(skip, limit)
             if (skip == 0) {
+                // We only cache the first page (skip == 0) to ensure offline availability 
+                // of recent data. Subsequent pages are not cached to prevent storage bloat 
+                // and stale data issues, meaning offline pagination is not supported.
                 withContext(Dispatchers.IO) {
                     apiCacheDao.insertApiCache(ApiCacheEntity(cacheKey = "lecturer_sessions_first_page", payloadJson = Json.encodeToString(response)))
                 }

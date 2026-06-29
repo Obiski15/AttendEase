@@ -37,6 +37,7 @@ class DashboardViewModel(
                 _adminStats.value = cache
             }
             if (cache == null || isRefresh) {
+                _error.value = null
                 _isLoading.value = true
             }
             try {
@@ -59,6 +60,7 @@ class DashboardViewModel(
                 _lecturerStats.value = cache
             }
             if (cache == null || isRefresh) {
+                _error.value = null
                 _isLoading.value = true
             }
             try {
@@ -85,6 +87,7 @@ class DashboardViewModel(
             }
 
             if (cache == null || isRefresh) {
+                _error.value = null
                 _isLoading.value = true
             }
 
