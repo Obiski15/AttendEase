@@ -260,8 +260,8 @@ fun LecturerDashboardScreen(
                         value = if (isSessionActive) activeSessionCode else "No live sessions",
                         subtitle = if (isSessionActive) "Ongoing (Tap to View)" else "No session currently active",
                         icon = Icons.Default.Wifi,
-                        containerColor = if (isSessionActive) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-                        contentColor = if (isSessionActive) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                         modifier = if (isSessionActive && activeSession != null) {
                             Modifier.clickable {
                                 val sessionResponse = AttendanceSessionResponse(
