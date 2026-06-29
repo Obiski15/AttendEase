@@ -125,4 +125,45 @@ fun AttendEaseSearchableDropdown(
                     unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
                     focusedBorderColor = MaterialTheme.colorScheme.primary
                 )
-
+            )
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+                modifier = Modifier.fillMaxWidth().heightIn(max = 250.dp)
+            ) {
+                if (options.isEmpty() && !isLoading) {
+                    DropdownMenuItem(
+                        text = { Text("No results found") },
+                        onClick = {}
+                    )
+                }
+                
+                options.forEachIndexed { index, option ->
+                    if (index == options.size - 1 && !isLastPage) {
+                        androidx.compose.runtime.LaunchedEffect(option) {
+                            onLoadMore()
+                        }
+                    }
+                    DropdownMenuItem(
+                        text = { Text(option) },
+                        onClick = {
+                            onOptionSelected(option)
+                            expanded = false
+                        }
+                    )
+                }
+                
+                if (isLoading) {
+                    DropdownMenuItem(
+                        text = { 
+                            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = androidx.compose.ui.Alignment.Center) {
+                                CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                            }
+                        },
+                        onClick = {}
+                    )
+                }
+            }
+        }
+    }
+}
