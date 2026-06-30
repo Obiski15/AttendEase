@@ -16,26 +16,13 @@ class DepartmentRepository(
     private val apiCacheDao: ApiCacheDao
 ) {
     suspend fun getDepartments(): List<DepartmentResponse> {
-        return try {
-            val response = departmentApi.getDepartments()
-            withContext(Dispatchers.IO) {
-                apiCacheDao.insertApiCache(
-                    ApiCacheEntity(
-                        cacheKey = "admin_departments",
-                        payloadJson = Json.encodeToString(response)
-                    )
-                )
-            }
-            response
-        } catch (e: Exception) {
-            if (e is com.example.attendease.data.api.ApiException || e is com.example.attendease.data.api.UnauthorizedException) throw e
-            Log.w("DepartmentRepo", "Network failed, loading admin_departments cache", e)
-            val cache = withContext(Dispatchers.IO) { apiCacheDao.getApiCache("admin_departments") }
-            if (cache != null) {
-                Json.decodeFromString(cache.payloadJson)
-            } else {
-                throw e
-            }
+        return withCache(
+            cacheKey = "admin_departments",
+            apiCacheDao = apiCacheDao,
+            refresh = true,
+            logTag = this::class.simpleName ?: "DepartmentRepository"
+        ) {
+            departmentApi.getDepartments()
         }
     }
 

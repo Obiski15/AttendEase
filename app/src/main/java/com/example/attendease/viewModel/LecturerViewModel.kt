@@ -21,14 +21,14 @@ class LecturerViewModel(private val repository: LecturerRepository) : ViewModel(
     private val PAGE_SIZE = 10
     private var isLastPage = false
 
-    private var isFetching = false
+    private var isPaginating = false
     fun loadLecturers(refresh: Boolean = false) {
         if (refresh) {
             currentSkip = 0
             isLastPage = false
         }
-        if (isLastPage || isFetching) return
-        isFetching = true
+        if (isLastPage || isPaginating) return
+        isPaginating = true
 
         viewModelScope.launch {
             _uiState.update { it.copy(error = null) }
@@ -54,7 +54,7 @@ class LecturerViewModel(private val repository: LecturerRepository) : ViewModel(
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message) }
             } finally {
-                isFetching = false
+                isPaginating = false
                 _uiState.update { it.copy(isLoading = false) }
             }
         }
@@ -92,7 +92,7 @@ class LecturerViewModel(private val repository: LecturerRepository) : ViewModel(
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message) }
             } finally {
-                isFetching = false
+                isPaginating = false
                 _uiState.update { it.copy(isLoading = false) }
             }
         }
@@ -113,7 +113,7 @@ class LecturerViewModel(private val repository: LecturerRepository) : ViewModel(
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message) }
             } finally {
-                isFetching = false
+                isPaginating = false
                 _uiState.update { it.copy(isLoading = false) }
             }
         }
@@ -130,7 +130,7 @@ class LecturerViewModel(private val repository: LecturerRepository) : ViewModel(
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message) }
             } finally {
-                isFetching = false
+                isPaginating = false
                 _uiState.update { it.copy(isLoading = false) }
             }
         }
@@ -146,7 +146,7 @@ class LecturerViewModel(private val repository: LecturerRepository) : ViewModel(
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message) }
             } finally {
-                isFetching = false
+                isPaginating = false
                 _uiState.update { it.copy(isLoading = false) }
             }
         }

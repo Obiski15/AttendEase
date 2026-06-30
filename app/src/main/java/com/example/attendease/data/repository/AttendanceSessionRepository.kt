@@ -111,17 +111,13 @@ class AttendanceSessionRepository(
     }
 
     suspend fun getSessionRecords(sessionId: String): List<AttendanceRecordResponse> {
-        return try {
-            val response = attendanceSessionApi.getSessionRecords(sessionId)
-            withContext(Dispatchers.IO) {
-                apiCacheDao.insertApiCache(ApiCacheEntity(cacheKey = "session_records_$sessionId", payloadJson = Json.encodeToString(response)))
-            }
-            response
-        } catch (e: Exception) {
-            if (e is com.example.attendease.data.api.ApiException || e is com.example.attendease.data.api.UnauthorizedException) throw e
-            Log.w("AttendanceSessionRepo", "Network failed, loading session records cache", e)
-            val cache = withContext(Dispatchers.IO) { apiCacheDao.getApiCache("session_records_$sessionId") }
-            if (cache != null) Json.decodeFromString(cache.payloadJson) else throw e
+        return withCache(
+            cacheKey = "session_records_$sessionId",
+            apiCacheDao = apiCacheDao,
+            refresh = true,
+            logTag = this::class.simpleName ?: "AttendanceSessionRepository"
+        ) {
+            attendanceSessionApi.getSessionRecords(sessionId)
         }
     }
 

@@ -16,26 +16,13 @@ class CourseRepository(
     private val apiCacheDao: ApiCacheDao
 ) {
     suspend fun getCourses(): List<CourseResponse> {
-        return try {
-            val response = courseApi.getCourses()
-            withContext(Dispatchers.IO) {
-                apiCacheDao.insertApiCache(
-                    ApiCacheEntity(
-                        cacheKey = "admin_courses",
-                        payloadJson = Json.encodeToString(response)
-                    )
-                )
-            }
-            response
-        } catch (e: Exception) {
-            if (e is com.example.attendease.data.api.ApiException || e is com.example.attendease.data.api.UnauthorizedException) throw e
-            Log.w("CourseRepo", "Network failed, loading admin_courses cache", e)
-            val cache = withContext(Dispatchers.IO) { apiCacheDao.getApiCache("admin_courses") }
-            if (cache != null) {
-                Json.decodeFromString(cache.payloadJson)
-            } else {
-                throw e
-            }
+        return withCache(
+            cacheKey = "admin_courses",
+            apiCacheDao = apiCacheDao,
+            refresh = true,
+            logTag = this::class.simpleName ?: "CourseRepository"
+        ) {
+            courseApi.getCourses()
         }
     }
 

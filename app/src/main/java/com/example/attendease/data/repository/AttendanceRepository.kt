@@ -67,36 +67,18 @@ class AttendanceRepository(
         }
     }
 
-    suspend fun getMyAttendance(skip: Int = 0, limit: Int = 100): com.example.attendease.dto.response.PaginatedResponse<AttendanceRecordResponse> {
-        return try {
-            val response = attendanceApi.getMyAttendance(skip, limit)
-            if (skip == 0) { 
-                // We only cache the first page (skip == 0) to ensure offline availability 
-                // of recent data. Subsequent pages are not cached to prevent storage bloat 
-                // and stale data issues, meaning offline pagination is not supported.
-                withContext(Dispatchers.IO) {
-                    apiCacheDao.insertApiCache(
-                        ApiCacheEntity(
-                            cacheKey = "my_attendance_first_page",
-                            payloadJson = Json.encodeToString(response)
-                        )
-                    )
-                }
+    suspend fun getMyAttendance(skip: Int = 0, limit: Int = 20): com.example.attendease.dto.response.PaginatedResponse<AttendanceRecordResponse> {
+        return if (skip == 0) {
+            withCache(
+                cacheKey = "my_attendance_first_page",
+                apiCacheDao = apiCacheDao,
+                refresh = true,
+                logTag = this::class.simpleName ?: "AttendanceRepository"
+            ) {
+                attendanceApi.getMyAttendance(skip, limit)
             }
-            response
-        } catch (e: Exception) {
-            if (e is com.example.attendease.data.api.ApiException || e is com.example.attendease.data.api.UnauthorizedException) throw e
-            if (skip == 0) {
-                Log.w("AttendanceRepo", "Network failed, loading my_attendance_first_page cache", e)
-                val cache = withContext(Dispatchers.IO) { apiCacheDao.getApiCache("my_attendance_first_page") }
-                if (cache != null) {
-                    Json.decodeFromString(cache.payloadJson)
-                } else {
-                    throw e
-                }
-            } else {
-                throw e
-            }
+        } else {
+            attendanceApi.getMyAttendance(skip, limit)
         }
     }
 

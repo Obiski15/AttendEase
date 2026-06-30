@@ -16,26 +16,13 @@ class AcademicSessionRepository(
     private val apiCacheDao: ApiCacheDao
 ) {
     suspend fun getAcademicSessions(): List<AcademicSessionResponse> {
-        return try {
-            val response = academicSessionApi.getAcademicSessions()
-            withContext(Dispatchers.IO) {
-                apiCacheDao.insertApiCache(
-                    ApiCacheEntity(
-                        cacheKey = "admin_academic_sessions",
-                        payloadJson = Json.encodeToString(response)
-                    )
-                )
-            }
-            response
-        } catch (e: Exception) {
-            if (e is com.example.attendease.data.api.ApiException || e is com.example.attendease.data.api.UnauthorizedException) throw e
-            Log.w("AcademicSessionRepo", "Network failed, loading admin_academic_sessions cache", e)
-            val cache = withContext(Dispatchers.IO) { apiCacheDao.getApiCache("admin_academic_sessions") }
-            if (cache != null) {
-                Json.decodeFromString(cache.payloadJson)
-            } else {
-                throw e
-            }
+        return withCache(
+            cacheKey = "admin_academic_sessions",
+            apiCacheDao = apiCacheDao,
+            refresh = true,
+            logTag = this::class.simpleName ?: "AcademicSessionRepository"
+        ) {
+            academicSessionApi.getAcademicSessions()
         }
     }
 

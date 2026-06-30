@@ -34,7 +34,7 @@ class AttendanceViewModel(
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message ?: "Check-in failed. Please try again.") }
             } finally {
-                isFetching = false
+                isPaginating = false
                 _uiState.update { it.copy(isLoading = false) }
             }
         }
@@ -54,14 +54,14 @@ class AttendanceViewModel(
     private val PAGE_SIZE = 10
     private var isLastPage = false
 
-    private var isFetching = false
+    private var isPaginating = false
     fun getMyAttendance(refresh: Boolean = false) {
         if (refresh) {
             currentSkip = 0
             isLastPage = false
         }
-        if (isLastPage || isFetching) return
-        isFetching = true
+        if (isLastPage || isPaginating) return
+        isPaginating = true
 
         viewModelScope.launch {
             _uiState.update { it.copy(error = null) }
@@ -87,7 +87,7 @@ class AttendanceViewModel(
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message ?: "Failed to load attendance history.") }
             } finally {
-                isFetching = false
+                isPaginating = false
                 _uiState.update { it.copy(isLoading = false) }
             }
         }

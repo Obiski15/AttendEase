@@ -20,32 +20,17 @@ class StudentRepository(
     private val apiCacheDao: ApiCacheDao
 ) {
     suspend fun getStudents(skip: Int = 0, limit: Int = 100): com.example.attendease.dto.response.PaginatedResponse<StudentResponse> {
-        return try {
-            val response = studentApi.getStudents(skip, limit)
-            if (skip == 0) {
-                withContext(Dispatchers.IO) {
-                    apiCacheDao.insertApiCache(
-                        ApiCacheEntity(
-                            cacheKey = "admin_students_first_page",
-                            payloadJson = Json.encodeToString(response)
-                        )
-                    )
-                }
+        return if (skip == 0) {
+            withCache(
+                cacheKey = "admin_students_first_page",
+                apiCacheDao = apiCacheDao,
+                refresh = true,
+                logTag = this::class.simpleName ?: "StudentRepository"
+            ) {
+                studentApi.getStudents(skip, limit)
             }
-            response
-        } catch (e: Exception) {
-            if (e is com.example.attendease.data.api.ApiException || e is com.example.attendease.data.api.UnauthorizedException) throw e
-            if (skip == 0) {
-                Log.w("StudentRepo", "Network failed, loading admin_students_first_page cache", e)
-                val cache = withContext(Dispatchers.IO) { apiCacheDao.getApiCache("admin_students_first_page") }
-                if (cache != null) {
-                    Json.decodeFromString(cache.payloadJson)
-                } else {
-                    throw e
-                }
-            } else {
-                throw e
-            }
+        } else {
+            studentApi.getStudents(skip, limit)
         }
     }
 
@@ -66,26 +51,13 @@ class StudentRepository(
     }
 
     suspend fun getDepartments(): List<DepartmentResponse> {
-        return try {
-            val response = departmentApi.getDepartments()
-            withContext(Dispatchers.IO) {
-                apiCacheDao.insertApiCache(
-                    ApiCacheEntity(
-                        cacheKey = "admin_departments",
-                        payloadJson = Json.encodeToString(response)
-                    )
-                )
-            }
-            response
-        } catch (e: Exception) {
-            if (e is com.example.attendease.data.api.ApiException || e is com.example.attendease.data.api.UnauthorizedException) throw e
-            Log.w("StudentRepo", "Network failed, loading admin_departments cache", e)
-            val cache = withContext(Dispatchers.IO) { apiCacheDao.getApiCache("admin_departments") }
-            if (cache != null) {
-                Json.decodeFromString(cache.payloadJson)
-            } else {
-                throw e
-            }
+        return withCache(
+            cacheKey = "admin_departments",
+            apiCacheDao = apiCacheDao,
+            refresh = true,
+            logTag = this::class.simpleName ?: "StudentRepository"
+        ) {
+            departmentApi.getDepartments()
         }
     }
 
