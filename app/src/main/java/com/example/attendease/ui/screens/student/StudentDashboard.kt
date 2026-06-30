@@ -45,9 +45,10 @@ fun StudentDashboardScreen(
     var userName by remember { mutableStateOf(cachedName ?: "User") }
 
     // Collect live data from the ViewModel
-    val studentStats by viewModel.studentStats.collectAsStateWithLifecycle()
-    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
-    val error by viewModel.error.collectAsStateWithLifecycle()
+    val viewModelUiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val studentStats = viewModelUiState.studentStats
+    val isLoading = viewModelUiState.isLoading
+    val error = viewModelUiState.error
 
     // Fetch data when the screen first opens
     LaunchedEffect(Unit) {

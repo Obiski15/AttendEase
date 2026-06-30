@@ -6,6 +6,8 @@ import com.example.attendease.data.repository.DashboardRepository
 import com.example.attendease.dto.response.AdminDashboardResponse
 import com.example.attendease.dto.response.LecturerDashboardResponse
 import com.example.attendease.dto.response.StudentDashboardResponse
+import com.example.attendease.state.DashboardUiState
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -13,64 +15,54 @@ import kotlinx.coroutines.launch
 class DashboardViewModel(
     private val repository: DashboardRepository
 ) : ViewModel() {
-    private val _adminStats = MutableStateFlow<AdminDashboardResponse?>(null)
-    val adminStats = _adminStats.asStateFlow()
+    private val _uiState = MutableStateFlow(DashboardUiState())
+    val uiState = _uiState.asStateFlow()
 
-    private val _lecturerStats = MutableStateFlow<LecturerDashboardResponse?>(null)
-    val lecturerStats = _lecturerStats.asStateFlow()
 
     // 👇 NEW: holds the student dashboard data
-    private val _studentStats = MutableStateFlow<StudentDashboardResponse?>(null)
-    val studentStats = _studentStats.asStateFlow()
-
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading = _isLoading.asStateFlow()
-
-    private val _error = MutableStateFlow<String?>(null)
-    val error = _error.asStateFlow()
 
     fun loadAdminStats(isRefresh: Boolean = false) {
         viewModelScope.launch {
-            _error.value = null
+            _uiState.update { it.copy(error = null) }
             val cache = repository.getCachedAdminDashboard()
             if (cache != null && !isRefresh) {
-                _adminStats.value = cache
-            }
+                _uiState.update { it.copy(adminStats = cache) }
+                        }
             if (cache == null || isRefresh) {
-                _error.value = null
-                _isLoading.value = true
+                _uiState.update { it.copy(error = null) }
+                _uiState.update { it.copy(isLoading = true) }
             }
             try {
-                _adminStats.value = repository.getAdminDashboard()
+                _uiState.update { it.copy(adminStats = repository.getAdminDashboard()) }
             } catch (e: Exception) {
-                if (_adminStats.value == null) {
-                    _error.value = e.message
+                if (_uiState.value.adminStats == null) {
+                    _uiState.update { it.copy(error = e.message) }
                 }
             } finally {
-                _isLoading.value = false
+                _uiState.update { it.copy(isLoading = false) }
             }
         }
     }
 
     fun loadLecturerDashboard(isRefresh: Boolean = false) {
         viewModelScope.launch {
-            _error.value = null
+            _uiState.update { it.copy(error = null) }
             val cache = repository.getCachedLecturerDashboard()
             if (cache != null && !isRefresh) {
-                _lecturerStats.value = cache
-            }
+                _uiState.update { it.copy(lecturerStats = cache) }
+                        }
             if (cache == null || isRefresh) {
-                _error.value = null
-                _isLoading.value = true
+                _uiState.update { it.copy(error = null) }
+                _uiState.update { it.copy(isLoading = true) }
             }
             try {
-                _lecturerStats.value = repository.getLecturerDashboard()
+                _uiState.update { it.copy(lecturerStats = repository.getLecturerDashboard()) }
             } catch (e: Exception) {
-                if (_lecturerStats.value == null) {
-                    _error.value = e.message
+                if (_uiState.value.lecturerStats == null) {
+                    _uiState.update { it.copy(error = e.message) }
                 }
             } finally {
-                _isLoading.value = false
+                _uiState.update { it.copy(isLoading = false) }
             }
         }
     }
@@ -78,34 +70,34 @@ class DashboardViewModel(
     // loads student dashboard on launch
     fun loadStudentDashboard(isRefresh: Boolean = false) {
         viewModelScope.launch {
-            _error.value = null
+            _uiState.update { it.copy(error = null) }
 
             // Check cache first so screen loads instantly
             val cache = repository.getCachedStudentDashboard()
             if (cache != null && !isRefresh) {
-                _studentStats.value = cache
-            }
+                _uiState.update { it.copy(studentStats = cache) }
+                        }
 
             if (cache == null || isRefresh) {
-                _error.value = null
-                _isLoading.value = true
+                _uiState.update { it.copy(error = null) }
+                _uiState.update { it.copy(isLoading = true) }
             }
 
             try {
                 // Fetch fresh data from API
-                _studentStats.value = repository.getStudentDashboard()
+                _uiState.update { it.copy(studentStats = repository.getStudentDashboard()) }
             } catch (e: Exception) {
                 // Only show error if we have no cached data to show
-                if (_studentStats.value == null) {
-                    _error.value = e.message
+                if (_uiState.value.studentStats == null) {
+                    _uiState.update { it.copy(error = e.message) }
                 }
             } finally {
-                _isLoading.value = false
+                _uiState.update { it.copy(isLoading = false) }
             }
         }
     }
 
     fun clearError() {
-        _error.value = null
+        _uiState.update { it.copy(error = null) }
     }
 }

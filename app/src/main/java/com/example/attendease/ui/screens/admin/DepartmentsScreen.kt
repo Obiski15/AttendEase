@@ -32,12 +32,13 @@ fun DepartmentsScreen(
     navController: NavController,
     viewModel: DepartmentViewModel = koinViewModel()
 ) {
-    val departments by viewModel.departments.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
-    val error by viewModel.error.collectAsState()
+    val viewModelUiState by viewModel.uiState.collectAsState()
+    val departments = viewModelUiState.departments
+    val isLoading = viewModelUiState.isLoading
+    val error = viewModelUiState.error
     AttendEaseErrorDialog(errorMessage = error, onDismiss = { viewModel.clearError() })
 
-    val saveSuccess by viewModel.saveSuccess.collectAsState()
+    val saveSuccess = viewModelUiState.saveSuccess
 
     var showAddDialog by remember { mutableStateOf(false) }
     var newDepartmentName by remember { mutableStateOf("") }

@@ -64,9 +64,11 @@ fun ScanAttendanceScreen(
     val context = LocalContext.current
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
 
-    val isLoading by attendanceViewModel.isLoading.collectAsState()
-    val error by attendanceViewModel.error.collectAsState()
-    val checkInSuccess by attendanceViewModel.checkInSuccess.collectAsState()
+    val attendanceViewModelUiState by attendanceViewModel.uiState.collectAsState()
+
+    val isLoading = attendanceViewModelUiState.isLoading
+    val error = attendanceViewModelUiState.error
+    val checkInSuccess = attendanceViewModelUiState.checkInSuccess
 
     var showManualInput by remember { mutableStateOf(false) }
     var codeInput by remember { mutableStateOf("") }

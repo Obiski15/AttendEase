@@ -37,11 +37,12 @@ fun LecturerActiveSessionScreen(
     navController: NavController,
     sessionViewModel: LecturerSessionViewModel
 ) {
-    val activeSession by sessionViewModel.activeSession.collectAsState()
-    val activeCourseTitle by sessionViewModel.activeCourseTitle.collectAsState()
-    val records by sessionViewModel.checkedInRecords.collectAsState()
-    val isLoading by sessionViewModel.isLoading.collectAsState()
-    val error by sessionViewModel.error.collectAsState()
+    val sessionViewModelUiState by sessionViewModel.uiState.collectAsState()
+    val activeSession = sessionViewModelUiState.activeSession
+    val activeCourseTitle = sessionViewModelUiState.activeCourseTitle
+    val records = sessionViewModelUiState.checkedInRecords
+    val isLoading = sessionViewModelUiState.isLoading
+    val error = sessionViewModelUiState.error
 
     var timeLeftString by remember { mutableStateOf("Active") }
 

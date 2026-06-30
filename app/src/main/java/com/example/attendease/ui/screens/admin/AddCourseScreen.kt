@@ -40,10 +40,13 @@ fun AddCourseScreen(
     var creditUnits by remember { mutableIntStateOf(3) }
     var showSuccessModal by remember { mutableStateOf(false) }
 
-    val departments by departmentViewModel.departments.collectAsState()
-    val saveSuccess by courseViewModel.saveSuccess.collectAsState()
-    val isLoading by courseViewModel.isLoading.collectAsState()
-    val error by courseViewModel.error.collectAsState()
+    val departmentViewModelUiState by departmentViewModel.uiState.collectAsState()
+
+    val departments = departmentViewModelUiState.departments
+    val courseViewModelUiState by courseViewModel.uiState.collectAsState()
+    val saveSuccess = courseViewModelUiState.saveSuccess
+    val isLoading = courseViewModelUiState.isLoading
+    val error = courseViewModelUiState.error
     AttendEaseErrorDialog(errorMessage = error, onDismiss = { courseViewModel.clearError() })
 
 

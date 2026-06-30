@@ -45,10 +45,12 @@ fun AddStudentScreen(
     var level by remember { mutableStateOf("100 Level") }
     var showSuccessModal by remember { mutableStateOf(false) }
 
-    val departments by viewModel.departments.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
-    val error by viewModel.error.collectAsState()
-    val saveSuccess by viewModel.saveSuccess.collectAsState()
+    val viewModelUiState by viewModel.uiState.collectAsState()
+
+    val departments = viewModelUiState.departments
+    val isLoading = viewModelUiState.isLoading
+    val error = viewModelUiState.error
+    val saveSuccess = viewModelUiState.saveSuccess
 
     LaunchedEffect(Unit) {
         viewModel.resetSaveState()
@@ -103,7 +105,7 @@ fun AddStudentScreen(
                             modifier = Modifier.size(36.dp),
                             shape = CircleShape,
                             color = MaterialTheme.colorScheme.secondary,
-                            border = androidx.compose.foundation.BorderStroke(2.dp, Color.White)
+                            border = androidx.compose.foundation.BorderStroke(2.dp, MaterialTheme.colorScheme.surface)
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
