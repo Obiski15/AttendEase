@@ -16,15 +16,15 @@ class DepartmentViewModel(
     private val _uiState = MutableStateFlow(DepartmentUiState())
     val uiState = _uiState.asStateFlow()
 
-    fun loadDepartments() {
+    fun loadDepartments(refresh: Boolean = false) {
         viewModelScope.launch {
             _uiState.update { it.copy(error = null) }
 
             val cache = repository.getCachedDepartments()
-            if (cache != null && !false) {
+            if (cache != null && !refresh) {
                 _uiState.update { it.copy(departments = cache) }
                         }
-            if (cache == null || false) {
+            if (cache == null || refresh) {
                 _uiState.update { it.copy(isLoading = true) }
             }
             try {

@@ -16,15 +16,15 @@ class CourseViewModel(
     private val _uiState = MutableStateFlow(CourseUiState())
     val uiState = _uiState.asStateFlow()
 
-    fun loadCourses() {
+    fun loadCourses(refresh: Boolean = false) {
         viewModelScope.launch {
             _uiState.update { it.copy(error = null) }
 
             val cache = repository.getCachedCourses()
-            if (cache != null && !false) {
+            if (cache != null && !refresh) {
                 _uiState.update { it.copy(courses = cache) }
                         }
-            if (cache == null || false) {
+            if (cache == null || refresh) {
                 _uiState.update { it.copy(isLoading = true) }
             }
             try {

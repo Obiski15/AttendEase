@@ -16,15 +16,15 @@ class AcademicSessionViewModel(
     private val _uiState = MutableStateFlow(AcademicSessionUiState())
     val uiState = _uiState.asStateFlow()
 
-    fun loadSessions() {
+    fun loadSessions(refresh: Boolean = false) {
         viewModelScope.launch {
             _uiState.update { it.copy(error = null) }
 
             val cache = repository.getCachedAcademicSessions()
-            if (cache != null && !false) {
+            if (cache != null && !refresh) {
                 _uiState.update { it.copy(sessions = cache) }
                         }
-            if (cache == null || false) {
+            if (cache == null || refresh) {
                 _uiState.update { it.copy(isLoading = true) }
             }
             try {
