@@ -52,11 +52,14 @@ fun StudentAttendanceHistoryScreen(
     dashboardViewModel: com.example.attendease.viewModel.DashboardViewModel = koinViewModel()
 ) {
     var selectedFilter by remember { mutableStateOf("ALL") }
-    val attendanceHistory by viewModel.attendanceHistory.collectAsStateWithLifecycle()
-    val error by viewModel.error.collectAsStateWithLifecycle()
-    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+    val viewModelUiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val attendanceHistory = viewModelUiState.attendanceHistory
+    val error = viewModelUiState.error
+    val isLoading = viewModelUiState.isLoading
     
-    val studentStats by dashboardViewModel.studentStats.collectAsStateWithLifecycle()
+    val dashboardViewModelUiState by dashboardViewModel.uiState.collectAsStateWithLifecycle()
+    
+    val studentStats = dashboardViewModelUiState.studentStats
 
     val totalRecords = studentStats?.totalCount ?: attendanceHistory.size
     val presentCount = studentStats?.presentCount ?: attendanceHistory.count { it.status == "PRESENT" }
@@ -75,7 +78,7 @@ fun StudentAttendanceHistoryScreen(
         }
     }
 
-    LaunchedEffect(Unit) { viewModel.getMyAttendance(refresh = true) }
+    LaunchedEffect(Unit) { viewModel.getMyAttendance(refresh = false) }
 
     error?.let {
         AttendEaseErrorDialog(errorMessage = it, onDismiss = { viewModel.clearError() })
@@ -267,7 +270,9 @@ fun StudentAttendanceHistoryScreen(
             } else {
                 itemsIndexed(filteredHistory) { index, record ->
                     if (index == filteredHistory.size - 1) {
-                        viewModel.loadMoreHistory()
+                        LaunchedEffect(index) {
+                            viewModel.loadMoreHistory()
+                        }
                     }
                     val (day, month, time) = DateUtils.parseIsoDateToDayMonthTime(record.checkInTime)
                     val codeStr = record.courseCode ?: record.sessionId?.take(8) ?: "Unknown"

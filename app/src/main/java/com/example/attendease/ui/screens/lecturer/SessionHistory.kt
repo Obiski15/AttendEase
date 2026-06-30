@@ -54,14 +54,17 @@ fun LecturerSessionHistoryScreen(
     val filters = listOf("All", "Active", "Completed")
 
     LaunchedEffect(Unit) {
-        sessionViewModel.loadSessionHistory(refresh = true)
+        sessionViewModel.loadSessionHistory(refresh = false)
         dashboardViewModel.loadLecturerDashboard()
     }
 
-    val historySessions by sessionViewModel.sessionsHistory.collectAsState()
-    val lecturerStats by dashboardViewModel.lecturerStats.collectAsState()
-    val isLoading by sessionViewModel.isLoading.collectAsState()
-    val error by sessionViewModel.error.collectAsState()
+    val sessionViewModelUiState by sessionViewModel.uiState.collectAsState()
+
+    val historySessions = sessionViewModelUiState.sessionsHistory
+    val dashboardViewModelUiState by dashboardViewModel.uiState.collectAsState()
+    val lecturerStats = dashboardViewModelUiState.lecturerStats
+    val isLoading = sessionViewModelUiState.isLoading
+    val error = sessionViewModelUiState.error
 
     val sessions = remember(historySessions, lecturerStats, searchQuery, selectedFilter) {
         historySessions.mapNotNull { session ->
@@ -212,7 +215,9 @@ fun LecturerSessionHistoryScreen(
                 ) {
                     itemsIndexed(sessions) { index, sessionItem ->
                         if (index == sessions.size - 1) {
-                            sessionViewModel.loadMoreHistory()
+                            LaunchedEffect(index) {
+                                sessionViewModel.loadMoreHistory()
+                            }
                         }
                         LecturerSessionCard(
                             session = sessionItem,

@@ -41,12 +41,15 @@ fun CoursesScreen(
 ) {
     var searchQuery by remember { mutableStateOf("") }
     
-    val courses by courseViewModel.courses.collectAsState()
-    val departments by departmentViewModel.departments.collectAsState()
+    val courseViewModelUiState by courseViewModel.uiState.collectAsState()
+    
+    val courses = courseViewModelUiState.courses
+    val departmentViewModelUiState by departmentViewModel.uiState.collectAsState()
+    val departments = departmentViewModelUiState.departments
     val assignmentState by assignmentViewModel.uiState.collectAsState()
     
-    val isLoading by courseViewModel.isLoading.collectAsState()
-    val error by courseViewModel.error.collectAsState()
+    val isLoading = courseViewModelUiState.isLoading
+    val error = courseViewModelUiState.error
     AttendEaseErrorDialog(errorMessage = error, onDismiss = { courseViewModel.clearError() })
 
 
@@ -122,7 +125,7 @@ fun CoursesScreen(
                         label = { Text("All Departments") },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = MaterialTheme.colorScheme.primary,
-                            selectedLabelColor = Color.White
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimary
                         )
                     )
                 }
@@ -133,7 +136,7 @@ fun CoursesScreen(
                         label = { Text(dept.name) },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = MaterialTheme.colorScheme.primary,
-                            selectedLabelColor = Color.White
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimary
                         )
                     )
                 }

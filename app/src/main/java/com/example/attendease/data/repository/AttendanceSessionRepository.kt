@@ -175,4 +175,10 @@ class AttendanceSessionRepository(
             }
         }
     }
+
+    suspend fun getCachedAttendanceSessions(): com.example.attendease.dto.response.PaginatedResponse<AttendanceSessionResponse>? {
+        val cache = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { apiCacheDao.getApiCache("lecturer_sessions_first_page") }
+        return if (cache != null) kotlinx.serialization.json.Json.decodeFromString(cache.payloadJson) else null
+    }
+
 }

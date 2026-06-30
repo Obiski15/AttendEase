@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.attendease.data.repository.CourseRepository
 import com.example.attendease.dto.response.CourseResponse
+import com.example.attendease.state.CourseUiState
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -11,109 +13,103 @@ import kotlinx.coroutines.launch
 class CourseViewModel(
     private val repository: CourseRepository
 ) : ViewModel() {
-    private val _courses = MutableStateFlow<List<CourseResponse>>(emptyList())
-    val courses = _courses.asStateFlow()
-
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading = _isLoading.asStateFlow()
-
-    private val _error = MutableStateFlow<String?>(null)
-    val error = _error.asStateFlow()
-
-    private val _saveSuccess = MutableStateFlow(false)
-    val saveSuccess = _saveSuccess.asStateFlow()
+    private val _uiState = MutableStateFlow(CourseUiState())
+    val uiState = _uiState.asStateFlow()
 
     fun loadCourses() {
         viewModelScope.launch {
-            _error.value = null
-            _isLoading.value = true
-            _error.value = null
+            _uiState.update { it.copy(error = null) }
+
+            val cache = repository.getCachedCourses()
+            if (cache != null && !false) {
+                _uiState.update { it.copy(courses = cache) }
+                        }
+            if (cache == null || false) {
+                _uiState.update { it.copy(isLoading = true) }
+            }
             try {
-                _courses.value = repository.getCourses()
+                _uiState.update { it.copy(courses = repository.getCourses()) }
             } catch (e: Exception) {
-                _error.value = e.message
+                _uiState.update { it.copy(error = e.message) }
             } finally {
-                _isLoading.value = false
+                _uiState.update { it.copy(isLoading = false) }
             }
         }
     }
 
     fun createCourse(title: String, courseCode: String, creditUnits: Int, departmentId: String) {
         viewModelScope.launch {
-            _error.value = null
-            _isLoading.value = true
-            _error.value = null
-            _saveSuccess.value = false
+            _uiState.update { it.copy(error = null) }
+            _uiState.update { it.copy(isLoading = true) }
+            _uiState.update { it.copy(error = null) }
+            _uiState.update { it.copy(saveSuccess = false) }
             try {
                 repository.createCourse(title, courseCode, creditUnits, departmentId)
-                _saveSuccess.value = true
+                _uiState.update { it.copy(saveSuccess = true) }
                 loadCourses()
             } catch (e: Exception) {
-                _error.value = e.message
+                _uiState.update { it.copy(error = e.message) }
             } finally {
-                _isLoading.value = false
+                _uiState.update { it.copy(isLoading = false) }
             }
         }
     }
 
     fun resetSaveState() {
-        _saveSuccess.value = false
-        _error.value = null
+        _uiState.update { it.copy(saveSuccess = false) }
+        _uiState.update { it.copy(error = null) }
     }
-
-    private val _currentCourse = MutableStateFlow<CourseResponse?>(null)
-    val currentCourse = _currentCourse.asStateFlow()
 
     fun loadCourse(courseId: String) {
         viewModelScope.launch {
-            _error.value = null
-            _isLoading.value = true
-            _error.value = null
+            _uiState.update { it.copy(error = null) }
+            _uiState.update { it.copy(isLoading = true) }
+            _uiState.update { it.copy(error = null) }
             try {
-                _currentCourse.value = repository.getCourse(courseId)
+                _uiState.update { it.copy(currentCourse = repository.getCourse(courseId)) }
             } catch (e: Exception) {
-                _error.value = e.message
+                _uiState.update { it.copy(error = e.message) }
             } finally {
-                _isLoading.value = false
+                _uiState.update { it.copy(isLoading = false) }
             }
         }
     }
 
     fun updateCourse(courseId: String, title: String, courseCode: String, creditUnits: Int, departmentId: String) {
         viewModelScope.launch {
-            _error.value = null
-            _isLoading.value = true
-            _error.value = null
-            _saveSuccess.value = false
+            _uiState.update { it.copy(error = null) }
+            _uiState.update { it.copy(isLoading = true) }
+            _uiState.update { it.copy(error = null) }
+            _uiState.update { it.copy(saveSuccess = false) }
             try {
                 repository.updateCourse(courseId, title, courseCode, creditUnits, departmentId)
-                _saveSuccess.value = true
+                _uiState.update { it.copy(saveSuccess = true) }
                 loadCourses()
             } catch (e: Exception) {
-                _error.value = e.message
+                _uiState.update { it.copy(error = e.message) }
             } finally {
-                _isLoading.value = false
+                _uiState.update { it.copy(isLoading = false) }
             }
         }
     }
 
     fun deleteCourse(courseId: String) {
         viewModelScope.launch {
-            _error.value = null
-            _isLoading.value = true
-            _error.value = null
+            _uiState.update { it.copy(error = null) }
+            _uiState.update { it.copy(isLoading = true) }
+            _uiState.update { it.copy(error = null) }
             try {
                 repository.deleteCourse(courseId)
                 loadCourses()
             } catch (e: Exception) {
-                _error.value = e.message
+                _uiState.update { it.copy(error = e.message) }
             } finally {
-                _isLoading.value = false
+                _uiState.update { it.copy(isLoading = false) }
             }
         }
     }
 
     fun clearError() {
-        _error.value = null
+        _uiState.update { it.copy(error = null) }
     }
 }

@@ -40,10 +40,11 @@ fun StudentsScreen(
     viewModel: StudentViewModel = koinViewModel()
 ) {
     var searchQuery by remember { mutableStateOf("") }
-    val students by viewModel.students.collectAsState()
-    val departments by viewModel.departments.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
-    val error by viewModel.error.collectAsState()
+    val viewModelUiState by viewModel.uiState.collectAsState()
+    val students = viewModelUiState.students
+    val departments = viewModelUiState.departments
+    val isLoading = viewModelUiState.isLoading
+    val error = viewModelUiState.error
     AttendEaseErrorDialog(errorMessage = error, onDismiss = { viewModel.clearError() })
 
 
@@ -52,7 +53,7 @@ fun StudentsScreen(
     val levels = listOf("ALL", "100L", "200L", "300L", "400L", "500L")
 
     LaunchedEffect(Unit) {
-        viewModel.loadStudents(refresh = true)
+        viewModel.loadStudents(refresh = false)
     }
 
     val filteredStudents = students.filter { student ->
@@ -191,7 +192,9 @@ fun StudentsScreen(
                     ) {
                         itemsIndexed(filteredStudents, key = { _, it -> it.userId }) { index, student ->
                             if (index == filteredStudents.size - 1) {
-                                viewModel.loadMore()
+                                LaunchedEffect(index) {
+                                    viewModel.loadMore()
+                                }
                             }
                             val deptName = student.department?.name ?: "Unknown Dept"
                             StudentCard(

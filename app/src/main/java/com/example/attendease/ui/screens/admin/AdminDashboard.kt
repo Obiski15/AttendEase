@@ -34,9 +34,11 @@ fun AdminDashboardScreen(
         userName = user.name ?: "Administrator"
     }
 
-    val stats by viewModel.adminStats.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
-    val error by viewModel.error.collectAsState()
+    val viewModelUiState by viewModel.uiState.collectAsState()
+
+    val stats = viewModelUiState.adminStats
+    val isLoading = viewModelUiState.isLoading
+    val error = viewModelUiState.error
 
     LaunchedEffect(Unit) {
         viewModel.loadAdminStats()

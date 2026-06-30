@@ -32,9 +32,11 @@ fun AddAdminScreen(
     
     var showSuccessModal by remember { mutableStateOf(false) }
 
-    val saveSuccess by viewModel.saveSuccess.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
-    val error by viewModel.error.collectAsState()
+    val viewModelUiState by viewModel.uiState.collectAsState()
+
+    val saveSuccess = viewModelUiState.saveSuccess
+    val isLoading = viewModelUiState.isLoading
+    val error = viewModelUiState.error
     AttendEaseErrorDialog(errorMessage = error, onDismiss = { viewModel.clearError() })
 
 

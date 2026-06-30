@@ -16,7 +16,7 @@ class CourseAssignmentViewModel(
     private val _uiState = MutableStateFlow(CourseAssignmentUiState())
     val uiState = _uiState.asStateFlow()
 
-    private val PAGE_SIZE = 20
+    private val PAGE_SIZE = 10
     private var currentLecturerSearchQuery: String = ""
 
     fun loadData() {

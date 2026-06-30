@@ -77,12 +77,12 @@ val appModule = module {
     single { AttendanceSessionApi(get(), get(), get()) }
     single { AttendanceApi(get(), get(), get()) }
 
-    single { LecturerRepository(get(), get()) }
-    single { StudentRepository(get(), get()) }
-    single { CourseAssignmentRepository(get(), get(), get(), get()) }
-    single { AcademicSessionRepository(get()) }
-    single { DepartmentRepository(get()) }
-    single { CourseRepository(get()) }
+    single { LecturerRepository(get(), get(), get()) }
+    single { StudentRepository(get(), get(), get()) }
+    single { CourseAssignmentRepository(get(), get(), get(), get(), get()) }
+    single { AcademicSessionRepository(get(), get()) }
+    single { DepartmentRepository(get(), get()) }
+    single { CourseRepository(get(), get()) }
     single { UserRepository(get(), get()) }
     single { AttendanceSessionRepository(get(), get(), get(), get()) }
     single { AttendanceRepository(get(), get(), get(), get()) }

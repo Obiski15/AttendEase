@@ -37,12 +37,13 @@ fun AcademicSessionsScreen(
     viewModel: AcademicSessionViewModel = koinViewModel()
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
-    val sessions by viewModel.sessions.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
-    val error by viewModel.error.collectAsState()
+    val viewModelUiState by viewModel.uiState.collectAsState()
+    val sessions = viewModelUiState.sessions
+    val isLoading = viewModelUiState.isLoading
+    val error = viewModelUiState.error
     AttendEaseErrorDialog(errorMessage = error, onDismiss = { viewModel.clearError() })
 
-    val saveSuccess by viewModel.saveSuccess.collectAsState()
+    val saveSuccess = viewModelUiState.saveSuccess
 
     var showCreateDialog by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }

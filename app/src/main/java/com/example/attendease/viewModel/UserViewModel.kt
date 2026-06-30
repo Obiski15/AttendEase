@@ -6,6 +6,8 @@ import com.example.attendease.data.repository.UserRepository
 import com.example.attendease.dto.request.UserCreateRequest
 import com.example.attendease.dto.request.UserUpdateRequest
 import com.example.attendease.dto.response.UserResponse
+import com.example.attendease.state.UserUiState
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -13,57 +15,45 @@ import kotlinx.coroutines.launch
 class UserViewModel(
     private val repository: UserRepository
 ) : ViewModel() {
-    private val _users = MutableStateFlow<List<UserResponse>>(emptyList())
-    val users = _users.asStateFlow()
-
-    private val _currentUser = MutableStateFlow<UserResponse?>(null)
-    val currentUser = _currentUser.asStateFlow()
-
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading = _isLoading.asStateFlow()
-
-    private val _error = MutableStateFlow<String?>(null)
-    val error = _error.asStateFlow()
-
-    private val _saveSuccess = MutableStateFlow(false)
-    val saveSuccess = _saveSuccess.asStateFlow()
+    private val _uiState = MutableStateFlow(UserUiState())
+    val uiState = _uiState.asStateFlow()
 
     fun loadUsers() {
         viewModelScope.launch {
-            _error.value = null
-            _isLoading.value = true
-            _error.value = null
+            _uiState.update { it.copy(error = null) }
+            _uiState.update { it.copy(isLoading = true) }
+            _uiState.update { it.copy(error = null) }
             try {
-                _users.value = repository.getUsers()
+                _uiState.update { it.copy(users = repository.getUsers()) }
             } catch (e: Exception) {
-                _error.value = e.message
+                _uiState.update { it.copy(error = e.message) }
             } finally {
-                _isLoading.value = false
+                _uiState.update { it.copy(isLoading = false) }
             }
         }
     }
 
     fun loadUser(userId: String) {
         viewModelScope.launch {
-            _error.value = null
-            _isLoading.value = true
-            _error.value = null
+            _uiState.update { it.copy(error = null) }
+            _uiState.update { it.copy(isLoading = true) }
+            _uiState.update { it.copy(error = null) }
             try {
-                _currentUser.value = repository.getUser(userId)
+                _uiState.update { it.copy(currentUser = repository.getUser(userId)) }
             } catch (e: Exception) {
-                _error.value = e.message
+                _uiState.update { it.copy(error = e.message) }
             } finally {
-                _isLoading.value = false
+                _uiState.update { it.copy(isLoading = false) }
             }
         }
     }
 
     fun createAdmin(name: String, email: String, password: String) {
         viewModelScope.launch {
-            _error.value = null
-            _isLoading.value = true
-            _error.value = null
-            _saveSuccess.value = false
+            _uiState.update { it.copy(error = null) }
+            _uiState.update { it.copy(isLoading = true) }
+            _uiState.update { it.copy(error = null) }
+            _uiState.update { it.copy(saveSuccess = false) }
             try {
                 val request = UserCreateRequest(
                     name = name,
@@ -72,22 +62,22 @@ class UserViewModel(
                     role = "ADMIN"
                 )
                 repository.createUser(request)
-                _saveSuccess.value = true
+                _uiState.update { it.copy(saveSuccess = true) }
                 loadUsers()
             } catch (e: Exception) {
-                _error.value = e.message
+                _uiState.update { it.copy(error = e.message) }
             } finally {
-                _isLoading.value = false
+                _uiState.update { it.copy(isLoading = false) }
             }
         }
     }
 
     fun updateAdmin(userId: String, name: String, email: String, password: String?) {
         viewModelScope.launch {
-            _error.value = null
-            _isLoading.value = true
-            _error.value = null
-            _saveSuccess.value = false
+            _uiState.update { it.copy(error = null) }
+            _uiState.update { it.copy(isLoading = true) }
+            _uiState.update { it.copy(error = null) }
+            _uiState.update { it.copy(saveSuccess = false) }
             try {
                 val request = UserUpdateRequest(
                     name = name,
@@ -96,39 +86,39 @@ class UserViewModel(
                     password = password.takeIf { !it.isNullOrBlank() }
                 )
                 repository.updateUser(userId, request)
-                _saveSuccess.value = true
+                _uiState.update { it.copy(saveSuccess = true) }
                 loadUsers()
             } catch (e: Exception) {
-                _error.value = e.message
+                _uiState.update { it.copy(error = e.message) }
             } finally {
-                _isLoading.value = false
+                _uiState.update { it.copy(isLoading = false) }
             }
         }
     }
 
     fun deleteUser(userId: String) {
         viewModelScope.launch {
-            _error.value = null
-            _isLoading.value = true
-            _error.value = null
+            _uiState.update { it.copy(error = null) }
+            _uiState.update { it.copy(isLoading = true) }
+            _uiState.update { it.copy(error = null) }
             try {
                 repository.deleteUser(userId)
                 loadUsers()
             } catch (e: Exception) {
-                _error.value = e.message
+                _uiState.update { it.copy(error = e.message) }
             } finally {
-                _isLoading.value = false
+                _uiState.update { it.copy(isLoading = false) }
             }
         }
     }
 
     fun resetSaveState() {
-        _saveSuccess.value = false
-        _error.value = null
-        _currentUser.value = null
+        _uiState.update { it.copy(saveSuccess = false) }
+        _uiState.update { it.copy(error = null) }
+        _uiState.update { it.copy(currentUser = null) }
     }
 
     fun clearError() {
-        _error.value = null
+        _uiState.update { it.copy(error = null) }
     }
 }

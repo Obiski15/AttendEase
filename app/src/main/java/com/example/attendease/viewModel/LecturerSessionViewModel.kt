@@ -8,6 +8,8 @@ import com.example.attendease.dto.response.AttendanceRecordResponse
 import com.example.attendease.dto.response.AttendanceSessionResponse
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import com.example.attendease.state.LecturerSessionUiState
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -18,31 +20,13 @@ class LecturerSessionViewModel(
     private val sessionRepository: AttendanceSessionRepository,
     private val webSocketClient: AttendanceWebSocketClient
 ) : ViewModel() {
+    private val _uiState = MutableStateFlow(LecturerSessionUiState())
+    val uiState = _uiState.asStateFlow()
 
-    private val _activeSession = MutableStateFlow<AttendanceSessionResponse?>(null)
-    val activeSession = _activeSession.asStateFlow()
-
-    private val _activeCourseTitle = MutableStateFlow<String?>(null)
-    val activeCourseTitle = _activeCourseTitle.asStateFlow()
 
     fun setActiveCourseTitle(title: String) {
-        _activeCourseTitle.value = title
+        _uiState.update { it.copy(activeCourseTitle = title) }
     }
-
-    private val _locallyClosedSessionIds = MutableStateFlow<Set<String>>(emptySet())
-    val locallyClosedSessionIds = _locallyClosedSessionIds.asStateFlow()
-
-    private val _checkedInRecords = MutableStateFlow<List<AttendanceRecordResponse>>(emptyList())
-    val checkedInRecords = _checkedInRecords.asStateFlow()
-
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading = _isLoading.asStateFlow()
-
-    private val _error = MutableStateFlow<String?>(null)
-    val error = _error.asStateFlow()
-
-    private val _sessionsHistory = MutableStateFlow<List<AttendanceSessionResponse>>(emptyList())
-    val sessionsHistory = _sessionsHistory.asStateFlow()
 
     private var pollingJob: Job? = null
     private var expirationJob: Job? = null
@@ -57,9 +41,9 @@ class LecturerSessionViewModel(
         onSuccess: () -> Unit
     ) {
         viewModelScope.launch {
-            _error.value = null
-            _isLoading.value = true
-            _error.value = null
+            _uiState.update { it.copy(error = null) }
+            _uiState.update { it.copy(isLoading = true) }
+            _uiState.update { it.copy(error = null) }
             try {
                 if (courseAssignmentId.startsWith("demo-")) {
                     throw IllegalArgumentException("Demo assignment fallback triggered")
@@ -73,7 +57,7 @@ class LecturerSessionViewModel(
                     radiusMeters = radiusMeters
                 )
                 val session = sessionRepository.openSession(request)
-                _activeSession.value = session
+                _uiState.update { it.copy(activeSession = session) }
                 onSuccess()
                 startExpirationTimer(session)
                 startPollingRecords(session.id)
@@ -92,53 +76,53 @@ class LecturerSessionViewModel(
                         longitude = longitude ?: 3.3792,
                         radiusMeters = radiusMeters ?: 50
                     )
-                    _activeSession.value = mockSession
+                    _uiState.update { it.copy(activeSession = mockSession) }
                     onSuccess()
                     startExpirationTimer(mockSession)
                 } else {
-                    _error.value = e.message ?: "Failed to start attendance session."
+                    _uiState.update { it.copy(error = e.message ?: "Failed to start attendance session.") }
                 }
             } finally {
-                _isLoading.value = false
+                _uiState.update { it.copy(isLoading = false) }
             }
         }
     }
 
     fun setActiveSession(session: AttendanceSessionResponse) {
-        _activeSession.value = session
+        _uiState.update { it.copy(activeSession = session) }
         startExpirationTimer(session)
         startPollingRecords(session.id)
     }
 
     fun closeActiveSession(onSuccess: () -> Unit) {
-        val sessionId = _activeSession.value?.id ?: return
+        val sessionId = _uiState.value.activeSession?.id ?: return
         viewModelScope.launch {
-            _error.value = null
-            _isLoading.value = true
-            _error.value = null
+            _uiState.update { it.copy(error = null) }
+            _uiState.update { it.copy(isLoading = true) }
+            _uiState.update { it.copy(error = null) }
             try {
                 sessionRepository.closeSession(sessionId)
                 stopPollingRecords()
                 expirationJob?.cancel()
                 expirationJob = null
-                _activeSession.value = null
-                _locallyClosedSessionIds.value = _locallyClosedSessionIds.value + sessionId
-                _checkedInRecords.value = emptyList()
+                _uiState.update { it.copy(activeSession = null) }
+                _uiState.update { it.copy(locallyClosedSessionIds = _uiState.value.locallyClosedSessionIds + sessionId) }
+                _uiState.update { it.copy(checkedInRecords = emptyList()) }
                 onSuccess()
             } catch (e: Exception) {
-                _error.value = e.message ?: "Failed to close attendance session."
+                _uiState.update { it.copy(error = e.message ?: "Failed to close attendance session.") }
             } finally {
-                _isLoading.value = false
+                _uiState.update { it.copy(isLoading = false) }
             }
         }
     }
 
     fun fetchActiveSessionRecords() {
-        val sessionId = _activeSession.value?.id ?: return
+        val sessionId = _uiState.value.activeSession?.id ?: return
         viewModelScope.launch {
             try {
                 val records = sessionRepository.getSessionRecords(sessionId)
-                _checkedInRecords.value = records
+                _uiState.update { it.copy(checkedInRecords = records) }
             } catch (e: Exception) {
                 // Fail silently during polling to avoid disruptive error UI
             }
@@ -155,9 +139,9 @@ class LecturerSessionViewModel(
             try {
                 webSocketClient.observeAttendance(sessionId).collect { record ->
                     // Prepend new record to the list
-                    val currentList = _checkedInRecords.value
+                    val currentList = _uiState.value.checkedInRecords
                     if (currentList.none { it.id == record.id }) {
-                        _checkedInRecords.value = listOf(record) + currentList
+                        _uiState.update { it.copy(checkedInRecords = listOf(record) + currentList) }
                     }
                 }
             } catch (e: Exception) {
@@ -166,7 +150,7 @@ class LecturerSessionViewModel(
                 while (true) {
                     try {
                         val records = sessionRepository.getSessionRecords(sessionId)
-                        _checkedInRecords.value = records
+                        _uiState.update { it.copy(checkedInRecords = records) }
                     } catch (e: Exception) {
                         // Ignore errors during polling
                     }
@@ -187,33 +171,44 @@ class LecturerSessionViewModel(
     }
 
     private var currentSkip = 0
-    private val PAGE_SIZE = 20
+    private val PAGE_SIZE = 10
     private var isLastPage = false
+    private var isFetching = false
 
     fun loadSessionHistory(refresh: Boolean = false) {
         if (refresh) {
             currentSkip = 0
             isLastPage = false
         }
-        if (isLastPage || (_isLoading.value && !refresh)) return
+        if (isLastPage || isFetching) return
+        isFetching = true
 
         viewModelScope.launch {
-            _error.value = null
-            _isLoading.value = true
-            if (refresh) _error.value = null
+            _uiState.update { it.copy(error = null) }
+
+            if (currentSkip == 0) {
+                val cache = sessionRepository.getCachedAttendanceSessions()?.items
+                if (cache != null && !refresh) {
+                    _uiState.update { it.copy(sessionsHistory = cache) }
+                            }
+            }
+            if (currentSkip != 0 || _uiState.value.sessionsHistory.isEmpty() || refresh) {
+                _uiState.update { it.copy(isLoading = true) }
+            }
             try {
                 val response = sessionRepository.getAttendanceSessions(skip = currentSkip, limit = PAGE_SIZE)
-                if (refresh) {
-                    _sessionsHistory.value = response.items
+                if (refresh || currentSkip == 0) {
+                        _uiState.update { it.copy(sessionsHistory = response.items) }
                 } else {
-                    _sessionsHistory.value = _sessionsHistory.value + response.items
+                    _uiState.update { it.copy(sessionsHistory = _uiState.value.sessionsHistory + response.items) }
                 }
                 currentSkip += PAGE_SIZE
                 isLastPage = response.items.isEmpty() || response.items.size < PAGE_SIZE
             } catch (e: Exception) {
-                _error.value = e.message ?: "Failed to load session history."
+                _uiState.update { it.copy(error = e.message ?: "Failed to load session history.") }
             } finally {
-                _isLoading.value = false
+                isFetching = false
+                _uiState.update { it.copy(isLoading = false) }
             }
         }
     }
@@ -223,7 +218,7 @@ class LecturerSessionViewModel(
     }
 
     fun clearError() {
-        _error.value = null
+        _uiState.update { it.copy(error = null) }
     }
 
     override fun onCleared() {

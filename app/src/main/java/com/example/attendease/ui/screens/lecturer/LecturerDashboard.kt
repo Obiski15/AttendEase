@@ -68,12 +68,16 @@ fun LecturerDashboardScreen(
         dashboardViewModel.loadLecturerDashboard()
     }
 
-    val currentLocalSession by sessionViewModel.activeSession.collectAsState()
-    val locallyClosedSessionIds by sessionViewModel.locallyClosedSessionIds.collectAsState()
+    val sessionViewModelUiState by sessionViewModel.uiState.collectAsState()
 
-    val lecturerStats by dashboardViewModel.lecturerStats.collectAsState()
-    val isLoading by dashboardViewModel.isLoading.collectAsState()
-    val error by dashboardViewModel.error.collectAsState()
+    val currentLocalSession = sessionViewModelUiState.activeSession
+    val locallyClosedSessionIds = sessionViewModelUiState.locallyClosedSessionIds
+
+    val dashboardViewModelUiState by dashboardViewModel.uiState.collectAsState()
+
+    val lecturerStats = dashboardViewModelUiState.lecturerStats
+    val isLoading = dashboardViewModelUiState.isLoading
+    val error = dashboardViewModelUiState.error
 
     var showDialog by remember { mutableStateOf(false) }
     var selectedAssignmentId by remember { mutableStateOf("") }
@@ -123,8 +127,8 @@ fun LecturerDashboardScreen(
         }
     }
 
-    val activeSessionIsLoading by sessionViewModel.isLoading.collectAsState()
-    val activeSessionError by sessionViewModel.error.collectAsState()
+    val activeSessionIsLoading = sessionViewModelUiState.isLoading
+    val activeSessionError = sessionViewModelUiState.error
 
     var isExpired by remember { mutableStateOf(false) }
 

@@ -35,7 +35,7 @@ fun AttendEaseFormField(
             text = label,
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Bold,
-            color = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant else Color.Gray
+            color = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
         )
         Spacer(modifier = Modifier.height(Spacing.xs))
         OutlinedTextField(

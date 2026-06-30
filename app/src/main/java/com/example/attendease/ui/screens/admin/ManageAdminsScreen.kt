@@ -38,9 +38,10 @@ fun ManageAdminsScreen(
 ) {
     val sessionManager: SessionManager = koinInject()
     val currentUserEmail = remember { sessionManager.getUserEmail() ?: "" }
-    val users by viewModel.users.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
-    val error by viewModel.error.collectAsState()
+    val viewModelUiState by viewModel.uiState.collectAsState()
+    val users = viewModelUiState.users
+    val isLoading = viewModelUiState.isLoading
+    val error = viewModelUiState.error
     AttendEaseErrorDialog(errorMessage = error, onDismiss = { viewModel.clearError() })
 
 

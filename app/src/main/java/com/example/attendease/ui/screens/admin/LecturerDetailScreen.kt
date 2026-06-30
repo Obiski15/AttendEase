@@ -30,10 +30,11 @@ fun LecturerDetailScreen(
     lecturerId: String,
     viewModel: LecturerViewModel = koinViewModel()
 ) {
-    val currentLecturer by viewModel.currentLecturer.collectAsState()
-    val departments by viewModel.departments.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
-    val error by viewModel.error.collectAsState()
+    val viewModelUiState by viewModel.uiState.collectAsState()
+    val currentLecturer = viewModelUiState.currentLecturer
+    val departments = viewModelUiState.departments
+    val isLoading = viewModelUiState.isLoading
+    val error = viewModelUiState.error
 
     LaunchedEffect(lecturerId) {
         viewModel.loadLecturer(lecturerId)
@@ -111,7 +112,7 @@ fun LecturerDetailScreen(
                                 .offset(x = (-4).dp, y = (-4).dp),
                             shape = CircleShape,
                             color = MaterialTheme.colorScheme.secondary,
-                            border = androidx.compose.foundation.BorderStroke(2.dp, Color.White)
+                            border = androidx.compose.foundation.BorderStroke(2.dp, MaterialTheme.colorScheme.surface)
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(

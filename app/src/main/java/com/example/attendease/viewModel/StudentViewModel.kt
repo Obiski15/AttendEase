@@ -7,57 +7,55 @@ import com.example.attendease.dto.request.StudentCreateRequest
 import com.example.attendease.dto.request.StudentUpdateRequest
 import com.example.attendease.dto.response.DepartmentResponse
 import com.example.attendease.dto.response.StudentResponse
+import com.example.attendease.state.StudentUiState
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class StudentViewModel(private val repository: StudentRepository) : ViewModel() {
-    private val _students = MutableStateFlow<List<StudentResponse>>(emptyList())
-    val students = _students.asStateFlow()
-
-    private val _departments = MutableStateFlow<List<DepartmentResponse>>(emptyList())
-    val departments = _departments.asStateFlow()
-
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading = _isLoading.asStateFlow()
-
-    private val _error = MutableStateFlow<String?>(null)
-    val error = _error.asStateFlow()
-
-    private val _saveSuccess = MutableStateFlow(false)
-    val saveSuccess = _saveSuccess.asStateFlow()
-
-    private val _currentStudent = MutableStateFlow<StudentResponse?>(null)
-    val currentStudent = _currentStudent.asStateFlow()
+    private val _uiState = MutableStateFlow(StudentUiState())
+    val uiState = _uiState.asStateFlow()
 
     private var currentSkip = 0
-    private val PAGE_SIZE = 20
+    private val PAGE_SIZE = 10
     private var isLastPage = false
 
+    private var isFetching = false
     fun loadStudents(refresh: Boolean = false) {
         if (refresh) {
             currentSkip = 0
             isLastPage = false
         }
-        if (isLastPage || (_isLoading.value && !refresh)) return
+        if (isLastPage || isFetching) return
+        isFetching = true
 
         viewModelScope.launch {
-            _error.value = null
-            _isLoading.value = true
-            if (refresh) _error.value = null
+            _uiState.update { it.copy(error = null) }
+
+            if (currentSkip == 0) {
+                val cache = repository.getCachedStudents()?.items
+                if (cache != null && !refresh) {
+                    _uiState.update { it.copy(students = cache) }
+                            }
+            }
+            if (currentSkip != 0 || _uiState.value.students.isEmpty() || refresh) {
+                _uiState.update { it.copy(isLoading = true) }
+            }
             try {
                 val response = repository.getStudents(skip = currentSkip, limit = PAGE_SIZE)
-                if (refresh) {
-                    _students.value = response.items
+                if (refresh || currentSkip == 0) {
+                        _uiState.update { it.copy(students = response.items) }
                 } else {
-                    _students.value = _students.value + response.items
+                    _uiState.update { it.copy(students = _uiState.value.students + response.items) }
                 }
                 currentSkip += PAGE_SIZE
                 isLastPage = response.items.isEmpty() || response.items.size < PAGE_SIZE
             } catch (e: Exception) {
-                _error.value = e.message
+                _uiState.update { it.copy(error = e.message) }
             } finally {
-                _isLoading.value = false
+                isFetching = false
+                _uiState.update { it.copy(isLoading = false) }
             }
         }
     }
@@ -68,8 +66,17 @@ class StudentViewModel(private val repository: StudentRepository) : ViewModel() 
 
     fun loadDepartments() {
         viewModelScope.launch {
+            _uiState.update { it.copy(error = null) }
+
+            val cache = repository.getCachedDepartments()
+            if (cache != null && !false) {
+                _uiState.update { it.copy(departments = cache) }
+                        }
+            if (cache == null || false) {
+                _uiState.update { it.copy(isLoading = true) }
+            }
             try {
-                _departments.value = repository.getDepartments()
+                _uiState.update { it.copy(departments = repository.getDepartments()) }
             } catch (e: Exception) {
                 // Silently handle background metadata loading errors
             }
@@ -78,79 +85,83 @@ class StudentViewModel(private val repository: StudentRepository) : ViewModel() 
 
     fun loadStudent(userId: String) {
         viewModelScope.launch {
-            _error.value = null
-            _isLoading.value = true
-            _error.value = null
+            _uiState.update { it.copy(error = null) }
+            _uiState.update { it.copy(isLoading = true) }
+            _uiState.update { it.copy(error = null) }
             try {
-                _currentStudent.value = repository.getStudent(userId)
+                _uiState.update { it.copy(currentStudent = repository.getStudent(userId)) }
             } catch (e: Exception) {
-                _error.value = e.message
+                _uiState.update { it.copy(error = e.message) }
             } finally {
-                _isLoading.value = false
+                isFetching = false
+                _uiState.update { it.copy(isLoading = false) }
             }
         }
     }
 
     fun clearCurrentStudent() {
-        _currentStudent.value = null
+        _uiState.update { it.copy(currentStudent = null) }
     }
 
     fun createStudent(request: StudentCreateRequest) {
         viewModelScope.launch {
-            _error.value = null
-            _isLoading.value = true
-            _error.value = null
-            _saveSuccess.value = false
+            _uiState.update { it.copy(error = null) }
+            _uiState.update { it.copy(isLoading = true) }
+            _uiState.update { it.copy(error = null) }
+            _uiState.update { it.copy(saveSuccess = false) }
             try {
                 repository.createStudent(request)
-                _saveSuccess.value = true
+                _uiState.update { it.copy(saveSuccess = true) }
             } catch (e: Exception) {
-                _error.value = e.message
+                _uiState.update { it.copy(error = e.message) }
             } finally {
-                _isLoading.value = false
+                isFetching = false
+                _uiState.update { it.copy(isLoading = false) }
             }
         }
     }
 
     fun updateStudent(userId: String, request: StudentUpdateRequest) {
         viewModelScope.launch {
-            _error.value = null
-            _isLoading.value = true
-            _error.value = null
-            _saveSuccess.value = false
+            _uiState.update { it.copy(error = null) }
+            _uiState.update { it.copy(isLoading = true) }
+            _uiState.update { it.copy(error = null) }
+            _uiState.update { it.copy(saveSuccess = false) }
             try {
                 repository.updateStudent(userId, request)
-                _saveSuccess.value = true
+                _uiState.update { it.copy(saveSuccess = true) }
             } catch (e: Exception) {
-                _error.value = e.message
+                _uiState.update { it.copy(error = e.message) }
             } finally {
-                _isLoading.value = false
+                isFetching = false
+                _uiState.update { it.copy(isLoading = false) }
             }
         }
     }
 
     fun deleteStudent(userId: String) {
         viewModelScope.launch {
-            _error.value = null
-            _isLoading.value = true
-            _error.value = null
+            _uiState.update { it.copy(error = null) }
+            _uiState.update { it.copy(isLoading = true) }
+            _uiState.update { it.copy(error = null) }
             try {
                 repository.deleteStudent(userId)
                 loadStudents() // Reload list immediately
             } catch (e: Exception) {
-                _error.value = e.message
+                _uiState.update { it.copy(error = e.message) }
             } finally {
-                _isLoading.value = false
+                isFetching = false
+                _uiState.update { it.copy(isLoading = false) }
             }
         }
     }
 
     fun resetSaveState() {
-        _saveSuccess.value = false
-        _error.value = null
+        _uiState.update { it.copy(saveSuccess = false) }
+        _uiState.update { it.copy(error = null) }
     }
 
     fun clearError() {
-        _error.value = null
+        _uiState.update { it.copy(error = null) }
     }
 }

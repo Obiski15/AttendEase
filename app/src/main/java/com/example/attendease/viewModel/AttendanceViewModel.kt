@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.attendease.data.repository.AttendanceRepository
 import com.example.attendease.dto.request.AttendanceCheckInRequest
 import com.example.attendease.dto.response.AttendanceRecordResponse
+import com.example.attendease.state.AttendanceUiState
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -12,22 +14,16 @@ import kotlinx.coroutines.launch
 class AttendanceViewModel(
     private val repository: AttendanceRepository
 ) : ViewModel() {
+    private val _uiState = MutableStateFlow(AttendanceUiState())
+    val uiState = _uiState.asStateFlow()
 
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading = _isLoading.asStateFlow()
-
-    private val _error = MutableStateFlow<String?>(null)
-    val error = _error.asStateFlow()
-
-    private val _checkInSuccess = MutableStateFlow<AttendanceRecordResponse?>(null)
-    val checkInSuccess = _checkInSuccess.asStateFlow()
 
     fun checkIn(sessionCode: String, latitude: Double?, longitude: Double?) {
         viewModelScope.launch {
-            _error.value = null
-            _isLoading.value = true
-            _error.value = null
-            _checkInSuccess.value = null
+            _uiState.update { it.copy(error = null) }
+            _uiState.update { it.copy(isLoading = true) }
+            _uiState.update { it.copy(error = null) }
+            _uiState.update { it.copy(checkInSuccess = null) }
             try {
                 val request = AttendanceCheckInRequest(
                     sessionCode = sessionCode,
@@ -35,56 +31,65 @@ class AttendanceViewModel(
                     longitude = longitude
                 )
                 val response = repository.checkIn(request)
-                _checkInSuccess.value = response
+                _uiState.update { it.copy(checkInSuccess = response) }
             } catch (e: Exception) {
-                _error.value = e.message ?: "Check-in failed. Please try again."
+                _uiState.update { it.copy(error = e.message ?: "Check-in failed. Please try again.") }
             } finally {
-                _isLoading.value = false
+                isFetching = false
+                _uiState.update { it.copy(isLoading = false) }
             }
         }
     }
 
     fun resetState() {
-        _checkInSuccess.value = null
-        _error.value = null
-        _isLoading.value = false
+        _uiState.update { it.copy(checkInSuccess = null) }
+        _uiState.update { it.copy(error = null) }
+        _uiState.update { it.copy(isLoading = false) }
     }
 
     fun clearError() {
-        _error.value = null
+        _uiState.update { it.copy(error = null) }
     }
 
-    private val _attendanceHistory = MutableStateFlow<List<AttendanceRecordResponse>>(emptyList())
-    val attendanceHistory = _attendanceHistory.asStateFlow()
-
     private var currentSkip = 0
-    private val PAGE_SIZE = 20
+    private val PAGE_SIZE = 10
     private var isLastPage = false
 
+    private var isFetching = false
     fun getMyAttendance(refresh: Boolean = false) {
         if (refresh) {
             currentSkip = 0
             isLastPage = false
         }
-        if (isLastPage || (_isLoading.value && !refresh)) return
+        if (isLastPage || isFetching) return
+        isFetching = true
 
         viewModelScope.launch {
-            _error.value = null
-            _isLoading.value = true
-            if (refresh) _error.value = null
+            _uiState.update { it.copy(error = null) }
+
+            if (currentSkip == 0) {
+                val cache = repository.getCachedMyAttendance()?.items
+                if (cache != null && !refresh) {
+                    _uiState.update { it.copy(attendanceHistory = cache) }
+                            }
+            }
+            if (currentSkip != 0 || _uiState.value.attendanceHistory.isEmpty() || refresh) {
+                _uiState.update { it.copy(isLoading = true) }
+            }
             try {
                 val response = repository.getMyAttendance(skip = currentSkip, limit = PAGE_SIZE)
-                if (refresh) {
-                    _attendanceHistory.value = response.items
+                if (refresh || currentSkip == 0) {
+                        _uiState.update { it.copy(attendanceHistory = response.items) }
                 } else {
-                    _attendanceHistory.value = _attendanceHistory.value + response.items
+                    _uiState.update { it.copy(attendanceHistory = _uiState.value.attendanceHistory + response.items) }
                 }
                 currentSkip += PAGE_SIZE
                 isLastPage = response.items.isEmpty() || response.items.size < PAGE_SIZE
             } catch (e: Exception) {
-                _error.value = e.message ?: "Failed to load attendance history."
+                _uiState.update { it.copy(error = e.message ?: "Failed to load attendance history.") }
             } finally {
-                _isLoading.value = false
+                isFetching = false
+                _uiState.update { it.copy(isLoading = false) }
             }
         }
     }

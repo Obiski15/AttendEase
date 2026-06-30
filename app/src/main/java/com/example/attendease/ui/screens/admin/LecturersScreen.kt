@@ -38,14 +38,15 @@ fun LecturersScreen(
     viewModel: LecturerViewModel = koinViewModel()
 ) {
     var searchQuery by remember { mutableStateOf("") }
-    val lecturers by viewModel.lecturers.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
-    val error by viewModel.error.collectAsState()
+    val viewModelUiState by viewModel.uiState.collectAsState()
+    val lecturers = viewModelUiState.lecturers
+    val isLoading = viewModelUiState.isLoading
+    val error = viewModelUiState.error
 
     AttendEaseErrorDialog(errorMessage = error, onDismiss = { viewModel.clearError() })
 
     LaunchedEffect(Unit) {
-        viewModel.loadLecturers(refresh = true)
+        viewModel.loadLecturers(refresh = false)
     }
 
     val filteredLecturers = lecturers.filter {
@@ -129,7 +130,9 @@ fun LecturersScreen(
                     ) {
                         itemsIndexed(filteredLecturers, key = { _, it -> it.userId }) { index, lecturer ->
                             if (index == filteredLecturers.size - 1) {
-                                viewModel.loadMore()
+                                LaunchedEffect(index) {
+                                    viewModel.loadMore()
+                                }
                             }
                             LecturerCard(
                                 lecturer = lecturer,
