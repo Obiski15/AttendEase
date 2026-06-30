@@ -41,7 +41,6 @@ class AcademicSessionViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(error = null) }
             _uiState.update { it.copy(isLoading = true) }
-            _uiState.update { it.copy(error = null) }
             _uiState.update { it.copy(saveSuccess = false) }
             try {
                 repository.createAcademicSession(sessionName, semester, isActive, startDate, endDate)
@@ -59,7 +58,6 @@ class AcademicSessionViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(error = null) }
             _uiState.update { it.copy(isLoading = true) }
-            _uiState.update { it.copy(error = null) }
             try {
                 repository.activateAcademicSession(sessionId)
                 loadSessions()
@@ -75,7 +73,6 @@ class AcademicSessionViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(error = null) }
             _uiState.update { it.copy(isLoading = true) }
-            _uiState.update { it.copy(error = null) }
             _uiState.update { it.copy(saveSuccess = false) }
             try {
                 repository.updateAcademicSession(sessionId, sessionName, semester, isActive, startDate, endDate)
@@ -93,7 +90,6 @@ class AcademicSessionViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(error = null) }
             _uiState.update { it.copy(isLoading = true) }
-            _uiState.update { it.copy(error = null) }
             try {
                 repository.deleteAcademicSession(sessionId)
                 loadSessions()

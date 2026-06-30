@@ -22,7 +22,6 @@ class AttendanceViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(error = null) }
             _uiState.update { it.copy(isLoading = true) }
-            _uiState.update { it.copy(error = null) }
             _uiState.update { it.copy(checkInSuccess = null) }
             try {
                 val request = AttendanceCheckInRequest(

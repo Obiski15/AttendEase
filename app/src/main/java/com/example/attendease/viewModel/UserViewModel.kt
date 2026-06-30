@@ -22,7 +22,6 @@ class UserViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(error = null) }
             _uiState.update { it.copy(isLoading = true) }
-            _uiState.update { it.copy(error = null) }
             try {
                 _uiState.update { it.copy(users = repository.getUsers()) }
             } catch (e: Exception) {
@@ -37,7 +36,6 @@ class UserViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(error = null) }
             _uiState.update { it.copy(isLoading = true) }
-            _uiState.update { it.copy(error = null) }
             try {
                 _uiState.update { it.copy(currentUser = repository.getUser(userId)) }
             } catch (e: Exception) {
@@ -52,7 +50,6 @@ class UserViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(error = null) }
             _uiState.update { it.copy(isLoading = true) }
-            _uiState.update { it.copy(error = null) }
             _uiState.update { it.copy(saveSuccess = false) }
             try {
                 val request = UserCreateRequest(
@@ -76,7 +73,6 @@ class UserViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(error = null) }
             _uiState.update { it.copy(isLoading = true) }
-            _uiState.update { it.copy(error = null) }
             _uiState.update { it.copy(saveSuccess = false) }
             try {
                 val request = UserUpdateRequest(
@@ -100,7 +96,6 @@ class UserViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(error = null) }
             _uiState.update { it.copy(isLoading = true) }
-            _uiState.update { it.copy(error = null) }
             try {
                 repository.deleteUser(userId)
                 loadUsers()

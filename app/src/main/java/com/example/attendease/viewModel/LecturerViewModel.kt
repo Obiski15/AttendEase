@@ -87,7 +87,6 @@ class LecturerViewModel(private val repository: LecturerRepository) : ViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(error = null) }
             _uiState.update { it.copy(isLoading = true) }
-            _uiState.update { it.copy(error = null) }
             try {
                 _uiState.update { it.copy(currentLecturer = repository.getLecturer(userId)) }
             } catch (e: Exception) {
@@ -107,7 +106,6 @@ class LecturerViewModel(private val repository: LecturerRepository) : ViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(error = null) }
             _uiState.update { it.copy(isLoading = true) }
-            _uiState.update { it.copy(error = null) }
             _uiState.update { it.copy(saveSuccess = false) }
             try {
                 repository.createLecturer(request)
@@ -125,7 +123,6 @@ class LecturerViewModel(private val repository: LecturerRepository) : ViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(error = null) }
             _uiState.update { it.copy(isLoading = true) }
-            _uiState.update { it.copy(error = null) }
             _uiState.update { it.copy(saveSuccess = false) }
             try {
                 repository.updateLecturer(userId, request)
@@ -143,7 +140,6 @@ class LecturerViewModel(private val repository: LecturerRepository) : ViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(error = null) }
             _uiState.update { it.copy(isLoading = true) }
-            _uiState.update { it.copy(error = null) }
             try {
                 repository.deleteLecturer(userId)
                 loadLecturers() // Reload list immediately

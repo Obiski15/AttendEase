@@ -43,7 +43,6 @@ class LecturerSessionViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(error = null) }
             _uiState.update { it.copy(isLoading = true) }
-            _uiState.update { it.copy(error = null) }
             try {
                 if (courseAssignmentId.startsWith("demo-")) {
                     throw IllegalArgumentException("Demo assignment fallback triggered")
@@ -99,7 +98,6 @@ class LecturerSessionViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(error = null) }
             _uiState.update { it.copy(isLoading = true) }
-            _uiState.update { it.copy(error = null) }
             try {
                 sessionRepository.closeSession(sessionId)
                 stopPollingRecords()

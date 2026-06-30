@@ -41,7 +41,6 @@ class DepartmentViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(error = null) }
             _uiState.update { it.copy(isLoading = true) }
-            _uiState.update { it.copy(error = null) }
             _uiState.update { it.copy(saveSuccess = false) }
             try {
                 repository.createDepartment(name)
@@ -59,7 +58,6 @@ class DepartmentViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(error = null) }
             _uiState.update { it.copy(isLoading = true) }
-            _uiState.update { it.copy(error = null) }
             try {
                 repository.deleteDepartment(departmentId)
                 loadDepartments()

@@ -41,7 +41,6 @@ class CourseViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(error = null) }
             _uiState.update { it.copy(isLoading = true) }
-            _uiState.update { it.copy(error = null) }
             _uiState.update { it.copy(saveSuccess = false) }
             try {
                 repository.createCourse(title, courseCode, creditUnits, departmentId)
@@ -64,7 +63,6 @@ class CourseViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(error = null) }
             _uiState.update { it.copy(isLoading = true) }
-            _uiState.update { it.copy(error = null) }
             try {
                 _uiState.update { it.copy(currentCourse = repository.getCourse(courseId)) }
             } catch (e: Exception) {
@@ -79,7 +77,6 @@ class CourseViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(error = null) }
             _uiState.update { it.copy(isLoading = true) }
-            _uiState.update { it.copy(error = null) }
             _uiState.update { it.copy(saveSuccess = false) }
             try {
                 repository.updateCourse(courseId, title, courseCode, creditUnits, departmentId)
@@ -97,7 +94,6 @@ class CourseViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(error = null) }
             _uiState.update { it.copy(isLoading = true) }
-            _uiState.update { it.copy(error = null) }
             try {
                 repository.deleteCourse(courseId)
                 loadCourses()
