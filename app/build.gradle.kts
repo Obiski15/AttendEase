@@ -6,6 +6,12 @@ plugins {
     alias(libs.plugins.ksp.plugin)
 }
 
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+val keystoreProperties = java.util.Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(java.io.FileInputStream(keystorePropertiesFile))
+}
+
 android {
     namespace = "com.example.attendease"
     compileSdk = 36
@@ -22,10 +28,10 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = file("release.keystore")
-            storePassword = "password"
-            keyAlias = "release"
-            keyPassword = "password"
+            storeFile = file(keystoreProperties["storeFile"] as String? ?: System.getenv("KEYSTORE_FILE") ?: "release.keystore")
+            storePassword = keystoreProperties["storePassword"] as String? ?: System.getenv("KEYSTORE_PASSWORD")
+            keyAlias = keystoreProperties["keyAlias"] as String? ?: System.getenv("KEY_ALIAS")
+            keyPassword = keystoreProperties["keyPassword"] as String? ?: System.getenv("KEY_PASSWORD")
             enableV3Signing = true
             enableV4Signing = true
         }
@@ -34,10 +40,11 @@ android {
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("release")
-            isMinifyEnabled = false
-            optimization {
-                enable = false
-            }
+            isMinifyEnabled = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
     compileOptions {
