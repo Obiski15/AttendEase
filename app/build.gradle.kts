@@ -20,9 +20,21 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = file("release.keystore")
+            storePassword = "password"
+            keyAlias = "release"
+            keyPassword = "password"
+            enableV3Signing = true
+            enableV4Signing = true
+        }
+    }
 
     buildTypes {
         release {
+            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = false
             optimization {
                 enable = false
             }
